@@ -1329,6 +1329,7 @@
   </div>
 
   <script>
+
     const dadosExemplos = {
       cimento: {
         id: "cimento",
@@ -1691,8 +1692,7 @@
       const chkAjuste = document.getElementById('chkAjustarPedidoSienge').checked;
 
       let msgAjuste = chkAjuste 
-        ? "✓ PATCH /purchase-orders/8921/items: Quantidade do Pedido Sienge alterada de 500 para 490 SC para bater 100% com a carga física.
-"
+        ? "✓ PATCH /purchase-orders/8921/items: Quantidade do Pedido Sienge alterada de 500 para 490 SC para bater 100% com a carga física.\n"
         : "";
 
       fetch('/api/sienge/aprovar', {
@@ -1935,9 +1935,7 @@
         alert('Nenhum detalhe adicional.');
         return;
       }
-      alert('📋 DETALHES DO RECEBIMENTO:
-
-' + JSON.stringify(details, null, 2));
+      alert('📋 DETALHES DO RECEBIMENTO:\n\n' + JSON.stringify(details, null, 2));
     }
 
     function exportarHistoricoCsv() {
@@ -2110,6 +2108,7 @@
     });
 
     biparNota();
+  
   </script>
 </body>
 </html>
