@@ -1,0 +1,9 @@
+{
+  "name": "omni-recebimento-sienge",
+  "version": "2.0.0",
+  "description": "Conferência Cega de Recebimento com IA Fiscal e Integração Sienge ERP",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

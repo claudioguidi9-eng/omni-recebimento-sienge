@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Omni Fiscal AI - Recebimento & Sienge ERP</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --accent: #0284c7;
+      --success: #16a34a;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --dark: #0f172a;
+      --gray-50: #f8fafc;
+      --gray-100: #f1f5f9;
+      --gray-200: #e2e8f0;
+      --gray-300: #cbd5e1;
+      --gray-600: #475569;
+      --gray-700: #334155;
+      --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; color: var(--gray-700); font-size: 14px; min-height: 100vh; }
+    
+    /* Header */
+    header {
+      background: linear-gradient(135deg, #0f172a, #1e3a8a);
+      color: white;
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #3b82f6;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 18px; letter-spacing: -0.5px; }
+    .brand-badge { background: #38bdf8; color: #082f49; font-size: 10px; padding: 2px 8px; border-radius: 999px; text-transform: uppercase; font-weight: 800; }
+    .header-actions { display: flex; align-items: center; gap: 14px; }
+
+    /* Top Bar / Bipagem */
+    .scanner-bar {
+      background: white;
+      padding: 14px 24px;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid var(--gray-200);
+    }
+    .scanner-group { display: flex; align-items: center; gap: 10px; flex: 1; max-width: 780px; }
+    .scanner-input-wrap { position: relative; flex: 1; }
+    .scanner-input {
+      width: 100%;
+      padding: 10px 14px 10px 38px;
+      border: 2px solid var(--gray-300);
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: 'JetBrains Mono', monospace;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .scanner-input:focus { border-color: var(--primary-light); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
+    .scanner-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 15px; color: var(--gray-600); }
+    .btn {
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: #172554; }
+    .btn-success { background: var(--success); color: white; }
+    .btn-success:hover { background: #15803d; }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn-outline { background: white; border: 1px solid var(--gray-300); color: var(--gray-700); }
+    .btn-outline:hover { background: var(--gray-100); }
+    .btn-pending {
+      position: relative;
+      background: #fef3c7;
+      border: 1px solid #f59e0b;
+      color: #92400e;
+    }
+    .pending-badge {
+      background: var(--danger);
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 99px;
+      margin-left: 4px;
+    }
+
+    /* Layout Principal */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 20px;
+      padding: 20px 24px;
+      max-width: 1700px;
+      margin: 0 auto;
+    }
+    @media(max-width: 1100px) { .main-grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background: white;
+      border-radius: 10px;
+      border: 1px solid var(--gray-200);
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 14px 18px;
+      background: var(--gray-50);
+      border-bottom: 1px solid var(--gray-200);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-title { font-weight: 700; color: var(--dark); display: flex; align-items: center; gap: 8px; font-size: 15px; }
+    .card-body { padding: 18px; flex: 1; }
+
+    /* DANFE Preview Visual */
+    .danfe-box {
+      border: 2px dashed var(--gray-300);
+      background: #fafbfc;
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 12px;
+    }
+    .danfe-header {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--gray-200);
+      margin-bottom: 12px;
+    }
+    .info-label { font-size: 11px; text-transform: uppercase; color: var(--gray-600); font-weight: 600; }
+    .info-value { font-size: 13px; font-weight: 600; color: var(--dark); }
+    .tag-match {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .tag-ok { background: #dcfce7; color: #166534; }
+    .tag-alert { background: #fee2e2; color: #991b1b; }
+    .tag-warning { background: #fef3c7; color: #92400e; }
+
+    .table-custom {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 12px;
+    }
+    .table-custom th {
+      background: var(--gray-100);
+      padding: 8px 10px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--gray-700);
+      border-bottom: 1px solid var(--gray-200);
+    }
+    .table-custom td {
+      padding: 10px;
+      border-bottom: 1px solid var(--gray-200);
+      vertical-align: middle;
+    }
+
+    /* Tela de Conferência às Cegas */
+    .blind-banner {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .attempts-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: white;
+      border: 1px solid #cbd5e1;
+      padding: 4px 10px;
+      border-radius: 99px;
+      font-weight: 700;
+      color: var(--gray-700);
+    }
+    .count-input {
+      width: 90px;
+      padding: 8px 10px;
+      border: 2px solid var(--gray-300);
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 700;
+      text-align: center;
+      outline: none;
+    }
+    .count-input:focus { border-color: var(--primary-light); }
+    .count-input.has-error { border-color: var(--danger); background: #fef2f2; }
+
+    /* Modais */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-card {
+      background: white;
+      width: 100%;
+      max-width: 650px;
+      border-radius: 12px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+      animation: modalIn 0.2s ease-out;
+    }
+    @keyframes modalIn {
+      from { transform: scale(0.96); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .modal-header {
+      background: var(--gray-50);
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--gray-200);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-body { padding: 20px; max-height: 75vh; overflow-y: auto; }
+    .modal-footer {
+      padding: 14px 20px;
+      background: var(--gray-50);
+      border-top: 1px solid var(--gray-200);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    /* Print Template para Ficha Inteligente */
+    @media print {
+      body * { visibility: hidden; }
+      #printable-sheet, #printable-sheet * { visibility: visible; }
+      #printable-sheet {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        padding: 20px;
+        background: white;
+      }
+      .no-print { display: none !important; }
+    }
+
+    /* Alerta de Log */
+    .status-toast {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header>
+    <div class="brand">
+      <span>🏗️ OMNI TRADE</span>
+      <span style="font-weight: 300; opacity: 0.7;">|</span>
+      <span>Sienge Fiscal AI</span>
+      <span class="brand-badge">Recebimento Doca</span>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-pending" onclick="openPendingModal()">
+        ⚠️ Notas Pendentes
+        <span class="pending-badge" id="pendingCount">0</span>
+      </button>
+      <div style="font-size: 12px; opacity: 0.85;">
+        Conectado: <b>Sienge API Gateway</b> 🟢
+      </div>
+    </div>
+  </header>
+
+  <!-- Barra de Scanner e Leitura de Chave -->
+  <div class="scanner-bar no-print">
+    <div class="scanner-group">
+      <div class="scanner-input-wrap">
+        <span class="scanner-icon">🔍</span>
+        <input 
+          type="text" 
+          id="chaveInput" 
+          class="scanner-input" 
+          placeholder="Bipe o código de barras ou digite os 44 dígitos da Chave da NF-e..."
+          maxlength="44"
+          autofocus
+          onkeydown="if(event.key === 'Enter') handleSearchKey()"
+        >
+      </div>
+      <button class="btn btn-primary" onclick="handleSearchKey()">
+        Ler Nota Fiscal
+      </button>
+    </div>
+    
+    <!-- Botões de Demonstração Rápida -->
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <span style="font-size: 11px; color: var(--gray-600); font-weight: 600;">SIMULAR:</span>
+      <button class="btn btn-outline" style="font-size: 11px; padding: 6px 10px;" onclick="simulateLoad(true)">
+        ✅ Nota Perfeita (Batimento 100%)
+      </button>
+      <button class="btn btn-outline" style="font-size: 11px; padding: 6px 10px;" onclick="simulateLoad(false)">
+        ❌ Nota com Divergência Física
+      </button>
+    </div>
+  </div>
+
+  <!-- Workspace Principal -->
+  <div class="main-grid">
+
+    <!-- Lado Esquerdo: DANFE Preview & Pedido de Compra Sienge -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <span>📄 DANFE & Pedido Sienge</span>
+          <span id="nfNumberTag" style="font-size: 12px; font-weight: 400; color: var(--gray-600);"></span>
+        </div>
+        <div id="xmlStatusTag" style="display: none;" class="tag-match tag-ok">
+          📁 XML movido para /XML_LIDOS
+        </div>
+      </div>
+      <div class="card-body">
+        
+        <div id="noDataState" style="text-align: center; padding: 60px 20px; color: var(--gray-600);">
+          <div style="font-size: 40px; margin-bottom: 12px;">📦</div>
+          <h3 style="font-weight: 600; color: var(--dark); margin-bottom: 6px;">Nenhuma nota fiscal carregada</h3>
+          <p style="font-size: 13px;">Bipe a chave da nota ou clique nos botões de simulação acima para iniciar o recebimento.</p>
+        </div>
+
+        <div id="danfeContent" style="display: none;">
+          <!-- Resumo Fornecedor & Pedido Sienge -->
+          <div class="danfe-box">
+            <div class="danfe-header">
+              <div>
+                <div class="info-label">Emitente / Fornecedor</div>
+                <div class="info-value" id="emitenteNome">-</div>
+                <div style="font-size: 11px; color: var(--gray-600);" id="emitenteCnpj">-</div>
+              </div>
+              <div style="text-align: right;">
+                <div class="info-label">Pedido Sienge Vinculado</div>
+                <div class="info-value" id="pedidoNumero" style="color: var(--primary);">-</div>
+                <div id="toleranciaTag" class="tag-match tag-ok" style="margin-top: 4px;">Preço Dentro da Tolerância (±0%)</div>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px;">
+              <div>
+                <div class="info-label">Valor Total NF</div>
+                <div class="info-value" id="valorTotalNf">R$ 0,00</div>
+              </div>
+              <div>
+                <div class="info-label">Valor Total Pedido</div>
+                <div class="info-value" id="valorTotalPedido">R$ 0,00</div>
+              </div>
+              <div>
+                <div class="info-label">Condição Pagamento</div>
+                <div class="info-value" id="condicaoPagto">28 / 56 Dias</div>
+              </div>
+              <div>
+                <div class="info-label">CFOP Entrada</div>
+                <div class="info-value" id="cfopFiscal">1.102 / 2.102</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabela de Produtos da NF -->
+          <h4 style="margin: 18px 0 8px; font-size: 13px; font-weight: 700; color: var(--dark);">
+            Itens Faturados na NF-e
+          </h4>
+          <table class="table-custom">
+            <thead>
+              <tr>
+                <th>Item / Descrição</th>
+                <th>NCM</th>
+                <th>Qtd Faturada</th>
+                <th>V. Unit (NF)</th>
+                <th>V. Unit (Pedido)</th>
+                <th>Variação</th>
+              </tr>
+            </thead>
+            <tbody id="danfeItemsTable">
+              <!-- Renderizado via JS -->
+            </tbody>
+          </table>
+
+          <div style="margin-top: 18px; padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid var(--gray-200); font-size: 12px;">
+            <div style="font-weight: 700; color: var(--dark); margin-bottom: 4px;">🧠 Análise Fiscal Automática (IA/Sienge):</div>
+            <div id="analiseFiscalText" style="color: var(--gray-700);">Aguardando conferência física de quantidades para gerar documento de entrada e títulos no Contas a Pagar.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Lado Direito: Conferência às Cegas & Ficha Inteligente -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <span>📋 Conferência Física "Às Cegas"</span>
+        </div>
+        <div class="attempts-badge" id="attemptsBadge" style="display: none;">
+          Tentativa: <span id="currentAttemptText" style="color: var(--primary);">1</span>/3
+        </div>
+      </div>
+      <div class="card-body">
+
+        <div id="noConferenceState" style="text-align: center; padding: 60px 20px; color: var(--gray-600);">
+          <div style="font-size: 40px; margin-bottom: 12px;">📝</div>
+          <h3 style="font-weight: 600; color: var(--dark); margin-bottom: 6px;">Aguardando Nota Fiscal</h3>
+          <p style="font-size: 13px;">Assim que a nota for bipada, a ficha de contagem será gerada aqui.</p>
+        </div>
+
+        <div id="conferenceActiveState" style="display: none;">
+          
+          <div class="blind-banner">
+            <div>
+              <div style="font-weight: 700; color: #1e3a8a; font-size: 13px;">Instruções ao Conferente:</div>
+              <div style="font-size: 12px; color: #3b82f6;">Conte os volumes na doca e preencha a quantidade física conferida.</div>
+            </div>
+            <button class="btn btn-outline" style="border-color: #93c5fd; background: white;" onclick="printBlindSheet()">
+              🖨️ Imprimir Ficha Inteligente
+            </button>
+          </div>
+
+          <div id="lockAlertBox" style="display: none;" class="status-toast" style="background: #fef2f2; color: #991b1b; border: 1px solid #f87171;">
+            <div>
+              <b>🚫 NOTA TRAVADA (3ª Tentativa Falhou):</b> Divergência persistente. Um e-mail foi disparado para <b>claudio.guidi@omnitradebrasil.com</b>. Esta nota foi enviada para a fila de pendências.
+            </div>
+          </div>
+
+          <table class="table-custom">
+            <thead>
+              <tr>
+                <th>Código / Material</th>
+                <th>Unid.</th>
+                <th style="width: 140px; text-align: center;">Qtd Contada</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="conferenceItemsTable">
+              <!-- Linhas com input de contagem preenchidas dinamicamente -->
+            </tbody>
+          </table>
+
+          <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 10px;">
+            <button id="btnProximaNota" class="btn btn-danger" style="display: none;" onclick="resetWorkspace()">
+              ⏭️ Próxima Nota (Liberar Doca)
+            </button>
+            <button id="btnConfirmarContagem" class="btn btn-success" onclick="validateConference()">
+              ✅ Confirmar e Liberar Recebimento
+            </button>
+          </div>
+
+          <div id="conferenceFeedback"></div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODAL: FICHA INTELIGENTE DE CONTAGEM (Versão Impressão) -->
+  <div class="modal-overlay" id="modalPrintSheet">
+    <div class="modal-card" style="max-width: 700px;">
+      <div class="modal-header">
+        <h3 style="font-size: 15px; font-weight: 700;">Pré-visualização da Ficha de Contagem Cega</h3>
+        <button class="btn btn-outline" style="padding: 4px 8px;" onclick="closeModal('modalPrintSheet')">✕</button>
+      </div>
+      <div class="modal-body" id="printable-sheet">
+        <div style="border: 2px solid #000; padding: 16px; font-family: monospace;">
+          <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 12px;">
+            <h2 style="font-size: 18px; margin-bottom: 4px;">FICHA DE CONTAGEM FÍSICA - RECEBIMENTO</h2>
+            <div>OMNI TRADE BRASIL - CONTROLE DE ESTOQUE DOCA</div>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12px; margin-bottom: 14px;">
+            <div><b>NF-e:</b> <span id="printNfNum"></span></div>
+            <div><b>PEDIDO SIENGE:</b> <span id="printPedidoNum"></span></div>
+            <div><b>FORNECEDOR:</b> <span id="printFornecedor"></span></div>
+            <div><b>DATA/HORA:</b> <span id="printData"></span></div>
+          </div>
+
+          <div style="background: #eee; padding: 6px; font-size: 11px; margin-bottom: 10px;">
+            <b>REGRA:</b> Anote a quantidade real contada nos campos abaixo. Não aceitar rasuras.
+          </div>
+
+          <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+            <thead>
+              <tr style="border-bottom: 2px solid #000; border-top: 2px solid #000;">
+                <th style="padding: 6px; text-align: left;">CÓDIGO</th>
+                <th style="padding: 6px; text-align: left;">DESCRIÇÃO DO MATERIAL</th>
+                <th style="padding: 6px; text-align: center;">UN</th>
+                <th style="padding: 6px; text-align: center; width: 130px; border-left: 1px dashed #000;">QTD CONFERIDA</th>
+              </tr>
+            </thead>
+            <tbody id="printTableItems">
+              <!-- Injetado por JS com espaço pontilhado para anotação a caneta -->
+            </tbody>
+          </table>
+
+          <div style="margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; font-size: 11px; text-align: center;">
+            <div style="border-top: 1px solid #000; padding-top: 6px;">Assinatura Conferente / Recebedor</div>
+            <div style="border-top: 1px solid #000; padding-top: 6px;">Visto Supervisor de Recebimento</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('modalPrintSheet')">Fechar</button>
+        <button class="btn btn-primary" onclick="window.print()">🖨️ Mandar para Impressora</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: NOTAS PENDENTES / APROVAÇÃO DO SUPERVISOR -->
+  <div class="modal-overlay" id="modalPending">
+    <div class="modal-card" style="max-width: 800px;">
+      <div class="modal-header">
+        <h3 style="font-size: 15px; font-weight: 700;">⚠️ Fila de Notas Pendentes / Divergentes</h3>
+        <button class="btn btn-outline" style="padding: 4px 8px;" onclick="closeModal('modalPending')">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 13px; color: var(--gray-600); margin-bottom: 14px;">
+          Notas travadas por divergência física na 3ª contagem aguardando análise e liberação do supervisor.
+        </p>
+
+        <div id="pendingListEmpty" style="text-align: center; padding: 30px; color: var(--gray-600);">
+          Nenhuma nota pendente no momento.
+        </div>
+
+        <table class="table-custom" id="pendingTable" style="display: none;">
+          <thead>
+            <tr>
+              <th>NF-e</th>
+              <th>Fornecedor</th>
+              <th>Pedido</th>
+              <th>Divergência Apurada</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+          <tbody id="pendingListBody"></tbody>
+        </table>
+
+        <!-- Seção de Liberação com Senha do Supervisor -->
+        <div id="supervisorActionBox" style="display: none; margin-top: 20px; padding: 16px; background: #fefce8; border: 1px solid #fef08a; border-radius: 8px;">
+          <h4 style="font-size: 14px; color: #854d0e; margin-bottom: 8px;">🔑 Desbloqueio e Liberação do Supervisor</h4>
+          <p style="font-size: 12px; color: #713f12; margin-bottom: 12px;">
+            Você está liberando a nota com divergência. O sistema pode ajustar o pedido de compra no Sienge automaticamente para permitir a entrada física e o fechamento do contas a pagar.
+          </p>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+            <div>
+              <label class="info-label">E-mail Supervisor</label>
+              <input type="email" id="supEmail" class="scanner-input" value="claudio.guidi@omnitradebrasil.com">
+            </div>
+            <div>
+              <label class="info-label">Senha de Autorização</label>
+              <input type="password" id="supPassword" class="scanner-input" placeholder="Digite sua senha...">
+            </div>
+          </div>
+
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">
+            <input type="checkbox" id="chkAutoAdjust" checked>
+            <span>Atualizar Pedido no Sienge automaticamente (adequar quantidades à contagem física)</span>
+          </label>
+
+          <div style="margin-top: 14px; display: flex; justify-content: flex-end; gap: 8px;">
+            <button class="btn btn-outline" onclick="cancelSupervisorRelease()">Cancelar</button>
+            <button class="btn btn-success" onclick="executeSupervisorRelease()">Aprovar e Integrar no Sienge</button>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('modalPending')">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Base de dados simulada de Notas e Pedidos
+    const mockDatabase = {
+      "perfect": {
+        chave: "35261012345678000199550010000456121894236123",
+        numeroNf: "000.045.612",
+        fornecedor: "GERDAU AÇOMINAS S.A.",
+        cnpj: "17.227.090/0001-40",
+        pedidoSienge: "PED-2026-8841",
+        condicao: "28 / 56 Dias",
+        totalNf: 14500.00,
+        totalPedido: 14500.00,
+        items: [
+          { codigo: "ACO-050", desc: "VERGALHAO CA-50 10.0MM BARRA 12M", ncm: "7214.20.00", un: "BR", qtdNf: 100, qtdPedido: 100, vUnitNf: 75.00, vUnitPed: 75.00 },
+          { codigo: "ACO-060", desc: "VERGALHAO CA-60 5.0MM ROLO", ncm: "7214.99.10", un: "KG", qtdNf: 200, qtdPedido: 200, vUnitNf: 35.00, vUnitPed: 35.00 }
+        ]
+      },
+      "divergent": {
+        chave: "35261098765432000188550010000881921498172635",
+        numeroNf: "000.088.192",
+        fornecedor: "VOTORANTIM CIMENTOS S.A.",
+        cnpj: "01.637.795/0001-32",
+        pedidoSienge: "PED-2026-8910",
+        condicao: "30 Dias",
+        totalNf: 19600.00,
+        totalPedido: 19600.00,
+        items: [
+          { codigo: "CIM-CP2", desc: "CIMENTO PORTLAND CP II-E-32 50KG", ncm: "2523.29.10", un: "SC", qtdNf: 400, qtdPedido: 400, vUnitNf: 34.00, vUnitPed: 34.00 },
+          { codigo: "ARG-AC3", desc: "ARGAMASSA COLANTE AC-III CINZA 20KG", ncm: "3824.50.00", un: "SC", qtdNf: 150, qtdPedido: 150, vUnitNf: 40.00, vUnitPed: 40.00 }
+        ]
+      }
+    };
+
+    // Estado da Aplicação
+    let currentNota = null;
+    let conferenceAttempts = 1;
+    let pendingNotas = [];
+    let selectedPendingIndex = null;
+
+    // Buscar chave digitada/bipada
+    function handleSearchKey() {
+      const key = document.getElementById("chaveInput").value.trim();
+      if (!key) {
+        alert("Por favor, bipe ou digite a chave de 44 dígitos.");
+        return;
+      }
+      
+      // Simula busca no diretório de XMLs
+      if (key.endsWith("123")) {
+        loadNotaData(mockDatabase.perfect);
+      } else {
+        loadNotaData(mockDatabase.divergent);
+      }
+    }
+
+    function simulateLoad(isPerfect) {
+      const data = isPerfect ? mockDatabase.perfect : mockDatabase.divergent;
+      document.getElementById("chaveInput").value = data.chave;
+      loadNotaData(data);
+    }
+
+    function loadNotaData(nota) {
+      currentNota = JSON.parse(JSON.stringify(nota));
+      conferenceAttempts = 1;
+
+      // Atualiza interface do lado esquerdo (DANFE & Sienge)
+      document.getElementById("noDataState").style.display = "none";
+      document.getElementById("danfeContent").style.display = "block";
+      document.getElementById("xmlStatusTag").style.display = "inline-flex";
+
+      document.getElementById("nfNumberTag").innerText = `NF nº ${currentNota.numeroNf}`;
+      document.getElementById("emitenteNome").innerText = currentNota.fornecedor;
+      document.getElementById("emitenteCnpj").innerText = currentNota.cnpj;
+      document.getElementById("pedidoNumero").innerText = currentNota.pedidoSienge;
+      document.getElementById("valorTotalNf").innerText = currentNota.totalNf.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+      document.getElementById("valorTotalPedido").innerText = currentNota.totalPedido.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+      document.getElementById("condicaoPagto").innerText = currentNota.condicao;
+
+      // Itens da DANFE
+      const danfeTbody = document.getElementById("danfeItemsTable");
+      danfeTbody.innerHTML = "";
+      currentNota.items.forEach(it => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><b>${it.codigo}</b><br><span style="color:#64748b">${it.desc}</span></td>
+          <td>${it.ncm}</td>
+          <td><b>${it.qtdNf} ${it.un}</b></td>
+          <td>R$ ${it.vUnitNf.toFixed(2)}</td>
+          <td>R$ ${it.vUnitPed.toFixed(2)}</td>
+          <td><span class="tag-match tag-ok">0.0%</span></td>
+        `;
+        danfeTbody.appendChild(tr);
+      });
+
+      // Ativa Conferência às Cegas no lado direito
+      document.getElementById("noConferenceState").style.display = "none";
+      document.getElementById("conferenceActiveState").style.display = "block";
+      document.getElementById("attemptsBadge").style.display = "inline-flex";
+      document.getElementById("lockAlertBox").style.display = "none";
+      document.getElementById("btnProximaNota").style.display = "none";
+      document.getElementById("btnConfirmarContagem").style.display = "inline-flex";
+      document.getElementById("conferenceFeedback").innerHTML = "";
+      updateAttemptText();
+
+      // Renderiza inputs de contagem (SEM MOSTRAR A QUANTIDADE ESPERADA)
+      const confTbody = document.getElementById("conferenceItemsTable");
+      confTbody.innerHTML = "";
+      currentNota.items.forEach((it, idx) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><b>${it.codigo}</b><br><span style="font-size:11px; color:#64748b;">${it.desc}</span></td>
+          <td><b>${it.un}</b></td>
+          <td style="text-align: center;">
+            <input type="number" step="any" min="0" class="count-input" id="countInput_${idx}" placeholder="0.00">
+          </td>
+          <td id="statusCol_${idx}"><span style="color:#94a3b8; font-size:11px;">Aguardando digitação</span></td>
+        `;
+        confTbody.appendChild(tr);
+      });
+    }
+
+    function updateAttemptText() {
+      const el = document.getElementById("currentAttemptText");
+      el.innerText = conferenceAttempts;
+      if (conferenceAttempts === 1) el.style.color = "var(--primary)";
+      if (conferenceAttempts === 2) el.style.color = "var(--warning)";
+      if (conferenceAttempts >= 3) el.style.color = "var(--danger)";
+    }
+
+    // Validação da Conferência Física
+    function validateConference() {
+      let allMatch = true;
+      let feedbackErrors = [];
+
+      currentNota.items.forEach((it, idx) => {
+        const input = document.getElementById(`countInput_${idx}`);
+        const statusCol = document.getElementById(`statusCol_${idx}`);
+        const counted = parseFloat(input.value) || 0;
+
+        it.qtdContada = counted; // armazena contagem
+
+        if (counted === it.qtdNf) {
+          input.classList.remove("has-error");
+          statusCol.innerHTML = `<span class="tag-match tag-ok">✓ Bateu</span>`;
+        } else {
+          allMatch = false;
+          input.classList.add("has-error");
+          statusCol.innerHTML = `<span class="tag-match tag-alert">✕ Divergente</span>`;
+          feedbackErrors.push(`Item ${it.codigo}: Contado ${counted} ${it.un} | Esperado no Pedido: ${it.qtdPedido} ${it.un}`);
+        }
+      });
+
+      const feedbackDiv = document.getElementById("conferenceFeedback");
+
+      if (allMatch) {
+        // Sucesso 100%!
+        feedbackDiv.innerHTML = `
+          <div class="status-toast" style="background: #dcfce7; color: #15803d; border: 1px solid #86efac; margin-top: 14px;">
+            <div>
+              <b>🎉 CONFERÊNCIA CONCLUÍDA COM SUCESSO!</b><br>
+              • Quantidades 100% validadas com o Pedido Sienge (${currentNota.pedidoSienge}).<br>
+              • Documento de Entrada e Estoque criados no Sienge.<br>
+              • Título no Contas a Pagar gerado com sucesso.
+            </div>
+          </div>
+        `;
+        document.getElementById("btnConfirmarContagem").disabled = true;
+        document.getElementById("analiseFiscalText").innerHTML = `
+          <b style="color:var(--success)">Recebimento Aprovado e Integrado!</b> NF-e vinculada ao ${currentNota.pedidoSienge}, impostos apropriados e faturas provisionadas no Contas a Pagar.
+        `;
+      } else {
+        // Erro / Divergência
+        if (conferenceAttempts < 3) {
+          conferenceAttempts++;
+          updateAttemptText();
+          feedbackDiv.innerHTML = `
+            <div class="status-toast" style="background: #fffbeb; color: #b45309; border: 1px solid #fcd34d; margin-top: 14px;">
+              <div>
+                <b>⚠️ DIVERGÊNCIA IDENTIFICADA (Tentativa ${conferenceAttempts - 1} de 3):</b><br>
+                A quantidade física digitada não bate com o faturado/pedido. Por favor, solicite a <b>Recontagem Física</b> do item destacado.
+              </div>
+            </div>
+          `;
+        } else {
+          // Bloqueio na 3ª tentativa
+          document.getElementById("lockAlertBox").style.display = "flex";
+          document.getElementById("btnConfirmarContagem").style.display = "none";
+          document.getElementById("btnProximaNota").style.display = "inline-flex";
+
+          // Desativa inputs
+          currentNota.items.forEach((_, idx) => {
+            document.getElementById(`countInput_${idx}`).disabled = true;
+          });
+
+          // Move para a fila de pendentes
+          currentNota.divergencias = feedbackErrors;
+          pendingNotas.push(JSON.parse(JSON.stringify(currentNota)));
+          updatePendingCount();
+
+          feedbackDiv.innerHTML = `
+            <div class="status-toast" style="background: #fef2f2; color: #b91c1c; border: 1px solid #fca5a5; margin-top: 14px;">
+              <div>
+                <b>🚨 E-MAIL DISPARADO COM SUCESSO:</b><br>
+                Destinatário: <u>claudio.guidi@omnitradebrasil.com</u><br>
+                Assunto: <i>[BLOQUEIO RECEBIMENTO] Divergência na NF ${currentNota.numeroNf} - Pedido ${currentNota.pedidoSienge}</i><br>
+                A nota agora está na lista de <b>Notas Pendentes</b>. Clique em "Próxima Nota" para liberar a doca.
+              </div>
+            </div>
+          `;
+        }
+      }
+    }
+
+    function resetWorkspace() {
+      currentNota = null;
+      document.getElementById("chaveInput").value = "";
+      document.getElementById("danfeContent").style.display = "none";
+      document.getElementById("noDataState").style.display = "block";
+      document.getElementById("conferenceActiveState").style.display = "none";
+      document.getElementById("noConferenceState").style.display = "block";
+      document.getElementById("attemptsBadge").style.display = "none";
+      document.getElementById("chaveInput").focus();
+    }
+
+    // Ficha Inteligente de Impressão
+    function printBlindSheet() {
+      if (!currentNota) return;
+      document.getElementById("printNfNum").innerText = currentNota.numeroNf;
+      document.getElementById("printPedidoNum").innerText = currentNota.pedidoSienge;
+      document.getElementById("printFornecedor").innerText = currentNota.fornecedor;
+      document.getElementById("printData").innerText = new Date().toLocaleString("pt-BR");
+
+      const tbody = document.getElementById("printTableItems");
+      tbody.innerHTML = "";
+      currentNota.items.forEach(it => {
+        const tr = document.createElement("tr");
+        tr.style.borderBottom = "1px solid #000";
+        tr.innerHTML = `
+          <td style="padding: 10px 6px;"><b>${it.codigo}</b></td>
+          <td style="padding: 10px 6px;">${it.desc}</td>
+          <td style="padding: 10px 6px; text-align: center;">${it.un}</td>
+          <td style="padding: 10px 6px; text-align: center; border-left: 1px dashed #000; font-family: monospace;">
+            [ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ]
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById("modalPrintSheet").classList.add("active");
+    }
+
+    // Modal de Notas Pendentes
+    function updatePendingCount() {
+      document.getElementById("pendingCount").innerText = pendingNotas.length;
+    }
+
+    function openPendingModal() {
+      const modal = document.getElementById("modalPending");
+      const empty = document.getElementById("pendingListEmpty");
+      const table = document.getElementById("pendingTable");
+      const tbody = document.getElementById("pendingListBody");
+      document.getElementById("supervisorActionBox").style.display = "none";
+
+      if (pendingNotas.length === 0) {
+        empty.style.display = "block";
+        table.style.display = "none";
+      } else {
+        empty.style.display = "none";
+        table.style.display = "table";
+        tbody.innerHTML = "";
+
+        pendingNotas.forEach((n, idx) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td><b>${n.numeroNf}</b></td>
+            <td>${n.fornecedor}</td>
+            <td><span class="info-value" style="color:var(--primary); font-size:12px;">${n.pedidoSienge}</span></td>
+            <td><span style="font-size:11px; color:var(--danger);">${n.divergencias.join("<br>")}</span></td>
+            <td>
+              <button class="btn btn-primary" style="font-size:11px; padding:4px 8px;" onclick="selectPendingForRelease(${idx})">
+                Assumir / Liberar
+              </button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+      modal.classList.add("active");
+    }
+
+    function selectPendingForRelease(idx) {
+      selectedPendingIndex = idx;
+      document.getElementById("supervisorActionBox").style.display = "block";
+    }
+
+    function cancelSupervisorRelease() {
+      selectedPendingIndex = null;
+      document.getElementById("supervisorActionBox").style.display = "none";
+    }
+
+    function executeSupervisorRelease() {
+      const email = document.getElementById("supEmail").value.trim();
+      const pass = document.getElementById("supPassword").value.trim();
+      const autoAdjust = document.getElementById("chkAutoAdjust").checked;
+
+      if (!email || !pass) {
+        alert("Informe o e-mail e a senha do supervisor para autenticar a liberação.");
+        return;
+      }
+
+      const notaLiberada = pendingNotas[selectedPendingIndex];
+
+      alert(`✅ SUCESSO!\n\nNota NF ${notaLiberada.numeroNf} liberada pelo supervisor (${email}).\n${autoAdjust ? "• Chamada API Sienge: Pedido " + notaLiberada.pedidoSienge + " ajustado automaticamente para refletir a quantidade contada.\n" : ""}• Recebimento integrado e Contas a Pagar gerado.`);
+
+      // Remove dos pendentes
+      pendingNotas.splice(selectedPendingIndex, 1);
+      updatePendingCount();
+      closeModal("modalPending");
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove("active");
+    }
+  </script>
+</body>
+</html>

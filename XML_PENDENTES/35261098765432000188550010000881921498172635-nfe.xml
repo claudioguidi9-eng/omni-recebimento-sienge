@@ -1,0 +1,29 @@
+﻿<?xml version=\1.0\ encoding=\UTF-8\?>
+<nfeProc xmlns=\http://www.portalfiscal.inf.br/nfe\ versao=\4.00\>
+ <NFe>
+ <infNFe Id=\NFe35261098765432000188550010000881921498172635\ versao=\4.00\>
+ <ide>
+ <nNF>88192</nNF>
+ <serie>1</serie>
+ <dhEmi>2026-10-16T14:15:00-03:00</dhEmi>
+ </ide>
+ <emit>
+ <CNPJ>01637795000132</CNPJ>
+ <xNome>VOTORANTIM CIMENTOS S.A.</xNome>
+ <xFant>VOTORANTIM</xFant>
+ </emit>
+ <dest>
+ <CNPJ>34028316000103</CNPJ>
+ <xNome>OMNI TRADE BRASIL REVESTIMENTOS METALICOS LTDA</xNome>
+ </dest>
+ <total>
+ <ICMSTot>
+ <vNF>19600.00</vNF>
+ </ICMSTot>
+ </total>
+ <infAdic>
+ <infCpl>Pedido de Compra Sienge: PED-2026-8910. Condicao 30 dias.</infCpl>
+ </infAdic>
+ </infNFe>
+ </NFe>
+</nfeProc>

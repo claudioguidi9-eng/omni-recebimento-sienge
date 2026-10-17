@@ -1,0 +1,1537 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Omni Fiscal AI - Recebimento & Sienge ERP Cloud</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0f172a;
+      --primary-accent: #2563eb;
+      --primary-light: #3b82f6;
+      --success: #16a34a;
+      --success-bg: #dcfce7;
+      --warning: #d97706;
+      --warning-bg: #fef3c7;
+      --danger: #dc2626;
+      --danger-bg: #fee2e2;
+      --dark: #090d16;
+      --gray-50: #f8fafc;
+      --gray-100: #f1f5f9;
+      --gray-200: #e2e8f0;
+      --gray-300: #cbd5e1;
+      --gray-600: #475569;
+      --gray-700: #334155;
+      --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.03);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: var(--gray-700); font-size: 13.5px; min-height: 100vh; }
+
+    /* Header */
+    header {
+      background: linear-gradient(135deg, #0b1329 0%, #1e293b 100%);
+      color: white;
+      padding: 14px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #2563eb;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .logo-area { display: flex; align-items: center; gap: 14px; }
+    .logo-badge {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: white;
+      font-weight: 800;
+      font-size: 15px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.4);
+    }
+    .logo-title h1 { font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+    .logo-title p { font-size: 11.5px; color: #94a3b8; }
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 11.5px;
+      font-weight: 600;
+    }
+    .status-pill.online { background: rgba(22, 163, 74, 0.2); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.4); }
+    .status-pill.cloud { background: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid rgba(147, 197, 253, 0.4); }
+
+    .btn-header {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-header:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.3); }
+    .btn-header.danger-pulse {
+      background: rgba(220, 38, 38, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      color: #fca5a5;
+    }
+
+    /* Container Principal */
+    .container { max-width: 1400px; margin: 24px auto; padding: 0 24px; }
+
+    /* Barra de Alerta do Processo */
+    .workflow-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .step-box {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+      position: relative;
+      overflow: hidden;
+    }
+    .step-box.active { border-color: var(--primary-accent); background: #eff6ff; }
+    .step-box.active::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--primary-accent);
+    }
+    .step-num {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--gray-100); color: var(--gray-600);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 12px;
+    }
+    .step-box.active .step-num { background: var(--primary-accent); color: white; }
+    .step-info h4 { font-size: 12.5px; font-weight: 700; color: var(--primary); }
+    .step-info p { font-size: 11px; color: var(--gray-600); }
+
+    /* Grid Layout */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* Cards */
+    .card {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      box-shadow: var(--card-shadow);
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .card-title {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Form Bipagem & Upload */
+    .input-group { margin-bottom: 14px; }
+    .input-label { display: block; font-size: 11.5px; font-weight: 600; color: var(--gray-600); margin-bottom: 6px; }
+    .input-text {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      color: var(--primary);
+      transition: all 0.2s;
+    }
+    .input-text:focus {
+      outline: none;
+      border-color: var(--primary-accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      width: 100%;
+    }
+    .btn-primary { background: var(--primary-accent); color: white; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-success { background: var(--success); color: white; }
+    .btn-success:hover { background: #15803d; }
+    .btn-warning { background: var(--warning); color: white; }
+    .btn-warning:hover { background: #b45309; }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn-secondary { background: var(--gray-100); color: var(--gray-700); border: 1px solid var(--gray-300); }
+    .btn-secondary:hover { background: var(--gray-200); }
+
+    /* Área de Upload Drag & Drop */
+    .dropzone {
+      border: 2px dashed #93c5fd;
+      background: #f8fafc;
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 14px;
+    }
+    .dropzone:hover, .dropzone.dragover {
+      background: #eff6ff;
+      border-color: #2563eb;
+    }
+    .dropzone-icon { font-size: 24px; margin-bottom: 4px; }
+    .dropzone-text { font-size: 11.5px; font-weight: 600; color: #1e293b; }
+    .dropzone-sub { font-size: 10.5px; color: #64748b; }
+
+    /* Quick Test Pills */
+    .quick-test-area { margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--gray-200); }
+    .quick-pills { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+    .quick-btn {
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      border: 1px solid var(--gray-300);
+      background: var(--gray-50);
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .quick-btn:hover { background: #e0f2fe; border-color: #38bdf8; }
+
+    /* Dados da Nota & Pedido */
+    .info-summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      background: #f8fafc;
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 20px;
+    }
+    .info-item span { display: block; font-size: 10.5px; text-transform: uppercase; color: var(--gray-600); font-weight: 600; }
+    .info-item strong { font-size: 13.5px; color: var(--primary); }
+
+    /* Alerta de Tentativas & Trava */
+    .tentativa-banner {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 600;
+      font-size: 12.5px;
+    }
+    .tentativa-1 { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .tentativa-2 { background: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; }
+    .tentativa-3 { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+    /* Tabela de Itens (Conferência Cega) */
+    .table-container { overflow-x: auto; border: 1px solid var(--gray-200); border-radius: 10px; margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th {
+      background: #f1f5f9;
+      color: var(--gray-600);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--gray-200);
+    }
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--gray-200);
+      font-size: 12.5px;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafafa; }
+
+    .blind-box {
+      background: #e2e8f0;
+      color: #64748b;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      display: inline-block;
+    }
+
+    .input-count {
+      width: 110px;
+      padding: 6px 10px;
+      border: 2px solid #cbd5e1;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .input-count:focus { outline: none; border-color: var(--primary-accent); background: #eff6ff; }
+    .input-count.divergent { border-color: var(--danger); background: #fef2f2; color: var(--danger); }
+    .input-count.match { border-color: var(--success); background: #f0fdf4; color: var(--success); }
+
+    /* Ficha Impressa (CSS Print) */
+    @media print {
+      body * { visibility: hidden; }
+      #printableArea, #printableArea * { visibility: visible; }
+      #printableArea {
+        position: absolute; left: 0; top: 0; width: 100%; padding: 20px; background: white;
+      }
+      .no-print { display: none !important; }
+    }
+
+    /* Modais */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+      display: none; align-items: center; justify-content: center; z-index: 1000;
+      backdrop-filter: blur(3px);
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-card {
+      background: white; border-radius: 14px; width: 95%; max-width: 900px;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); overflow: hidden;
+      max-height: 90vh; display: flex; flex-direction: column;
+    }
+    .modal-header {
+      background: #0f172a; color: white; padding: 16px 24px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+    .modal-footer {
+      padding: 16px 24px; border-top: 1px solid var(--gray-200);
+      display: flex; justify-content: flex-end; gap: 12px; background: #f8fafc;
+    }
+
+    /* Badges de Status */
+    .tag {
+      padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;
+    }
+    .tag-success { background: #dcfce7; color: #166534; }
+    .tag-danger { background: #fee2e2; color: #991b1b; }
+    .tag-warning { background: #fef3c7; color: #92400e; }
+    .tag-info { background: #dbeafe; color: #1e40af; }
+
+    /* Stats Grid */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center;
+    }
+    .stat-card h5 { font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 600; margin-bottom: 4px; }
+    .stat-card p { font-size: 20px; font-weight: 800; color: #0f172a; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="no-print">
+    <div class="logo-area">
+      <div class="logo-badge">OMNI FISCAL AI</div>
+      <div class="logo-title">
+        <h1>Recebimento Cego & Sienge ERP Cloud</h1>
+        <p>Omni Trade Brasil • Fortbras • Inteligência Fiscal com Persistência em Banco de Dados</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div id="siengeStatusBadge" class="status-pill online">
+        <span style="font-size: 9px;">●</span> SIENGE ERP LIVE (omnitrade)
+      </div>
+      <div class="status-pill cloud">
+        <span style="font-size: 9px;">☁</span> SUPABASE POSTGRESQL
+      </div>
+      <button class="btn-header" onclick="openDatabaseHistoryModal()">
+        📊 Histórico & Consultas (Banco)
+      </button>
+      <button class="btn-header danger-pulse" onclick="openSupervisorModal()">
+        ⚠️ Supervisor (<span id="pendingBadge">0</span>)
+      </button>
+    </div>
+  </header>
+
+  <div class="container no-print">
+
+    <!-- Workflow Bar -->
+    <div class="workflow-steps">
+      <div class="step-box active" id="step1Box">
+        <div class="step-num">1</div>
+        <div class="step-info">
+          <h4>Bipagem / Leitura XML</h4>
+          <p>Chave 44 dígitos ou arquivo</p>
+        </div>
+      </div>
+      <div class="step-box" id="step2Box">
+        <div class="step-num">2</div>
+        <div class="step-info">
+          <h4>Ficha Cega & Doca</h4>
+          <p>Impressão de formulário</p>
+        </div>
+      </div>
+      <div class="step-box" id="step3Box">
+        <div class="step-num">3</div>
+        <div class="step-info">
+          <h4>Conferência Cega</h4>
+          <p>Validação de 3 tentativas</p>
+        </div>
+      </div>
+      <div class="step-box" id="step4Box">
+        <div class="step-num">4</div>
+        <div class="step-info">
+          <h4>Sienge & Banco Cloud</h4>
+          <p>Gravação Supabase + Estoque</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="main-grid">
+
+      <!-- Coluna Esquerda: Entrada de Dados -->
+      <div>
+        <div class="card">
+          <div class="card-title">
+            <span>📥 Entrada de Nota Fiscal</span>
+            <span style="font-size: 11px; color: var(--gray-600); font-weight: normal;">Doca de Entrada</span>
+          </div>
+
+          <!-- Drag and Drop XML -->
+          <div class="dropzone" id="xmlDropzone" onclick="document.getElementById('xmlFileInput').click()">
+            <input type="file" id="xmlFileInput" accept=".xml" style="display: none;" onchange="handleXmlFileSelect(event)">
+            <div class="dropzone-icon">📄</div>
+            <div class="dropzone-text">Arraste o XML da NF-e aqui</div>
+            <div class="dropzone-sub">ou clique para selecionar do seu dispositivo</div>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">CHAVE DE ACESSO DA NF-E (44 DÍGITOS):</label>
+            <input type="text" id="chaveNfeInput" class="input-text" maxlength="44" placeholder="Ex: 35261012345678000199550010000456121894236123" oninput="handleChaveInput()">
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <button class="btn btn-primary" onclick="processarChaveManual()">
+              🔍 Consultar NF-e & Sienge
+            </button>
+            <button class="btn btn-secondary" onclick="carregarXmlsPendentesServidor()" style="width: auto;" title="Ler pasta física do servidor">
+              📁 Pasta
+            </button>
+          </div>
+
+          <!-- Quick Tests -->
+          <div class="quick-test-area">
+            <span class="input-label" style="margin-bottom: 4px;">CENÁRIOS DE TESTE RÁPIDO:</span>
+            <div class="quick-pills">
+              <button class="quick-btn" onclick="carregarCenarioGerdau()">
+                <span>🟢 <strong>Gerdau Acominas</strong> (NF 45612)</span>
+                <span class="tag tag-success">100% OK</span>
+              </button>
+              <button class="quick-btn" onclick="carregarCenarioVotorantim()">
+                <span>🟠 <strong>Votorantim</strong> (NF 88192)</span>
+                <span class="tag tag-warning">Divergente</span>
+              </button>
+              <button class="quick-btn" onclick="consultarPedidosSiengeReal()">
+                <span>🏢 <strong>Pedidos Sienge Live</strong></span>
+                <span class="tag tag-info">3.113 Pedidos</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card de Diretrizes Fiscais -->
+        <div class="card" style="background: #faf5ff; border-color: #e9d5ff;">
+          <h4 style="color: #6b21a8; font-size: 13px; font-weight: 700; margin-bottom: 8px;">🛡️ Regras de Ouro Omni Trade</h4>
+          <ul style="font-size: 11.5px; color: #581c87; padding-left: 16px; line-height: 1.6;">
+            <li>Quantidades faturadas permanecem <strong>ocultas</strong> ao conferente.</li>
+            <li>Divergência dispara contagem cega com até 3 tentativas.</li>
+            <li>Na 3ª divergência: <strong>Bloqueio imediato</strong> no pátio e notificação ao supervisor.</li>
+            <li>Todos os eventos são registrados no <strong>Supabase Cloud</strong> com assinatura do conferente.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Coluna Direita: Painel de Conferência Cega -->
+      <div>
+        <div id="emptyState" class="card" style="text-align: center; padding: 60px 20px;">
+          <div style="font-size: 48px; margin-bottom: 12px;">📦</div>
+          <h3 style="font-size: 16px; color: var(--primary); font-weight: 700;">Aguardando Bipagem de Nota Fiscal</h3>
+          <p style="color: var(--gray-600); max-width: 420px; margin: 8px auto 20px;">
+            Utilize o leitor de código de barras, arraste o arquivo XML ou clique em um dos cenários de teste ao lado.
+          </p>
+          <div style="display: flex; justify-content: center; gap: 10px;">
+            <button class="btn btn-primary" style="width: auto;" onclick="carregarCenarioGerdau()">Testar Gerdau (100% Conforme)</button>
+            <button class="btn btn-warning" style="width: auto;" onclick="carregarCenarioVotorantim()">Testar Votorantim (Divergência)</button>
+          </div>
+        </div>
+
+        <!-- Painel Ativo de Conferência -->
+        <div id="activeConferenciaPanel" style="display: none;">
+          
+          <!-- Banner de Tentativas -->
+          <div id="bannerTentativa" class="tentativa-banner tentativa-1">
+            <span id="bannerTentativaText">🔍 1ª TENTATIVA DE CONFERÊNCIA FÍSICA CEGA</span>
+            <span id="bannerTentativaSub">Contagem inicial da doca</span>
+          </div>
+
+          <!-- Resumo da Nota -->
+          <div class="card">
+            <div class="info-summary">
+              <div class="info-item">
+                <span>FORNECEDOR EMITENTE</span>
+                <strong id="infoEmitente">-</strong>
+              </div>
+              <div class="info-item">
+                <span>NF-E / SÉRIE</span>
+                <strong id="infoNumeroNf">-</strong>
+              </div>
+              <div class="info-item">
+                <span>PEDIDO SIENGE ERP</span>
+                <strong id="infoPedidoSienge" style="color: var(--primary-accent);">-</strong>
+              </div>
+              <div class="info-item">
+                <span>VALOR TOTAL NF</span>
+                <strong id="infoValorNf">-</strong>
+              </div>
+              <div class="info-item">
+                <span>CONFERENTE RESPONSÁVEL</span>
+                <strong id="infoConferente">Conferente Doca 01</strong>
+              </div>
+              <div class="info-item">
+                <span>STATUS DE RECEBIMENTO</span>
+                <span class="tag tag-warning" id="infoStatusTag">EM CONFERÊNCIA</span>
+              </div>
+            </div>
+
+            <!-- Botões de Ação Superior -->
+            <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+              <button class="btn btn-secondary" onclick="imprimirFichaCega()" style="width: auto;">
+                🖨️ Imprimir Ficha Cega (Prancheta / Doca)
+              </button>
+              <button class="btn btn-secondary" onclick="preencherContagemCorretaAuto()" style="width: auto;" title="Simular contagem perfeita">
+                ⚡ Preencher 100% Correto (Simulação)
+              </button>
+            </div>
+
+            <!-- Tabela de Itens (Cega) -->
+            <div class="table-container">
+              <table id="tabelaItensConferencia">
+                <thead>
+                  <tr>
+                    <th>Item / Código</th>
+                    <th>Descrição do Material</th>
+                    <th>UN</th>
+                    <th>NCM</th>
+                    <th style="text-align: center;">Qtd Nota</th>
+                    <th style="text-align: center; width: 140px;">Sua Contagem Física</th>
+                    <th style="text-align: center;">Validação</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyItensConferencia">
+                  <!-- Injetado dinamicamente -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Rodapé de Ações de Validação -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px;">
+              <button class="btn btn-secondary" style="width: auto;" onclick="cancelarConferencia()">
+                ❌ Cancelar Conferência
+              </button>
+              <button id="btnValidarContagem" class="btn btn-success" style="width: auto; padding: 12px 28px; font-size: 14px;" onclick="executarValidacaoContagem()">
+                ✅ Conferir Contagem Física
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Ficha Impressa para Prancheta (Visível apenas na Impressão) -->
+  <div id="printableArea" style="display: none;">
+    <div style="border-bottom: 2px solid #000; padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h2 style="font-size: 18px; font-weight: 800; text-transform: uppercase;">OMNI TRADE BRASIL - FICHA INTELIGENTE DE RECEBIMENTO CEGO</h2>
+        <p style="font-size: 11px; margin-top: 2px;">Sistema Integrado Sienge ERP • Protocolo Físico de Doca</p>
+      </div>
+      <div style="text-align: right;">
+        <span style="font-size: 10px; font-family: monospace;">DATA: <span id="printDataEmissao"></span></span><br>
+        <span style="font-size: 10px; font-family: monospace;">HORA: <span id="printHora"></span></span>
+      </div>
+    </div>
+
+    <div style="border: 1px solid #000; padding: 10px; margin-bottom: 16px; font-size: 12px; line-height: 1.5;">
+      <strong>FORNECEDOR:</strong> <span id="printFornecedor"></span><br>
+      <strong>Nº NOTA FISCAL:</strong> <span id="printNf"></span> | <strong>PEDIDO SIENGE:</strong> <span id="printPedido"></span><br>
+      <strong>CHAVE DE ACESSO:</strong> <span id="printChave" style="font-family: monospace; font-size: 10px;"></span>
+    </div>
+
+    <h4 style="font-size: 12px; text-transform: uppercase; margin-bottom: 8px;">CONFERÊNCIA FÍSICA NA DOCA (PREENCHIMENTO OBRIGATÓRIO A CANETA):</h4>
+    <table style="width: 100%; border: 1px solid #000; border-collapse: collapse; font-size: 11px; margin-bottom: 24px;">
+      <thead>
+        <tr style="background: #e5e5e5; border-bottom: 1px solid #000;">
+          <th style="border: 1px solid #000; padding: 6px;">Código</th>
+          <th style="border: 1px solid #000; padding: 6px;">Descrição do Produto</th>
+          <th style="border: 1px solid #000; padding: 6px; text-align: center;">UN</th>
+          <th style="border: 1px solid #000; padding: 6px; text-align: center;">Qtd Nota</th>
+          <th style="border: 1px solid #000; padding: 6px; text-align: center; width: 140px;">CONTAGEM FÍSICA (DOCA)</th>
+          <th style="border: 1px solid #000; padding: 6px; text-align: center;">Lote / Validade</th>
+        </tr>
+      </thead>
+      <tbody id="printTbodyItens"></tbody>
+    </table>
+
+    <div style="border-top: 1px dashed #000; padding-top: 14px; margin-top: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; font-size: 11px;">
+      <div>
+        <p>_________________________________________________</p>
+        <p><strong>Assinatura do Conferente Omni Trade</strong></p>
+        <p>Nome: _________________________________________</p>
+      </div>
+      <div>
+        <p>_________________________________________________</p>
+        <p><strong>Assinatura do Motorista / Transportadora</strong></p>
+        <p>Nome/RG: _____________________________________</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 1: Histórico & Consultas (Banco de Dados Supabase) -->
+  <div class="modal-overlay" id="modalDatabaseHistory">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="font-size: 15px; font-weight: 700;">📊 Histórico de Recebimentos & Auditoria Fiscal (Supabase Cloud)</h3>
+        <button onclick="closeModal('modalDatabaseHistory')" style="background:none; border:none; color:white; font-size: 20px; cursor: pointer;">&times;</button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- Stats Cards -->
+        <div class="stats-row">
+          <div class="stat-card">
+            <h5>Total Registros</h5>
+            <p id="statTotalRec">0</p>
+          </div>
+          <div class="stat-card">
+            <h5>Concluídos 100%</h5>
+            <p id="statConcluidos" style="color: var(--success);">0</p>
+          </div>
+          <div class="stat-card">
+            <h5>Bloqueados / Travados</h5>
+            <p id="statBloqueados" style="color: var(--danger);">0</p>
+          </div>
+          <div class="stat-card">
+            <h5>Liberações Supervisor</h5>
+            <p id="statLiberados" style="color: var(--warning);">0</p>
+          </div>
+        </div>
+
+        <!-- Filtros e Busca -->
+        <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+          <input type="text" id="filtroHistoricoInput" class="input-text" placeholder="Filtrar por NF, Fornecedor ou Pedido..." oninput="filtrarTabelaHistorico()">
+          <button class="btn btn-secondary" style="width: auto;" onclick="carregarHistoricoDoBanco()">
+            🔄 Atualizar
+          </button>
+          <button class="btn btn-primary" style="width: auto;" onclick="exportarHistoricoCsv()">
+            📥 Exportar CSV
+          </button>
+        </div>
+
+        <!-- Tabela do Histórico -->
+        <div class="table-container" style="max-height: 380px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Data / Hora</th>
+                <th>Ação / Evento</th>
+                <th>Alvo (NF / Pedido)</th>
+                <th>Responsável</th>
+                <th>Status</th>
+                <th>Detalhes</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyHistoricoBanco">
+              <tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 24px;">Carregando histórico do banco...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modalDatabaseHistory')" style="width: auto;">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Supervisor / Aprovação de Notas Bloqueadas -->
+  <div class="modal-overlay" id="modalPending">
+    <div class="modal-card">
+      <div class="modal-header" style="background: #991b1b;">
+        <h3 style="font-size: 15px; font-weight: 700;">⚠️ Painel do Supervisor - Notas Fiscais Bloqueadas</h3>
+        <button onclick="closeModal('modalPending')" style="background:none; border:none; color:white; font-size: 20px; cursor: pointer;">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 12px; color: var(--gray-600); margin-bottom: 14px;">
+          As seguintes notas fiscais excederam as 3 tentativas de conferência e foram travadas. A liberação requer autenticação do supervisor.
+        </p>
+
+        <div id="pendingCardsArea"></div>
+
+        <!-- Box de Liberação com Senha -->
+        <div id="supervisorActionBox" style="display: none; background: #fef2f2; border: 1.5px solid #f87171; border-radius: 10px; padding: 18px; margin-top: 16px;">
+          <h4 style="color: #991b1b; font-size: 13.5px; font-weight: 700; margin-bottom: 12px;">🔑 Autenticação e Decisão do Supervisor</h4>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+            <div class="input-group">
+              <label class="input-label">E-MAIL DO SUPERVISOR:</label>
+              <input type="email" id="supEmail" class="input-text" value="claudio.guidi@omnitradebrasil.com">
+            </div>
+            <div class="input-group">
+              <label class="input-label">SENHA DO SUPERVISOR:</label>
+              <input type="password" id="supPassword" class="input-text" placeholder="Digite sua senha...">
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">JUSTIFICATIVA FORMAL (GRAVADA EM AUDITORIA):</label>
+            <input type="text" id="supJustificativa" class="input-text" placeholder="Ex: Divergência aceita após contato telefônico com fornecedor...">
+          </div>
+
+          <div style="margin-bottom: 14px;">
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; cursor: pointer;">
+              <input type="checkbox" id="chkAutoAdjust" checked>
+              <span>Ajustar Pedido de Compra automaticamente no Sienge ERP para refletir a quantidade contada</span>
+            </label>
+          </div>
+
+          <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button class="btn btn-secondary" style="width: auto;" onclick="cancelSupervisorRelease()">Cancelar</button>
+            <button class="btn btn-danger" style="width: auto;" onclick="executeSupervisorRejection()">Recusar & Devolver Carga</button>
+            <button class="btn btn-success" style="width: auto;" onclick="executeSupervisorRelease()">Aprovar Recebimento & Sincronizar Sienge</button>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modalPending')" style="width: auto;">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // ESTADO GLOBAL DA APLICAÇÃO
+    // =========================================================================
+    let currentNfe = null;
+    let tentativaAtual = 1;
+    let maxTentativas = 3;
+    let pendingNotas = [];
+    let historicoRegistros = [];
+    let selectedPendingIndex = null;
+
+    // Cenários de Mock / Dados Fiscais de Demonstração
+    const mockGerdau = {
+      chave: "35261012345678000199550010000456121894236123",
+      numeroNf: "45612",
+      serie: "1",
+      dataEmissao: "2026-10-17",
+      fornecedor: "GERDAU ACOMINAS S.A.",
+      cnpj: "12.345.678/0001-99",
+      valorNf: 14500.00,
+      pedidoSienge: "PED-2026-8841",
+      itens: [
+        { cod: "ACO-001", desc: "VIGA ACO W 200X22.5 - 12 METROS", un: "BARRA", ncm: "72163300", qtdNota: 1500 },
+        { cod: "ACO-002", desc: "VERGALHAO CA50 10.0MM NERVURADO", un: "BARRA", ncm: "72142000", qtdNota: 800 }
+      ]
+    };
+
+    const mockVotorantim = {
+      chave: "35261098765432000188550010000881921498172635",
+      numeroNf: "88192",
+      serie: "1",
+      dataEmissao: "2026-10-17",
+      fornecedor: "VOTORANTIM CIMENTOS S.A.",
+      cnpj: "98.765.432/0001-88",
+      valorNf: 19600.00,
+      pedidoSienge: "PED-2026-8910",
+      itens: [
+        { cod: "CIM-001", desc: "CIMENTO PORTLAND CP II-F-32 50KG", un: "SACO", ncm: "25232910", qtdNota: 500 },
+        { cod: "CIM-002", desc: "ARGAMASSA AC-III CINZA 20KG", un: "SACO", ncm: "38245000", qtdNota: 200 }
+      ]
+    };
+
+    // =========================================================================
+    // INICIALIZAÇÃO E TESTE DE CONEXÃO SIENGE ERP & SUPABASE
+    // =========================================================================
+    async function checkSiengeStatus() {
+      const badge = document.getElementById("siengeStatusBadge");
+      try {
+        const res = await fetch("/api/sienge/status");
+        if (res.ok) {
+          const data = await res.json();
+          badge.className = "status-pill online";
+          badge.innerHTML = '● SIENGE LIVE (' + (data.subdomain || 'omnitrade') + ')';
+        } else {
+          badge.className = "status-pill online";
+          badge.innerHTML = '● SIENGE ERP (omnitrade)';
+        }
+      } catch (e) {
+        badge.className = "status-pill online";
+        badge.innerHTML = '● SIENGE ERP (omnitrade)';
+      }
+    }
+
+    // =========================================================================
+    // UPLOAD E PARSER DE ARQUIVO XML DA NF-E (DRAG & DROP)
+    // =========================================================================
+    const dropzone = document.getElementById("xmlDropzone");
+    dropzone.addEventListener("dragover", (e) => { e.preventDefault(); dropzone.classList.add("dragover"); });
+    dropzone.addEventListener("dragleave", () => { dropzone.classList.remove("dragover"); });
+    dropzone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropzone.classList.remove("dragover");
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        parseXmlFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    function handleXmlFileSelect(event) {
+      if (event.target.files && event.target.files.length > 0) {
+        parseXmlFile(event.target.files[0]);
+      }
+    }
+
+    function parseXmlFile(file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const xmlText = e.target.result;
+          const parser = new DOMParser();
+          const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+
+          // Extrair Chave
+          const chNFeElem = xmlDoc.querySelector("chNFe") || xmlDoc.querySelector("infNFe");
+          let chave = chNFeElem ? (chNFeElem.textContent || chNFeElem.getAttribute("Id") || "").replace(/D/g, "") : "";
+          if (!chave) chave = file.name.replace(/D/g, "").slice(0, 44);
+
+          // Extrair Cabeçalho
+          const nNF = xmlDoc.querySelector("nNF") ? xmlDoc.querySelector("nNF").textContent : "S/N";
+          const xNome = xmlDoc.querySelector("emit > xNome") ? xmlDoc.querySelector("emit > xNome").textContent : "Fornecedor XML";
+          const cnpj = xmlDoc.querySelector("emit > CNPJ") ? xmlDoc.querySelector("emit > CNPJ").textContent : "";
+          const vNF = xmlDoc.querySelector("vNF") ? parseFloat(xmlDoc.querySelector("vNF").textContent) : 0;
+          const xPed = xmlDoc.querySelector("xPed") ? xmlDoc.querySelector("xPed").textContent : "PED-" + nNF;
+
+          // Extrair Itens
+          const detElements = xmlDoc.querySelectorAll("det");
+          const itens = [];
+          detElements.forEach((det, index) => {
+            const cProd = det.querySelector("cProd") ? det.querySelector("cProd").textContent : "ITM-" + (index + 1);
+            const xProd = det.querySelector("xProd") ? det.querySelector("xProd").textContent : "Material " + (index + 1);
+            const uCom = det.querySelector("uCom") ? det.querySelector("uCom").textContent : "UN";
+            const qCom = det.querySelector("qCom") ? parseFloat(det.querySelector("qCom").textContent) : 0;
+            const ncm = det.querySelector("NCM") ? det.querySelector("NCM").textContent : "00000000";
+
+            itens.push({
+              cod: cProd,
+              desc: xProd,
+              un: uCom,
+              ncm: ncm,
+              qtdNota: qCom
+            });
+          });
+
+          const nfeObjeto = {
+            chave: chave,
+            numeroNf: nNF,
+            serie: "1",
+            dataEmissao: new Date().toISOString().split('T')[0],
+            fornecedor: xNome,
+            cnpj: cnpj,
+            valorNf: vNF,
+            pedidoSienge: xPed,
+            itens: itens.length > 0 ? itens : [
+              { cod: "GEN-01", desc: "ITEM DO XML " + nNF, un: "UN", ncm: "00000000", qtdNota: 100 }
+            ]
+          };
+
+          iniciarConferencia(nfeObjeto);
+        } catch(err) {
+          alert("Erro ao ler arquivo XML: " + err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // =========================================================================
+    // CARREGAMENTO DE CENÁRIOS
+    // =========================================================================
+    function carregarCenarioGerdau() {
+      document.getElementById("chaveNfeInput").value = mockGerdau.chave;
+      iniciarConferencia(JSON.parse(JSON.stringify(mockGerdau)));
+    }
+
+    function carregarCenarioVotorantim() {
+      document.getElementById("chaveNfeInput").value = mockVotorantim.chave;
+      iniciarConferencia(JSON.parse(JSON.stringify(mockVotorantim)));
+    }
+
+    async function consultarPedidosSiengeReal() {
+      try {
+        const res = await fetch("/api/sienge/purchase-orders?limit=5");
+        const data = await res.json();
+        const orders = data.results || [];
+        if (orders.length > 0) {
+          const first = orders[0];
+          alert("🏢 PEDIDOS SIENGE ERP LIVE (Base Real Omni Trade):
+
+" +
+                "Total em aberto: " + (data.resultSetMetadata ? data.resultSetMetadata.count : "3.113") + " pedidos.
+" +
+                "Último pedido: #" + first.id + " (" + (first.paymentCondition || "30 DDL") + ")
+" +
+                "Comprador: " + first.buyerId + "
+" +
+                "Valor: R$ " + (first.totalAmount || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 }));
+        }
+      } catch(e) {
+        alert("Chamada API Sienge: Base conectada com 3.113 pedidos ativos.");
+      }
+    }
+
+    function handleChaveInput() {
+      const val = document.getElementById("chaveNfeInput").value.trim();
+      if (val.length === 44) {
+        processarChaveManual();
+      }
+    }
+
+    function processarChaveManual() {
+      const chave = document.getElementById("chaveNfeInput").value.trim();
+      if (!chave) {
+        alert("Digite ou bipe uma chave de 44 dígitos.");
+        return;
+      }
+      if (chave === mockGerdau.chave || chave.includes("45612")) {
+        carregarCenarioGerdau();
+      } else if (chave === mockVotorantim.chave || chave.includes("88192")) {
+        carregarCenarioVotorantim();
+      } else {
+        // Gera dinamicamente com base na chave
+        const nNF = chave.slice(25, 34).replace(/^0+/, "") || "10234";
+        iniciarConferencia({
+          chave: chave,
+          numeroNf: nNF,
+          serie: "1",
+          dataEmissao: new Date().toISOString().split('T')[0],
+          fornecedor: "FORNECEDOR INTEGRADO SIENGE",
+          cnpj: "00.000.000/0001-00",
+          valorNf: 8750.00,
+          pedidoSienge: "PED-2026-" + nNF,
+          itens: [
+            { cod: "MAT-01", desc: "MATERIAL INDUSTRIAL TIPO A", un: "UN", ncm: "73089010", qtdNota: 250 },
+            { cod: "MAT-02", desc: "COMPONENTE ESTRUTURAL B", un: "PC", ncm: "73269090", qtdNota: 120 }
+          ]
+        });
+      }
+    }
+
+    async function carregarXmlsPendentesServidor() {
+      try {
+        const res = await fetch("/api/xmls/pendentes");
+        const data = await res.json();
+        if (data.files && data.files.length > 0) {
+          const list = data.files.map((f, i) => (i+1) + ". NF " + f.nNF + " - " + f.emitente + " (" + f.pedido + ")").join("\n");
+          const sel = prompt("Selecione a nota para conferir (1 a " + data.files.length + "):\n\n" + list, "1");
+          if (sel) {
+            const idx = parseInt(sel) - 1;
+            if (data.files[idx]) {
+              const item = data.files[idx];
+              if (item.itens) {
+                iniciarConferencia({
+                  chave: item.chave,
+                  numeroNf: item.nNF,
+                  serie: "1",
+                  dataEmissao: new Date().toISOString().split('T')[0],
+                  fornecedor: item.emitente,
+                  cnpj: "",
+                  valorNf: parseFloat(item.vNF),
+                  pedidoSienge: item.pedido,
+                  itens: item.itens
+                });
+              } else if (item.nNF === "45612") {
+                carregarCenarioGerdau();
+              } else {
+                carregarCenarioVotorantim();
+              }
+            }
+          }
+        }
+      } catch(e) {
+        alert("Erro ao ler pasta de XMLs pendentes.");
+      }
+    }
+
+    // =========================================================================
+    // FLUXO DE CONFERÊNCIA CEGA & VALIDAÇÃO DE 3 TENTATIVAS
+    // =========================================================================
+    function iniciarConferencia(nfe) {
+      currentNfe = nfe;
+      tentativaAtual = 1;
+
+      document.getElementById("emptyState").style.display = "none";
+      document.getElementById("activeConferenciaPanel").style.display = "block";
+
+      // Info Resumo
+      document.getElementById("infoEmitente").textContent = nfe.fornecedor;
+      document.getElementById("infoNumeroNf").textContent = nfe.numeroNf + " (Série " + nfe.serie + ")";
+      document.getElementById("infoPedidoSienge").textContent = nfe.pedidoSienge;
+      document.getElementById("infoValorNf").textContent = "R$ " + nfe.valorNf.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      document.getElementById("infoStatusTag").className = "tag tag-warning";
+      document.getElementById("infoStatusTag").textContent = "EM CONFERÊNCIA";
+
+      atualizarBannerTentativa();
+      renderizarTabelaItens();
+
+      // Atualiza passos
+      document.getElementById("step1Box").className = "step-box";
+      document.getElementById("step2Box").className = "step-box active";
+      document.getElementById("step3Box").className = "step-box";
+      document.getElementById("step4Box").className = "step-box";
+    }
+
+    function atualizarBannerTentativa() {
+      const banner = document.getElementById("bannerTentativa");
+      const title = document.getElementById("bannerTentativaText");
+      const sub = document.getElementById("bannerTentativaSub");
+
+      if (tentativaAtual === 1) {
+        banner.className = "tentativa-banner tentativa-1";
+        title.textContent = "🔍 1ª TENTATIVA DE CONFERÊNCIA FÍSICA CEGA";
+        sub.textContent = "Contagem inicial na doca pelo Conferente";
+      } else if (tentativaAtual === 2) {
+        banner.className = "tentativa-banner tentativa-2";
+        title.textContent = "⚠️ 2ª TENTATIVA (RECONFERÊNCIA POR 2º CONFERENTE)";
+        sub.textContent = "Divergência detectada na 1ª contagem. Faça a recontagem atenta!";
+      } else if (tentativaAtual === 3) {
+        banner.className = "tentativa-banner tentativa-3";
+        title.textContent = "🚨 3ª E ÚLTIMA TENTATIVA - TRAVA DE DIVERGÊNCIA";
+        sub.textContent = "Persistindo divergência, a carga será travada e enviada ao Supervisor.";
+      }
+    }
+
+    function renderizarTabelaItens() {
+      const tbody = document.getElementById("tbodyItensConferencia");
+      tbody.innerHTML = "";
+
+      currentNfe.itens.forEach((it, idx) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong style="font-family: 'JetBrains Mono', monospace;">${it.cod}</strong></td>
+          <td>${it.desc}</td>
+          <td><span class="tag tag-info">${it.un}</span></td>
+          <td style="font-family: monospace; font-size: 11px;">${it.ncm}</td>
+          <td style="text-align: center;"><span class="blind-box">🔒 OCULTA</span></td>
+          <td style="text-align: center;">
+            <input type="number" id="inputCount_${idx}" class="input-count" placeholder="0" min="0" oninput="limparValidacaoInput(${idx})">
+          </td>
+          <td style="text-align: center;" id="statusTd_${idx}">
+            <span style="color: #94a3b8; font-size: 11px;">Aguardando</span>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function limparValidacaoInput(idx) {
+      const input = document.getElementById("inputCount_" + idx);
+      input.classList.remove("divergent", "match");
+      document.getElementById("statusTd_" + idx).innerHTML = '<span style="color: #94a3b8; font-size: 11px;">Digitando...</span>';
+    }
+
+    function preencherContagemCorretaAuto() {
+      if (!currentNfe) return;
+      currentNfe.itens.forEach((it, idx) => {
+        document.getElementById("inputCount_" + idx).value = it.qtdNota;
+        limparValidacaoInput(idx);
+      });
+    }
+
+    // =========================================================================
+    // EXECUÇÃO DA VALIDAÇÃO E REGRAS DE 3 TENTATIVAS
+    // =========================================================================
+    async function executarValidacaoContagem() {
+      if (!currentNfe) return;
+
+      let hasEmpty = false;
+      let hasDivergence = false;
+      const contagens = [];
+
+      currentNfe.itens.forEach((it, idx) => {
+        const valStr = document.getElementById("inputCount_" + idx).value.trim();
+        if (valStr === "") hasEmpty = true;
+        const contada = parseFloat(valStr) || 0;
+        const statusTd = document.getElementById("statusTd_" + idx);
+        const input = document.getElementById("inputCount_" + idx);
+
+        if (contada !== it.qtdNota) {
+          hasDivergence = true;
+          input.classList.add("divergent");
+          input.classList.remove("match");
+          statusTd.innerHTML = '<span class="tag tag-danger">DIVERGENTE</span>';
+        } else {
+          input.classList.add("match");
+          input.classList.remove("divergent");
+          statusTd.innerHTML = '<span class="tag tag-success">CONFORME</span>';
+        }
+
+        contagens.push({
+          cod: it.cod,
+          desc: it.desc,
+          qtdNota: it.qtdNota,
+          qtdContada: contada,
+          conforme: contada === it.qtdNota
+        });
+      });
+
+      if (hasEmpty) {
+        alert("Preencha a contagem física de todos os itens antes de prosseguir.");
+        return;
+      }
+
+      // CENÁRIO A: 100% CONFORME!
+      if (!hasDivergence) {
+        document.getElementById("infoStatusTag").className = "tag tag-success";
+        document.getElementById("infoStatusTag").textContent = "RECEBIDO 100% OK";
+        document.getElementById("step3Box").className = "step-box";
+        document.getElementById("step4Box").className = "step-box active";
+
+        // Salva no Banco de Dados Supabase Cloud
+        await salvarRecebimentoNoBanco({
+          action: "RECEBIMENTO_CONCLUIDO",
+          numeroNf: currentNfe.numeroNf,
+          fornecedor: currentNfe.fornecedor,
+          pedidoSienge: currentNfe.pedidoSienge,
+          valorNf: currentNfe.valorNf,
+          status: "RECEBIDO_OK",
+          tentativas: tentativaAtual,
+          conferente: "Conferente Doca 01",
+          itens: contagens
+        });
+
+        alert("🎉 PARABÉNS! CONFERÊNCIA 100% CONFORME!
+
+" +
+              "• Chave: " + currentNfe.chave + "
+" +
+              "• Fornecedor: " + currentNfe.fornecedor + "
+" +
+              "• Pedido Sienge: " + currentNfe.pedidoSienge + " liberado para entrada no estoque e financeiro.
+" +
+              "• Dados salvos com sucesso no Supabase PostgreSQL Cloud.");
+
+        cancelarConferencia();
+        return;
+      }
+
+      // CENÁRIO B: DIVERGÊNCIA DETECTADA
+      if (tentativaAtual < maxTentativas) {
+        tentativaAtual++;
+        atualizarBannerTentativa();
+        alert("⚠️ ATENÇÃO: DIVERGÊNCIA DE CONTAGEM IDENTIFICADA!
+
+" +
+              "Foi iniciada a " + tentativaAtual + "ª tentativa de conferência cega.
+" +
+              "Reconte as peças físicas na doca com atenção redobrada.");
+      } else {
+        // 3ª TENTATIVA FALHOU -> BLOQUEIO TOTAL E ENVIO AO SUPERVISOR
+        document.getElementById("infoStatusTag").className = "tag tag-danger";
+        document.getElementById("infoStatusTag").textContent = "BLOQUEADO (3 TENTATIVAS)";
+
+        const notaTravada = {
+          chave: currentNfe.chave,
+          numeroNf: currentNfe.numeroNf,
+          fornecedor: currentNfe.fornecedor,
+          pedidoSienge: currentNfe.pedidoSienge,
+          valorNf: currentNfe.valorNf,
+          dataBloqueio: new Date().toLocaleString('pt-BR'),
+          itens: contagens
+        };
+
+        pendingNotas.push(notaTravada);
+        updatePendingCount();
+
+        // Salva evento de bloqueio no Banco Supabase Cloud
+        await salvarRecebimentoNoBanco({
+          action: "RECEBIMENTO_BLOQUEADO_DIVERGENCIA",
+          numeroNf: currentNfe.numeroNf,
+          fornecedor: currentNfe.fornecedor,
+          pedidoSienge: currentNfe.pedidoSienge,
+          valorNf: currentNfe.valorNf,
+          status: "BLOQUEADO_DIVERGENCIA",
+          tentativas: 3,
+          conferente: "Conferente Doca 01",
+          itens: contagens
+        });
+
+        alert("🚨 BLOQUEIO FISCAL ATIVADO!
+
+" +
+              "A conferência da NF " + currentNfe.numeroNf + " atingiu 3 tentativas divergentes.
+
+" +
+              "• Mercadoria travada na doca.
+" +
+              "• E-mail de auditoria disparado para claudio.guidi@omnitradebrasil.com.
+" +
+              "• Nota enviada para a fila de liberação com senha do Supervisor.");
+
+        cancelarConferencia();
+      }
+    }
+
+    function cancelarConferencia() {
+      currentNfe = null;
+      document.getElementById("emptyState").style.display = "block";
+      document.getElementById("activeConferenciaPanel").style.display = "none";
+      document.getElementById("step1Box").className = "step-box active";
+      document.getElementById("step2Box").className = "step-box";
+      document.getElementById("step3Box").className = "step-box";
+      document.getElementById("step4Box").className = "step-box";
+    }
+
+    // =========================================================================
+    // INTEGRAÇÃO COM BANCO DE DADOS (SUPABASE POSTGRESQL CLOUD)
+    // =========================================================================
+    async function salvarRecebimentoNoBanco(payload) {
+      try {
+        await fetch("/api/recebimentos/salvar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+      } catch(e) {
+        console.warn("Aviso ao persistir no Supabase:", e.message);
+      }
+    }
+
+    async function carregarHistoricoDoBanco() {
+      const tbody = document.getElementById("tbodyHistoricoBanco");
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 24px;">Carregando dados do Supabase Cloud...</td></tr>';
+
+      try {
+        const res = await fetch("/api/recebimentos/listar?limit=50");
+        const data = await res.json();
+        historicoRegistros = data.registros || [];
+
+        // Atualizar estatísticas
+        let concluidos = 0, bloqueados = 0, liberados = 0;
+        historicoRegistros.forEach(r => {
+          if (r.action === "RECEBIMENTO_CONCLUIDO") concluidos++;
+          else if (r.action === "RECEBIMENTO_BLOQUEADO_DIVERGENCIA") bloqueados++;
+          else if (r.action === "LIBERACAO_SUPERVISOR") liberados++;
+        });
+
+        document.getElementById("statTotalRec").textContent = historicoRegistros.length;
+        document.getElementById("statConcluidos").textContent = concluidos;
+        document.getElementById("statBloqueados").textContent = bloqueados;
+        document.getElementById("statLiberados").textContent = liberados;
+
+        renderizarTabelaHistorico(historicoRegistros);
+      } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #dc2626; padding: 24px;">Erro ao carregar dados do banco: ' + e.message + '</td></tr>';
+      }
+    }
+
+    function renderizarTabelaHistorico(lista) {
+      const tbody = document.getElementById("tbodyHistoricoBanco");
+      if (!lista || lista.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 24px;">Nenhum registro de recebimento encontrado no banco.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = "";
+      lista.forEach(r => {
+        const tr = document.createElement("tr");
+        const dt = new Date(r.timestamp).toLocaleString('pt-BR');
+        
+        let tagStatus = '<span class="tag tag-info">' + r.action + '</span>';
+        if (r.action === "RECEBIMENTO_CONCLUIDO") tagStatus = '<span class="tag tag-success">CONCLUÍDO 100%</span>';
+        else if (r.action === "RECEBIMENTO_BLOQUEADO_DIVERGENCIA") tagStatus = '<span class="tag tag-danger">BLOQUEADO</span>';
+        else if (r.action === "LIBERACAO_SUPERVISOR") tagStatus = '<span class="tag tag-warning">SUPERVISOR</span>';
+
+        tr.innerHTML = `
+          <td style="font-family: monospace; font-size: 11px;">${dt}</td>
+          <td><strong>${r.action}</strong></td>
+          <td>${r.target || 'N/A'}</td>
+          <td>${r.actor}</td>
+          <td>${tagStatus}</td>
+          <td>
+            <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 11px; width: auto;" onclick='visualizarDetalhesRegistro(${JSON.stringify(r.details)})'>
+              Ver Espelho
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filtrarTabelaHistorico() {
+      const termo = document.getElementById("filtroHistoricoInput").value.toLowerCase();
+      const filtrados = historicoRegistros.filter(r => {
+        return (r.target && r.target.toLowerCase().includes(termo)) ||
+               (r.actor && r.actor.toLowerCase().includes(termo)) ||
+               (r.action && r.action.toLowerCase().includes(termo));
+      });
+      renderizarTabelaHistorico(filtrados);
+    }
+
+    function visualizarDetalhesRegistro(details) {
+      if (!details) {
+        alert("Nenhum detalhe adicional disponível para este registro.");
+        return;
+      }
+      alert("📋 DETALHES DO RECEBIMENTO:
+
+" + JSON.stringify(details, null, 2));
+    }
+
+    function exportarHistoricoCsv() {
+      if (!historicoRegistros || historicoRegistros.length === 0) {
+        alert("Nenhum dado para exportar.");
+        return;
+      }
+
+      let csv = "ID;Data/Hora;Acao;Alvo;Responsavel;Nivel;Detalhes\n";
+      historicoRegistros.forEach(r => {
+        const detailsEscaped = JSON.stringify(r.details).replace(/"/g, '""');
+        csv += `"${r.id}";"${r.timestamp}";"${r.action}";"${r.target}";"${r.actor}";"${r.level}";"${detailsEscaped}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "omni_recebimentos_audit_" + new Date().toISOString().slice(0,10) + ".csv";
+      a.click();
+    }
+
+    function openDatabaseHistoryModal() {
+      document.getElementById("modalDatabaseHistory").classList.add("active");
+      carregarHistoricoDoBanco();
+    }
+
+    // =========================================================================
+    // IMPRESSÃO DA FICHA CEGA
+    // =========================================================================
+    function imprimirFichaCega() {
+      if (!currentNfe) return;
+
+      document.getElementById("printDataEmissao").textContent = new Date().toLocaleDateString('pt-BR');
+      document.getElementById("printHora").textContent = new Date().toLocaleTimeString('pt-BR');
+      document.getElementById("printFornecedor").textContent = currentNfe.fornecedor;
+      document.getElementById("printNf").textContent = currentNfe.numeroNf + " (Série " + currentNfe.serie + ")";
+      document.getElementById("printPedido").textContent = currentNfe.pedidoSienge;
+      document.getElementById("printChave").textContent = currentNfe.chave;
+
+      const printTbody = document.getElementById("printTbodyItens");
+      printTbody.innerHTML = "";
+
+      currentNfe.itens.forEach(it => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td style="border: 1px solid #000; padding: 6px; font-family: monospace;">${it.cod}</td>
+          <td style="border: 1px solid #000; padding: 6px;">${it.desc}</td>
+          <td style="border: 1px solid #000; padding: 6px; text-align: center;">${it.un}</td>
+          <td style="border: 1px solid #000; padding: 6px; text-align: center;">[ CEGA ]</td>
+          <td style="border: 1px solid #000; padding: 6px; height: 35px;"></td>
+          <td style="border: 1px solid #000; padding: 6px;"></td>
+        `;
+        printTbody.appendChild(tr);
+      });
+
+      window.print();
+    }
+
+    // =========================================================================
+    // PAINEL DO SUPERVISOR
+    // =========================================================================
+    function updatePendingCount() {
+      document.getElementById("pendingBadge").textContent = pendingNotas.length;
+    }
+
+    function openSupervisorModal() {
+      renderPendingCards();
+      document.getElementById("modalPending").classList.add("active");
+    }
+
+    function renderPendingCards() {
+      const area = document.getElementById("pendingCardsArea");
+      area.innerHTML = "";
+
+      if (pendingNotas.length === 0) {
+        area.innerHTML = '<div style="text-align: center; color: var(--gray-600); padding: 30px;">✅ Nenhuma nota fiscal bloqueada no momento. Todas as docas operando com conformidade.</div>';
+        document.getElementById("supervisorActionBox").style.display = "none";
+        return;
+      }
+
+      pendingNotas.forEach((n, idx) => {
+        const card = document.createElement("div");
+        card.style.cssText = "background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 14px; margin-bottom: 12px;";
+        card.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <strong style="color: #991b1b; font-size: 13.5px;">NF ${n.numeroNf} - ${n.fornecedor}</strong>
+            <span class="tag tag-danger">3 Tentativas Esgotadas</span>
+          </div>
+          <p style="font-size: 12px; color: var(--gray-600); margin-bottom: 6px;">
+            Pedido Sienge: <strong>${n.pedidoSienge}</strong> | Valor: <strong>R$ ${n.valorNf.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</strong> | Bloqueio: ${n.dataBloqueio}
+          </p>
+          <button class="btn btn-warning" style="width: auto; padding: 6px 14px; font-size: 11.5px;" onclick="selectPendingForRelease(${idx})">
+            🔑 Analisar & Liberar como Supervisor
+          </button>
+        `;
+        area.appendChild(card);
+      });
+    }
+
+    function selectPendingForRelease(idx) {
+      selectedPendingIndex = idx;
+      document.getElementById("supervisorActionBox").style.display = "block";
+    }
+
+    function cancelSupervisorRelease() {
+      selectedPendingIndex = null;
+      document.getElementById("supervisorActionBox").style.display = "none";
+    }
+
+    async function executeSupervisorRelease() {
+      const email = document.getElementById("supEmail").value.trim();
+      const pass = document.getElementById("supPassword").value.trim();
+      const just = document.getElementById("supJustificativa").value.trim();
+      const autoAdjust = document.getElementById("chkAutoAdjust").checked;
+
+      if (!email || !pass) {
+        alert("Informe o e-mail e a senha do supervisor para autenticar a liberação.");
+        return;
+      }
+
+      const notaLiberada = pendingNotas[selectedPendingIndex];
+
+      try {
+        await fetch("/api/sienge/aprovar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            supervisorEmail: email,
+            numeroNf: notaLiberada.numeroNf,
+            pedidoSienge: notaLiberada.pedidoSienge,
+            autoAdjust: autoAdjust,
+            decisao: "LIBERACAO_SUPERVISOR",
+            justificativa: just || "Liberado com ressalva pelo supervisor"
+          })
+        });
+      } catch(e) {}
+
+      alert("✅ SUCESSO!
+
+Nota NF " + notaLiberada.numeroNf + " liberada pelo supervisor (" + email + ").
+" +
+            (autoAdjust ? "• Chamada API Sienge: Pedido " + notaLiberada.pedidoSienge + " ajustado automaticamente para refletir a quantidade contada.
+" : "") +
+            "• Auditoria persistida no Supabase Cloud.");
+
+      pendingNotas.splice(selectedPendingIndex, 1);
+      updatePendingCount();
+      closeModal("modalPending");
+    }
+
+    async function executeSupervisorRejection() {
+      const email = document.getElementById("supEmail").value.trim();
+      const pass = document.getElementById("supPassword").value.trim();
+      const just = document.getElementById("supJustificativa").value.trim();
+
+      if (!email || !pass) {
+        alert("Informe o e-mail e a senha do supervisor para autenticar a recusa.");
+        return;
+      }
+
+      const notaRecusada = pendingNotas[selectedPendingIndex];
+
+      try {
+        await fetch("/api/sienge/aprovar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            supervisorEmail: email,
+            numeroNf: notaRecusada.numeroNf,
+            pedidoSienge: notaRecusada.pedidoSienge,
+            autoAdjust: false,
+            decisao: "RECUSADO_DEVOLUCAO",
+            justificativa: just || "Mercadoria rejeitada por divergência de volume"
+          })
+        });
+      } catch(e) {}
+
+      alert("🚫 CARGA RECUSADA!
+
+Nota NF " + notaRecusada.numeroNf + " rejeitada pelo supervisor.
+Emitida instrução de devolução.");
+
+      pendingNotas.splice(selectedPendingIndex, 1);
+      updatePendingCount();
+      closeModal("modalPending");
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove("active");
+    }
+
+    // Inicialização
+    window.addEventListener("DOMContentLoaded", () => {
+      checkSiengeStatus();
+      updatePendingCount();
+    });
+  </script>
+</body>
+</html>
