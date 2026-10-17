@@ -1023,6 +1023,9 @@
               <div style="font-size:0.82rem; margin-top:4px; line-height:1.4; color:#7f1d1d;">
                 As 2 recontagens físicas confirmaram divergência na carga. Esta nota foi <strong>retida no almoxarifado</strong> e um alerta formal foi disparado para o supervisor:
                 <br><strong style="color:#0f172a; text-decoration:underline;">claudio.guidi@omnitradebrasil.com</strong>.
+                <div id="emailStatusNotify" style="margin-top:6px; font-size:0.78rem; font-weight:600; color:#1e40af;">
+                  ✉️ Disparando e-mail de notificação formal ao supervisor...
+                </div>
               </div>
 
               <!-- Ações: Próxima Nota ou Desbloquear -->
@@ -1648,6 +1651,41 @@
         tentativas: 3,
         conferente: 'Conferente de Doca',
         itens: notaAtual.itens
+      });
+
+      // Dispara envio do E-mail de Notificação Formal ao Supervisor
+      const elStatus = document.getElementById('emailStatusNotify');
+      if (elStatus) elStatus.innerHTML = '✉️ Enviando alerta formal para claudio.guidi@omnitradebrasil.com...';
+
+      fetch('/api/notificar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          supervisorEmail: 'claudio.guidi@omnitradebrasil.com',
+          numeroNf: notaAtual.numeroNfe,
+          fornecedor: notaAtual.fornecedor,
+          obra: notaAtual.obra,
+          pedidoSienge: notaAtual.pedidoSienge,
+          itens: notaAtual.itens.map((it, idx) => ({
+            desc: it.desc,
+            un: it.un,
+            qtdNfe: it.qtdNfe,
+            qtdFisica: document.getElementById('contagem_' + idx) ? parseFloat(document.getElementById('contagem_' + idx).value || 0) : it.qtdNfe,
+            diferenca: document.getElementById('contagem_' + idx) ? (parseFloat(document.getElementById('contagem_' + idx).value || 0) - it.qtdNfe) : 0
+          }))
+        })
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (!elStatus) return;
+        if (res.delivered) {
+          elStatus.innerHTML = '<span style="color:#16a34a; font-weight:700;">✅ E-mail enviado com sucesso para claudio.guidi@omnitradebrasil.com (' + (res.provider || 'SMTP') + ')</span>';
+        } else {
+          elStatus.innerHTML = '<span style="color:#b45309; font-weight:600;">⚠️ E-mail formatado e registrado no Supabase. Aguardando credenciais de envio SMTP/Resend no servidor.</span>';
+        }
+      })
+      .catch(err => {
+        if (elStatus) elStatus.innerHTML = '<span style="color:#dc2626;">❌ Erro ao contactar serviço de e-mail. Log gravado no Supabase.</span>';
       });
     }
 

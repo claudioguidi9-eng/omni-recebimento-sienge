@@ -300,6 +300,34 @@ const handler = async (req, res) => {
     return;
   }
 
+    // 8. Notificar Supervisor por E-mail (Resend ou SMTP)
+  if ((pathname === '/api/notificar' || pathname === '/api/notificar-supervisor') && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', async () => {
+      try {
+        const payload = JSON.parse(body || '{}');
+        req.body = payload;
+        const fakeRes = {
+          setHeader: () => {},
+          status: (code) => ({
+            json: (data) => {
+              res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8' });
+              res.end(JSON.stringify(data));
+            },
+            end: () => res.end()
+          })
+        };
+        const notificarHandler = require('./api/notificar.js');
+        await notificarHandler(req, fakeRes);
+      } catch(err) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+    return;
+  }
+
   // 8. Servir Frontend index.html em qualquer outra rota
   const indexPath = path.join(__dirname, 'index.html');
   if (fs.existsSync(indexPath)) {
