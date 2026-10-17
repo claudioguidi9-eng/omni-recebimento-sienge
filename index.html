@@ -9,29 +9,30 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-dark: #090D16;
-      --bg-card: #111827;
-      --bg-card-subtle: #172033;
-      --border-color: #232F46;
-      --border-focus: #3B82F6;
-      --primary: #2563EB;
-      --primary-hover: #1D4ED8;
-      --primary-glow: rgba(37, 99, 235, 0.3);
-      --success: #10B981;
-      --success-bg: rgba(16, 185, 129, 0.12);
-      --warning: #F59E0B;
-      --warning-bg: rgba(245, 158, 11, 0.12);
-      --danger: #EF4444;
-      --danger-bg: rgba(239, 68, 68, 0.12);
-      --text-main: #F3F4F6;
-      --text-muted: #9CA3AF;
-      --text-dim: #6B7280;
+      --bg-page: #f8fafc;
+      --bg-card: #ffffff;
+      --bg-subtle: #f1f5f9;
+      --border-color: #e2e8f0;
+      --border-focus: #2563eb;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-glow: rgba(37, 99, 235, 0.15);
+      --success: #16a34a;
+      --success-bg: #dcfce7;
+      --warning: #d97706;
+      --warning-bg: #fef3c7;
+      --danger: #dc2626;
+      --danger-bg: #fee2e2;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --text-dim: #94a3b8;
+      --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.02);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background-color: var(--bg-dark);
+      background-color: var(--bg-page);
       color: var(--text-main);
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       min-height: 100vh;
@@ -41,9 +42,9 @@
 
     /* Top Bar */
     header {
-      background: rgba(17, 24, 39, 0.9);
-      backdrop-filter: blur(14px);
-      border-bottom: 1px solid var(--border-color);
+      background: linear-gradient(135deg, #0b1329 0%, #1e293b 100%);
+      color: white;
+      border-bottom: 2px solid #2563eb;
       padding: 12px 24px;
       display: flex;
       align-items: center;
@@ -51,6 +52,7 @@
       position: sticky;
       top: 0;
       z-index: 50;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
 
     .brand-section {
@@ -60,14 +62,14 @@
     }
 
     .brand-logo {
-      background: linear-gradient(135deg, #2563EB, #7C3AED);
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
       width: 40px;
       height: 40px;
       border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 0 20px var(--primary-glow);
+      box-shadow: 0 2px 10px rgba(37,99,235,0.4);
     }
 
     .brand-logo svg {
@@ -79,19 +81,20 @@
     .brand-title {
       font-size: 1.15rem;
       font-weight: 800;
+      color: #ffffff;
       letter-spacing: -0.02em;
     }
 
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
     .btn-pending-queue {
       background: rgba(245, 158, 11, 0.15);
-      border: 1px solid #F59E0B;
-      color: #FBBF24;
+      border: 1px solid #f59e0b;
+      color: #fef08a;
       padding: 6px 14px;
       border-radius: 20px;
       font-size: 0.8rem;
@@ -109,7 +112,7 @@
     }
 
     .badge-count {
-      background: #F59E0B;
+      background: #f59e0b;
       color: #111;
       padding: 1px 7px;
       border-radius: 10px;
@@ -121,9 +124,9 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      background: #172554;
-      border: 1px solid #1E40AF;
-      color: #93C5FD;
+      background: rgba(37, 99, 235, 0.2);
+      border: 1px solid rgba(96, 165, 250, 0.4);
+      color: #93c5fd;
       padding: 6px 14px;
       border-radius: 30px;
       font-size: 0.8rem;
@@ -133,9 +136,9 @@
     .pulse-dot {
       width: 8px;
       height: 8px;
-      background-color: var(--success);
+      background-color: #22c55e;
       border-radius: 50%;
-      box-shadow: 0 0 10px var(--success);
+      box-shadow: 0 0 10px #22c55e;
       animation: pulse 2s infinite;
     }
 
@@ -147,7 +150,7 @@
 
     /* Folder Status Bar */
     .folder-status-bar {
-      background: #0E1626;
+      background: #f1f5f9;
       border-bottom: 1px solid var(--border-color);
       padding: 8px 24px;
       display: flex;
@@ -159,11 +162,11 @@
 
     .folder-tag {
       font-family: 'JetBrains Mono', monospace;
-      color: #93C5FD;
-      background: #172033;
+      color: #1e40af;
+      background: #e2e8f0;
       padding: 2px 8px;
       border-radius: 4px;
-      border: 1px solid #232F46;
+      border: 1px solid #cbd5e1;
     }
 
     /* Workspace */
@@ -171,23 +174,26 @@
       display: grid;
       grid-template-columns: 1.05fr 1.35fr;
       gap: 20px;
-      padding: 18px 24px;
+      padding: 20px 24px;
       flex: 1;
+      max-width: 1560px;
+      margin: 0 auto;
+      width: 100%;
     }
 
     /* Left Pane */
     .left-pane {
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 16px;
     }
 
     .scanner-card {
       background: var(--bg-card);
       border: 1px solid var(--border-color);
-      border-radius: 14px;
+      border-radius: 12px;
       padding: 16px 20px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      box-shadow: var(--card-shadow);
     }
 
     .scanner-label {
@@ -195,11 +201,27 @@
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: #93C5FD;
+      color: #1e40af;
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
+    }
+
+    /* Dropzone Drag & Drop */
+    .dropzone-area {
+      border: 2px dashed #93c5fd;
+      background: #f8fafc;
+      border-radius: 10px;
+      padding: 12px 16px;
+      text-align: center;
+      cursor: pointer;
+      margin-bottom: 12px;
+      transition: all 0.2s;
+    }
+    .dropzone-area:hover, .dropzone-area.dragover {
+      border-color: #2563eb;
+      background: #eff6ff;
     }
 
     .scanner-input-group {
@@ -209,31 +231,31 @@
 
     .scanner-input {
       flex: 1;
-      background: #0B0F17;
-      border: 1.5px solid var(--border-color);
-      border-radius: 10px;
-      padding: 12px 16px;
-      color: #fff;
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #0f172a;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       letter-spacing: 0.05em;
       outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      transition: all 0.2s;
     }
 
     .scanner-input:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 12px var(--primary-glow);
+      box-shadow: 0 0 0 3px var(--primary-glow);
     }
 
     .btn-scan {
-      background: linear-gradient(135deg, #2563EB, #1D4ED8);
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
       color: #fff;
       border: none;
-      padding: 0 20px;
-      border-radius: 10px;
+      padding: 0 18px;
+      border-radius: 8px;
       font-weight: 700;
-      font-size: 0.88rem;
+      font-size: 0.85rem;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -242,7 +264,7 @@
     }
 
     .btn-scan:hover {
-      background: linear-gradient(135deg, #1D4ED8, #1E40AF);
+      background: linear-gradient(135deg, #1d4ed8, #1e40af);
       transform: translateY(-1px);
     }
 
@@ -250,7 +272,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-top: 10px;
+      margin-top: 12px;
       flex-wrap: wrap;
     }
 
@@ -261,38 +283,38 @@
     }
 
     .chip-btn {
-      background: var(--bg-card-subtle);
-      border: 1px solid var(--border-color);
-      color: #E2E8F0;
-      padding: 4px 10px;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      color: #334155;
+      padding: 5px 11px;
       border-radius: 6px;
       font-size: 0.75rem;
-      font-weight: 500;
+      font-weight: 600;
       cursor: pointer;
       transition: all 0.15s;
     }
 
     .chip-btn:hover {
-      border-color: #3B82F6;
-      background: #1E293B;
-      color: #fff;
+      border-color: #2563eb;
+      background: #eff6ff;
+      color: #1e40af;
     }
 
     /* DANFE Viewer Card */
     .doc-card {
       background: var(--bg-card);
       border: 1px solid var(--border-color);
-      border-radius: 14px;
+      border-radius: 12px;
       overflow: hidden;
       flex: 1;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      box-shadow: var(--card-shadow);
     }
 
     .doc-card-header {
       padding: 12px 18px;
-      background: var(--bg-card-subtle);
+      background: #f8fafc;
       border-bottom: 1px solid var(--border-color);
       display: flex;
       align-items: center;
@@ -300,7 +322,7 @@
     }
 
     .doc-card-body {
-      background: #1F2430;
+      background: #f1f5f9;
       padding: 18px;
       overflow-y: auto;
       max-height: calc(100vh - 380px);
@@ -309,17 +331,17 @@
     }
 
     .danfe-sheet {
-      background: #FFFFFF;
+      background: #ffffff;
       color: #111827;
       width: 100%;
       max-width: 580px;
       padding: 18px;
       border-radius: 6px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
       line-height: 1.35;
-      border: 1px solid #D1D5DB;
+      border: 1px solid #cbd5e1;
     }
 
     .danfe-grid-box {
@@ -331,7 +353,7 @@
       font-size: 9px;
       font-weight: 700;
       text-transform: uppercase;
-      color: #4B5563;
+      color: #4b5563;
       margin-bottom: 2px;
     }
 
@@ -341,8 +363,8 @@
     }
 
     .ocr-mark {
-      background: rgba(37, 99, 235, 0.15);
-      outline: 1.5px dashed #2563EB;
+      background: rgba(37, 99, 235, 0.1);
+      outline: 1.5px dashed #2563eb;
       border-radius: 3px;
       padding: 1px 3px;
     }
@@ -351,16 +373,16 @@
     .right-pane {
       background: var(--bg-card);
       border: 1px solid var(--border-color);
-      border-radius: 14px;
+      border-radius: 12px;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      box-shadow: var(--card-shadow);
     }
 
     .right-pane-header {
       padding: 14px 20px;
-      background: var(--bg-card-subtle);
+      background: #f8fafc;
       border-bottom: 1px solid var(--border-color);
       display: flex;
       align-items: center;
@@ -370,9 +392,9 @@
     }
 
     .btn-print {
-      background: #1E293B;
-      color: #E2E8F0;
-      border: 1px solid #334155;
+      background: #ffffff;
+      color: #334155;
+      border: 1px solid #cbd5e1;
       padding: 8px 16px;
       border-radius: 8px;
       font-weight: 600;
@@ -385,9 +407,9 @@
     }
 
     .btn-print:hover {
-      background: #334155;
-      color: #fff;
-      border-color: #64748B;
+      background: #f1f5f9;
+      color: #0f172a;
+      border-color: #94a3b8;
     }
 
     .right-pane-body {
@@ -401,9 +423,9 @@
 
     /* Attempt Tracker Box */
     .attempt-tracker-card {
-      background: var(--bg-card-subtle);
+      background: #f8fafc;
       border: 1px solid var(--border-color);
-      border-radius: 12px;
+      border-radius: 10px;
       padding: 14px 18px;
       display: flex;
       align-items: center;
@@ -425,38 +447,38 @@
       justify-content: center;
       font-size: 0.78rem;
       font-weight: 700;
-      background: #1E293B;
-      color: var(--text-muted);
-      border: 1.5px solid #334155;
+      background: #f1f5f9;
+      color: #64748b;
+      border: 1.5px solid #cbd5e1;
     }
 
     .attempt-dot.active {
-      background: #2563EB;
+      background: #2563eb;
       color: #fff;
-      border-color: #60A5FA;
-      box-shadow: 0 0 10px rgba(37,99,235,0.5);
+      border-color: #1d4ed8;
+      box-shadow: 0 0 10px rgba(37,99,235,0.4);
     }
 
     .attempt-dot.failed {
-      background: #991B1B;
-      color: #FEE2E2;
-      border-color: #EF4444;
+      background: #fee2e2;
+      color: #dc2626;
+      border-color: #ef4444;
     }
 
     .attempt-dot.success {
-      background: #065F46;
-      color: #D1FAE5;
-      border-color: #10B981;
+      background: #dcfce7;
+      color: #16a34a;
+      border-color: #22c55e;
     }
 
     /* Lock Alert Banner with Next Note Action */
     .lock-banner {
       display: none;
-      background: linear-gradient(135deg, rgba(239, 68, 68, 0.25) 0%, rgba(153, 27, 27, 0.45) 100%);
-      border: 2px solid #EF4444;
+      background: #fef2f2;
+      border: 2px solid #ef4444;
       border-radius: 12px;
       padding: 16px 20px;
-      color: #FEE2E2;
+      color: #991b1b;
       animation: shake 0.4s ease-in-out;
     }
 
@@ -478,7 +500,7 @@
     }
 
     .btn-next-note {
-      background: #3B82F6;
+      background: #2563eb;
       color: #fff;
       border: none;
       padding: 9px 18px;
@@ -489,17 +511,17 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
       transition: all 0.2s;
     }
 
     .btn-next-note:hover {
-      background: #2563EB;
+      background: #1d4ed8;
       transform: translateY(-1px);
     }
 
     .btn-supervisor-unlock {
-      background: #EF4444;
+      background: #dc2626;
       color: #fff;
       border: none;
       padding: 9px 18px;
@@ -510,20 +532,20 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
       transition: all 0.2s;
     }
 
     .btn-supervisor-unlock:hover {
-      background: #DC2626;
+      background: #b91c1c;
       transform: translateY(-1px);
     }
 
     /* Step Card */
     .step-card {
-      background: var(--bg-card-subtle);
+      background: #f8fafc;
       border: 1px solid var(--border-color);
-      border-radius: 12px;
+      border-radius: 10px;
       padding: 16px 20px;
     }
 
@@ -540,21 +562,23 @@
       font-size: 0.75rem;
       text-transform: uppercase;
       border-bottom: 1px solid var(--border-color);
+      background: #f1f5f9;
     }
 
     .blind-table td {
       padding: 12px;
-      border-bottom: 1px solid rgba(35, 47, 70, 0.5);
+      border-bottom: 1px solid var(--border-color);
       vertical-align: middle;
+      color: #1e293b;
     }
 
     .count-input {
       width: 95px;
-      background: #0B0F17;
-      border: 1.5px solid var(--border-color);
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
       border-radius: 8px;
       padding: 8px 10px;
-      color: #fff;
+      color: #0f172a;
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.95rem;
       font-weight: 700;
@@ -565,7 +589,7 @@
 
     .count-input:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 10px var(--primary-glow);
+      box-shadow: 0 0 0 3px var(--primary-glow);
     }
 
     .badge-status {
@@ -579,26 +603,26 @@
     }
 
     .badge-pendente {
-      background: rgba(245, 158, 11, 0.15);
-      color: #FBBF24;
-      border: 1px solid rgba(245, 158, 11, 0.3);
+      background: var(--warning-bg);
+      color: #b45309;
+      border: 1px solid rgba(245, 158, 11, 0.4);
     }
 
     .badge-conferido {
       background: var(--success-bg);
-      color: var(--success);
-      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #15803d;
+      border: 1px solid rgba(22, 163, 74, 0.4);
     }
 
     .badge-falta {
       background: var(--danger-bg);
-      color: var(--danger);
-      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #b91c1c;
+      border: 1px solid rgba(220, 38, 38, 0.4);
     }
 
     .tolerance-box {
-      background: rgba(37, 99, 235, 0.08);
-      border: 1px solid rgba(37, 99, 235, 0.25);
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
       border-radius: 10px;
       padding: 12px 16px;
       display: flex;
@@ -608,11 +632,10 @@
     }
 
     .sienge-action-box {
-      background: linear-gradient(180deg, #131E33 0%, #0D1524 100%);
-      border: 1.5px solid #1E3A8A;
+      background: #f8fafc;
+      border: 1.5px solid #bfdbfe;
       border-radius: 12px;
       padding: 18px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
     }
 
     .sienge-features-grid {
@@ -623,7 +646,7 @@
     }
 
     .sienge-feat {
-      background: var(--bg-card);
+      background: #ffffff;
       border: 1px solid var(--border-color);
       border-radius: 8px;
       padding: 10px 12px;
@@ -632,7 +655,7 @@
 
     .sienge-feat-title {
       font-weight: 700;
-      color: #BFDBFE;
+      color: #1e40af;
       margin-bottom: 2px;
       display: flex;
       align-items: center;
@@ -646,7 +669,7 @@
 
     .btn-finish {
       width: 100%;
-      background: linear-gradient(135deg, #10B981, #059669);
+      background: linear-gradient(135deg, #16a34a, #15803d);
       color: #fff;
       border: none;
       padding: 14px;
@@ -658,12 +681,12 @@
       align-items: center;
       justify-content: center;
       gap: 10px;
-      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+      box-shadow: 0 4px 16px rgba(22, 163, 74, 0.3);
       transition: all 0.2s;
     }
 
     .btn-finish:hover:not(:disabled) {
-      background: linear-gradient(135deg, #059669, #047857);
+      background: linear-gradient(135deg, #15803d, #166534);
       transform: translateY(-1px);
     }
 
@@ -678,8 +701,8 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.8);
-      backdrop-filter: blur(6px);
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(4px);
       z-index: 200;
       align-items: center;
       justify-content: center;
@@ -689,13 +712,14 @@
     .modal-overlay.active { display: flex; }
 
     .modal-card {
-      background: var(--bg-card);
+      background: #ffffff;
       border: 1px solid var(--border-color);
       border-radius: 14px;
       width: 100%;
       max-width: 620px;
       padding: 24px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+      color: #0f172a;
     }
 
     .modal-header {
@@ -710,10 +734,9 @@
     .modal-title {
       font-size: 1.1rem;
       font-weight: 800;
-      color: #fff;
+      color: #0f172a;
     }
 
-    /* Supervisor Form Controls */
     .form-group {
       margin-bottom: 14px;
     }
@@ -728,11 +751,11 @@
 
     .form-input {
       width: 100%;
-      background: #0B0F17;
-      border: 1px solid var(--border-color);
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
       border-radius: 8px;
       padding: 10px 14px;
-      color: #fff;
+      color: #0f172a;
       font-family: inherit;
       font-size: 0.9rem;
       outline: none;
@@ -743,8 +766,8 @@
     }
 
     .sienge-sync-box {
-      background: rgba(37, 99, 235, 0.1);
-      border: 1px solid rgba(37, 99, 235, 0.3);
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
       border-radius: 8px;
       padding: 12px 16px;
       margin: 16px 0;
@@ -753,9 +776,8 @@
       gap: 12px;
     }
 
-    /* Pending Queue Drawer/Modal */
     .pending-item-card {
-      background: var(--bg-card-subtle);
+      background: #f8fafc;
       border: 1px solid var(--border-color);
       border-radius: 10px;
       padding: 14px 16px;
@@ -766,7 +788,7 @@
     }
 
     .print-sheet {
-      background: #FFFFFF;
+      background: #ffffff;
       color: #111827;
       width: 100%;
       max-width: 750px;
@@ -778,52 +800,52 @@
     }
 
     .count-blank-box {
-      border: 1.5px dashed #4B5563;
+      border: 1.5px dashed #4b5563;
       height: 26px;
       width: 90px;
-      background: #F9FAFB;
+      background: #f9fafb;
     }
-  
-    /* Database History Table & Cards (Dark Theme) */
-    .stats-row-dark {
+
+    /* Database History Table & Cards (Light Theme) */
+    .stats-row-light {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 12px;
       margin-bottom: 16px;
     }
-    .stat-card-dark {
-      background: var(--bg-card-subtle);
+    .stat-card-light {
+      background: #f8fafc;
       border: 1px solid var(--border-color);
       border-radius: 10px;
       padding: 12px 14px;
       text-align: center;
     }
-    .stat-card-dark h5 {
+    .stat-card-light h5 {
       font-size: 0.72rem;
       text-transform: uppercase;
       color: var(--text-muted);
       font-weight: 600;
       margin-bottom: 4px;
     }
-    .stat-card-dark p {
+    .stat-card-light p {
       font-size: 1.3rem;
       font-weight: 800;
-      color: #fff;
+      color: #0f172a;
     }
-    .table-dark-container {
+    .table-light-container {
       overflow-x: auto;
       border: 1px solid var(--border-color);
       border-radius: 10px;
       max-height: 380px;
     }
-    .table-dark {
+    .table-light {
       width: 100%;
       border-collapse: collapse;
       font-size: 0.82rem;
       text-align: left;
     }
-    .table-dark th {
-      background: #0E1626;
+    .table-light th {
+      background: #f1f5f9;
       color: var(--text-muted);
       padding: 10px 12px;
       font-size: 0.72rem;
@@ -832,28 +854,14 @@
       position: sticky;
       top: 0;
     }
-    .table-dark td {
+    .table-light td {
       padding: 10px 12px;
-      border-bottom: 1px solid rgba(35, 47, 70, 0.5);
+      border-bottom: 1px solid var(--border-color);
+      color: #1e293b;
     }
-    .table-dark tr:hover td {
-      background: rgba(30, 41, 59, 0.5);
+    .table-light tr:hover td {
+      background: #f8fafc;
     }
-    .dropzone-area {
-      border: 1.5px dashed var(--border-color);
-      background: rgba(11, 15, 23, 0.6);
-      border-radius: 10px;
-      padding: 10px 14px;
-      text-align: center;
-      cursor: pointer;
-      margin-bottom: 10px;
-      transition: all 0.2s;
-    }
-    .dropzone-area:hover, .dropzone-area.dragover {
-      border-color: var(--primary);
-      background: rgba(37, 99, 235, 0.1);
-    }
-
   </style>
 </head>
 <body>
@@ -867,11 +875,11 @@
       <div>
         <div style="display:flex; align-items:center; gap:8px;">
           <h1 class="brand-title">OmniFiscal AI</h1>
-          <span style="background:rgba(37,99,235,0.2); color:#93C5FD; font-size:0.72rem; font-weight:700; padding:2px 8px; border-radius:4px;">
+          <span style="background:rgba(37,99,235,0.25); color:#bfdbfe; font-size:0.72rem; font-weight:700; padding:2px 8px; border-radius:4px; border:1px solid rgba(147,197,253,0.3);">
             Módulo Recebimento Cego & Sienge ERP
           </span>
         </div>
-        <div style="font-size:0.75rem; color:var(--text-muted);">Conferência Física Cega, Alçada de Recontagem & Fila de Pendências</div>
+        <div style="font-size:0.75rem; color:#94a3b8;">Conferência Física Cega, Alçada de Recontagem & Fila de Pendências</div>
       </div>
     </div>
 
@@ -883,7 +891,7 @@
       </button>
 
       <!-- Botão de Histórico Supabase -->
-      <button class="btn-pending-queue" style="border-color:#3B82F6; color:#93C5FD; background:rgba(59,130,246,0.15);" onclick="abrirModalHistoricoBanco()">
+      <button class="btn-pending-queue" style="border-color:#38bdf8; color:#e0f2fe; background:rgba(14,165,233,0.2);" onclick="abrirModalHistoricoBanco()">
         <span>📊 Histórico Banco (Supabase)</span>
       </button>
 
@@ -892,7 +900,7 @@
         <span id="siengeStatusText">Sienge API: <strong>omnitrade</strong> (Conectado)</span>
       </div>
 
-      <div class="status-badge" style="background:#0F2942; border-color:#0284C7; color:#38BDF8;">
+      <div class="status-badge" style="background:rgba(2,132,199,0.25); border-color:#0284c7; color:#bae6fd;">
         <span style="font-size:11px;">☁️</span>
         <span>Supabase: <strong>PostgreSQL Cloud</strong></span>
       </div>
@@ -907,12 +915,12 @@
       <span>📦 Pasta de Arquivamento: <strong class="folder-tag">C:\D\Omni\XML_LIDOS\2026-10\</strong></span>
     </div>
     <div style="display:flex; align-items:center; gap:8px;">
-      <span style="color:#10B981;">●</span>
+      <span style="color:#16a34a;">●</span>
       <span>Supervisor Fiscal Configurado: <strong>claudio.guidi@omnitradebrasil.com</strong></span>
     </div>
   </div>
 
-  <!-- Workspace -->
+  <!-- Workspace Dual-Pane -->
   <div class="workspace">
 
     <!-- LEFT PANE: Scanner + DANFE -->
@@ -924,11 +932,12 @@
           <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
           1. Bipagem da Chave de Acesso (Busca Instantânea no XML Inbox em 0.01s)
         </div>
+
         <!-- Dropzone XML -->
         <div id="xmlDropzone" class="dropzone-area" onclick="document.getElementById('xmlFileInput').click()">
           <input type="file" id="xmlFileInput" accept=".xml" style="display: none;" onchange="handleXmlFileSelect(event)">
-          <div style="font-size: 0.8rem; color: #93C5FD; font-weight: 600;">📥 Arraste um arquivo XML da NF-e aqui</div>
-          <div style="font-size: 0.72rem; color: var(--text-muted);">ou clique para selecionar do seu computador</div>
+          <div style="font-size: 0.82rem; color: #1e40af; font-weight: 700;">📥 Arraste um arquivo XML da NF-e aqui</div>
+          <div style="font-size: 0.72rem; color: var(--text-muted);">ou clique para selecionar do seu dispositivo</div>
         </div>
 
         <div class="scanner-input-group">
@@ -952,7 +961,7 @@
       <!-- DANFE Sheet Render -->
       <div class="doc-card">
         <div class="doc-card-header">
-          <div style="font-weight:700; font-size:0.85rem; display:flex; align-items:center; gap:8px;">
+          <div style="font-weight:700; font-size:0.85rem; display:flex; align-items:center; gap:8px; color:#0f172a;">
             <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
             <span id="danfeTitle">DANFE - Carregado via XML Local</span>
           </div>
@@ -971,14 +980,14 @@
       <!-- Header with Print Button -->
       <div class="right-pane-header">
         <div>
-          <div style="font-weight:800; font-size:0.95rem; color:#fff; display:flex; align-items:center; gap:8px;">
+          <div style="font-weight:800; font-size:0.95rem; color:#0f172a; display:flex; align-items:center; gap:8px;">
             <span>2. Conferência Física às Cegas & Alçada</span>
-            <span style="background:#1E3A8A; color:#BFDBFE; font-size:0.72rem; font-weight:700; padding:3px 8px; border-radius:6px;" id="siengePoBadge">
+            <span style="background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; font-size:0.72rem; font-weight:700; padding:3px 8px; border-radius:6px;" id="siengePoBadge">
               Pedido Sienge: PO #8921
             </span>
           </div>
-          <div style="font-size:0.75rem; color:var(--text-muted);">
-            Obra: <strong id="obraName" style="color:#BFDBFE;">Residencial Grand Reserva - Torre A</strong>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
+            Obra: <strong id="obraName" style="color:#1e40af;">Residencial Grand Reserva - Torre A</strong>
           </div>
         </div>
 
@@ -993,7 +1002,7 @@
         <!-- Attempt Tracker -->
         <div class="attempt-tracker-card">
           <div>
-            <div style="font-weight:700; font-size:0.85rem; color:#fff;">Status de Recontagem Física:</div>
+            <div style="font-weight:700; font-size:0.85rem; color:#0f172a;">Status de Recontagem Física:</div>
             <div style="font-size:0.75rem; color:var(--text-muted);" id="attemptStatusText">
               Tentativa 1 de 3 (Primeira contagem da descarga)
             </div>
@@ -1010,10 +1019,10 @@
           <div style="display:flex; align-items:flex-start; gap:12px;">
             <div style="font-size:1.8rem;">🚨</div>
             <div style="flex:1;">
-              <div style="font-weight:800; font-size:1rem; color:#FEE2E2;">RECEBIMENTO BLOQUEADO: 3ª DIVERGÊNCIA CONFIRMADA</div>
-              <div style="font-size:0.82rem; margin-top:4px; line-height:1.4;">
+              <div style="font-weight:800; font-size:1rem; color:#991b1b;">RECEBIMENTO BLOQUEADO: 3ª DIVERGÊNCIA CONFIRMADA</div>
+              <div style="font-size:0.82rem; margin-top:4px; line-height:1.4; color:#7f1d1d;">
                 As 2 recontagens físicas confirmaram divergência na carga. Esta nota foi <strong>retida no almoxarifado</strong> e um alerta formal foi disparado para o supervisor:
-                <br><strong style="color:#fff; text-decoration:underline;">claudio.guidi@omnitradebrasil.com</strong>.
+                <br><strong style="color:#0f172a; text-decoration:underline;">claudio.guidi@omnitradebrasil.com</strong>.
               </div>
 
               <!-- Ações: Próxima Nota ou Desbloquear -->
@@ -1035,14 +1044,14 @@
         <div class="step-card" id="blindCard">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
             <div>
-              <div style="font-weight:700; font-size:0.88rem; color:#fff;">Contagem Física Cega do Conferente</div>
+              <div style="font-weight:700; font-size:0.88rem; color:#0f172a;">Contagem Física Cega do Conferente</div>
               <div style="font-size:0.75rem; color:var(--text-muted);">
                 Audite os volumes físicos. Se houver divergência, serão permitidas até 2 recontagens.
               </div>
             </div>
             <div style="display:flex; gap:6px;">
               <button class="chip-btn" onclick="simularContagemPerfeita()">✓ Bater Contagem 100%</button>
-              <button class="chip-btn" onclick="simularFalta()" style="color:#F87171;">⚠️ Simular Erro de Contagem</button>
+              <button class="chip-btn" onclick="simularFalta()" style="color:#dc2626;">⚠️ Simular Erro de Contagem</button>
             </div>
           </div>
 
@@ -1059,7 +1068,7 @@
           </table>
 
           <div style="margin-top:14px; display:flex; justify-content:flex-end;">
-            <button class="btn-scan" id="btnValidarContagem" onclick="validarConferenciaFisica()" style="background:#2563EB;">
+            <button class="btn-scan" id="btnValidarContagem" onclick="validarConferenciaFisica()">
               <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
               Confirmar Contagem Física (OK)
             </button>
@@ -1069,7 +1078,7 @@
         <!-- Price Tolerance Validation -->
         <div class="tolerance-box" id="toleranceCard">
           <div>
-            <div style="font-weight:700; color:#fff;">Validação de Preço & Margem de Variação Sienge</div>
+            <div style="font-weight:700; color:#1e40af;">Validação de Preço & Margem de Variação Sienge</div>
             <div style="color:var(--text-muted); font-size:0.75rem;" id="toleranceDesc">
               Política Omni Trade: Tolerância máxima de ±2.0% sobre o preço unitário do Pedido de Compra.
             </div>
@@ -1083,10 +1092,10 @@
         <div class="sienge-action-box">
           <div style="display:flex; justify-content:space-between; align-items:flex-start;">
             <div>
-              <div style="font-weight:800; font-size:0.95rem; color:#fff;">3. Liquidação & Integração Sienge ERP</div>
-              <div style="font-size:0.75rem; color:#93C5FD;">Ao confirmar, move o XML para <code style="color:#fff;">XML_LIDOS</code> e executa no Sienge:</div>
+              <div style="font-weight:800; font-size:0.95rem; color:#0f172a;">3. Liquidação & Integração Sienge ERP</div>
+              <div style="font-size:0.75rem; color:#1e40af;">Ao confirmar, move o XML para <code>XML_LIDOS</code> e executa no Sienge:</div>
             </div>
-            <span style="font-size:0.72rem; background:#1E3A8A; color:#93C5FD; padding:3px 8px; border-radius:4px; font-weight:700;">
+            <span style="font-size:0.72rem; background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; padding:3px 8px; border-radius:4px; font-weight:700;">
               POST /purchase-invoices
             </span>
           </div>
@@ -1145,20 +1154,20 @@
         <input type="text" id="supJustificativa" class="form-input" value="Aceite com ressalva comercial. Quantidade real conferida pela supervisão da obra.">
       </div>
 
-      <!-- RECURSO SOLICITADO: Ajuste Automático do Pedido Sienge -->
+      <!-- Ajuste Automático do Pedido Sienge -->
       <div class="sienge-sync-box">
         <input type="checkbox" id="chkAjustarPedidoSienge" checked style="margin-top:3px; cursor:pointer;">
         <div>
-          <strong style="color:#BFDBFE; font-size:0.85rem;">Ajustar Automaticamente o Pedido no Sienge (PO #8921)</strong>
+          <strong style="color:#1e40af; font-size:0.85rem;">Ajustar Automaticamente o Pedido no Sienge (PO #8921)</strong>
           <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px; line-height:1.35;">
-            Ao marcar esta opção, o sistema enviará um <code style="color:#60A5FA;">PATCH /purchase-orders/items</code> para alterar as quantidades do Pedido Sienge, <strong>fazendo o Pedido e a Nota baterem 100%</strong> e eliminando resíduos financeiros.
+            Ao marcar esta opção, o sistema enviará um <code style="color:#2563eb;">PATCH /purchase-orders/items</code> para alterar as quantidades do Pedido Sienge, <strong>fazendo o Pedido e a Nota baterem 100%</strong> e eliminando resíduos financeiros.
           </div>
         </div>
       </div>
 
       <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
         <button class="chip-btn" onclick="fecharModalSupervisor()" style="padding:10px 18px; font-size:0.85rem;">Cancelar</button>
-        <button class="btn-scan" onclick="confirmarAprovacaoSupervisor()" style="background:#10B981; padding:10px 22px;">
+        <button class="btn-scan" onclick="confirmarAprovacaoSupervisor()" style="background:#16a34a; padding:10px 22px;">
           ✓ Aprovar & Liquidar no Sienge
         </button>
       </div>
@@ -1191,56 +1200,56 @@
   <div class="modal-overlay" id="printModal">
     <div class="print-sheet">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-        <span style="font-size:12px; color:#4B5563; text-transform:uppercase; font-weight:700;">Visualização de Impressão (Ficha Cega)</span>
+        <span style="font-size:12px; color:#4b5563; text-transform:uppercase; font-weight:700;">Visualização de Impressão (Ficha Cega)</span>
         <div style="display:flex; gap:8px;">
           <button onclick="window.print()" class="btn-scan" style="padding:6px 14px; font-size:12px; background:#111827;">🖨️ Imprimir Agora</button>
-          <button onclick="fecharFichaImpressao()" class="btn-scan" style="padding:6px 14px; font-size:12px; background:#E5E7EB; color:#111;">Fechar</button>
+          <button onclick="fecharFichaImpressao()" class="btn-scan" style="padding:6px 14px; font-size:12px; background:#e5e7eb; color:#111;">Fechar</button>
         </div>
       </div>
 
       <div style="border-bottom:2px solid #111827; padding-bottom:12px; margin-bottom:16px; display:flex; justify-content:space-between;">
         <div>
           <h2 style="font-size:16px; font-weight:800; color:#111;">OMNI TRADE CONSTRUÇÕES & SUPRIMENTOS</h2>
-          <div style="font-size:12px; color:#4B5563; margin-top:2px;">FICHA DE CONFERÊNCIA FÍSICA ÀS CEGAS (ALMOXARIFADO DE OBRA)</div>
+          <div style="font-size:12px; color:#4b5563; margin-top:2px;">FICHA DE CONFERÊNCIA FÍSICA ÀS CEGAS (ALMOXARIFADO DE OBRA)</div>
         </div>
         <div style="text-align:right;">
           <div style="font-weight:700; font-size:12px;" id="printPoNumber">PEDIDO SIENGE: PO #8921</div>
-          <div style="font-size:11px; color:#4B5563;" id="printDataEmissao">Data: 17/10/2026</div>
+          <div style="font-size:11px; color:#4b5563;" id="printDataEmissao">Data: 17/10/2026</div>
         </div>
       </div>
 
       <div style="display:grid; grid-template-columns: 2fr 1fr; gap:16px; margin-bottom:14px; font-size:11px;">
-        <div style="border:1px solid #D1D5DB; padding:8px; border-radius:4px;">
+        <div style="border:1px solid #d1d5db; padding:8px; border-radius:4px;">
           <strong>Obra:</strong> <span id="printObra">Residencial Grand Reserva - Torre A</span><br>
           <strong>Fornecedor:</strong> <span id="printFornecedor">VOTORANTIM CIMENTOS S.A.</span>
         </div>
-        <div style="border:1px solid #D1D5DB; padding:8px; border-radius:4px;">
+        <div style="border:1px solid #d1d5db; padding:8px; border-radius:4px;">
           <strong>NF-e Nº:</strong> <span id="printNfe">000.048.912</span><br>
           <strong>Protocolo Entrada:</strong> <span style="font-family:monospace;">OMNI-REC-2026-981</span>
         </div>
       </div>
 
-      <div style="font-size:11px; background:#FEF3C7; border:1px solid #F59E0B; padding:6px 10px; border-radius:4px; margin-bottom:14px; color:#92400E;">
+      <div style="font-size:11px; background:#fef3c7; border:1px solid #f59e0b; padding:6px 10px; border-radius:4px; margin-bottom:14px; color:#92400e;">
         ⚠️ <strong>Atenção Conferente:</strong> Anote no campo em branco a quantidade exata descarregada. Não consulte a nota fiscal antes do preenchimento da contagem física.
       </div>
 
       <table style="width:100%; border-collapse:collapse; margin:16px 0;">
         <thead>
-          <tr style="background:#F3F4F6; font-size:11px;">
-            <th style="border:1px solid #9CA3AF; padding:8px 10px; width:40px;">Item</th>
-            <th style="border:1px solid #9CA3AF; padding:8px 10px; text-align:left;">Descrição do Material / Especificação</th>
-            <th style="border:1px solid #9CA3AF; padding:8px 10px; width:50px;">Unid</th>
-            <th style="border:1px solid #9CA3AF; padding:8px 10px; width:120px; text-align:center;">Local Obra</th>
-            <th style="border:1px solid #9CA3AF; padding:8px 10px; width:110px; text-align:center;">Qtd Contada Físico</th>
+          <tr style="background:#f3f4f6; font-size:11px;">
+            <th style="border:1px solid #9ca3af; padding:8px 10px; width:40px;">Item</th>
+            <th style="border:1px solid #9ca3af; padding:8px 10px; text-align:left;">Descrição do Material / Especificação</th>
+            <th style="border:1px solid #9ca3af; padding:8px 10px; width:50px;">Unid</th>
+            <th style="border:1px solid #9ca3af; padding:8px 10px; width:120px; text-align:center;">Local Obra</th>
+            <th style="border:1px solid #9ca3af; padding:8px 10px; width:110px; text-align:center;">Qtd Contada Físico</th>
           </tr>
         </thead>
         <tbody id="printTableBody"></tbody>
       </table>
 
-      <div style="margin-top:20px; font-size:11px; color:#4B5563;">
+      <div style="margin-top:20px; font-size:11px; color:#4b5563;">
         <strong>Observações do Recebimento:</strong>
-        <div style="border-bottom:1px solid #D1D5DB; height:24px; margin-top:4px;"></div>
-        <div style="border-bottom:1px solid #D1D5DB; height:24px; margin-top:4px;"></div>
+        <div style="border-bottom:1px solid #d1d5db; height:24px; margin-top:4px;"></div>
+        <div style="border-bottom:1px solid #d1d5db; height:24px; margin-top:4px;"></div>
       </div>
 
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:40px; margin-top:40px; padding-top:10px;">
@@ -1250,6 +1259,71 @@
         <div style="border-top:1px solid #111827; padding-top:6px; text-align:center; font-size:11px; color:#374151;">
           <strong>Engenheiro / Almoxarife Responsável</strong><br>Visto e Homologação
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Histórico & Consultas (Supabase Cloud) -->
+  <div class="modal-overlay" id="historyModal">
+    <div class="modal-card" style="max-width: 980px;">
+      <div class="modal-header">
+        <div class="modal-title" style="display:flex; align-items:center; gap:8px;">
+          <span>📊 Histórico de Recebimentos & Auditoria Fiscal</span>
+          <span style="background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; font-size:0.72rem; font-weight:700; padding:2px 8px; border-radius:4px;">
+            Supabase PostgreSQL Cloud
+          </span>
+        </div>
+        <button onclick="fecharModalHistoricoBanco()" style="background:none; border:none; color:var(--text-muted); font-size:1.3rem; cursor:pointer;">&times;</button>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-row-light">
+        <div class="stat-card-light">
+          <h5>Total Registros</h5>
+          <p id="statTotalRec">0</p>
+        </div>
+        <div class="stat-card-light">
+          <h5>Concluídos 100%</h5>
+          <p id="statConcluidos" style="color: var(--success);">0</p>
+        </div>
+        <div class="stat-card-light">
+          <h5>Bloqueados na Doca</h5>
+          <p id="statBloqueados" style="color: var(--danger);">0</p>
+        </div>
+        <div class="stat-card-light">
+          <h5>Alçada Supervisor</h5>
+          <p id="statLiberados" style="color: var(--warning);">0</p>
+        </div>
+      </div>
+
+      <!-- Filtros e Busca -->
+      <div style="display:flex; gap:10px; margin-bottom:14px;">
+        <input type="text" id="filtroHistoricoInput" class="form-input" placeholder="Filtrar por NF, Fornecedor ou Pedido..." oninput="filtrarTabelaHistorico()" style="flex:1;">
+        <button class="btn-scan" onclick="carregarHistoricoDoBanco()" style="padding:0 16px;">🔄 Atualizar</button>
+        <button class="chip-btn" onclick="exportarHistoricoCsv()" style="background:#f1f5f9; color:#334155; padding:0 16px; font-weight:600;">📥 Exportar CSV</button>
+      </div>
+
+      <!-- Tabela de Histórico -->
+      <div class="table-light-container">
+        <table class="table-light">
+          <thead>
+            <tr>
+              <th>Data / Hora</th>
+              <th>Ação / Evento</th>
+              <th>Alvo (NF / Pedido)</th>
+              <th>Responsável</th>
+              <th>Status</th>
+              <th>Detalhes</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyHistoricoBanco">
+            <tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:24px;">Carregando histórico do banco...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; margin-top:16px;">
+        <button class="chip-btn" onclick="fecharModalHistoricoBanco()" style="padding:8px 18px;">Fechar</button>
       </div>
     </div>
   </div>
@@ -1322,6 +1396,7 @@
     let tentativaAtual = 1;
     let maxTentativas = 3;
     let notaTravada = false;
+    let historicoRegistros = [];
 
     function atualizarBadgePendencias() {
       document.getElementById('pendingCountBadge').innerText = filaPendencias.length;
@@ -1383,12 +1458,12 @@
     function renderDanfeSheet() {
       let rowsHtml = notaAtual.itens.map(item => `
         <tr>
-          <td>${item.cod}</td>
-          <td>${item.desc}</td>
-          <td class="ocr-mark" style="font-weight:700;">${item.qtdNfe}</td>
-          <td>${item.un}</td>
-          <td class="ocr-mark">R$ ${item.valorUnit.toFixed(2).replace('.', ',')}</td>
-          <td class="ocr-mark">R$ ${item.valorTotal.toFixed(2).replace('.', ',')}</td>
+          <td style="border:1px solid #111; padding:4px;">${item.cod}</td>
+          <td style="border:1px solid #111; padding:4px;">${item.desc}</td>
+          <td class="ocr-mark" style="border:1px solid #111; padding:4px; font-weight:700; text-align:center;">${item.qtdNfe}</td>
+          <td style="border:1px solid #111; padding:4px; text-align:center;">${item.un}</td>
+          <td class="ocr-mark" style="border:1px solid #111; padding:4px; text-align:right;">R$ ${item.valorUnit.toFixed(2).replace('.', ',')}</td>
+          <td class="ocr-mark" style="border:1px solid #111; padding:4px; text-align:right;">R$ ${item.valorTotal.toFixed(2).replace('.', ',')}</td>
         </tr>
       `).join('');
 
@@ -1399,7 +1474,7 @@
           <div class="danfe-grid-box">
             <div class="danfe-tag-title">EMITENTE</div>
             <div class="danfe-tag-val">${notaAtual.fornecedor}</div>
-            <div style="font-size:9px; color:#4B5563;">CNPJ: ${notaAtual.cnpj}</div>
+            <div style="font-size:9px; color:#4b5563;">CNPJ: ${notaAtual.cnpj}</div>
           </div>
           <div class="danfe-grid-box">
             <div class="danfe-tag-title">NF-e Nº</div>
@@ -1418,12 +1493,12 @@
           <div style="font-size:9px;">LOCAL DE ENTREGA: ${notaAtual.obra.toUpperCase()}</div>
         </div>
 
-        <div style="background:#E5E7EB; border:1px solid #111; padding:3px 6px; font-size:9px; font-weight:700;">
+        <div style="background:#e5e7eb; border:1px solid #111; padding:3px 6px; font-size:9px; font-weight:700;">
           DADOS DOS PRODUTOS (XML PARSEADO)
         </div>
         <table style="width:100%; border-collapse:collapse; border:1px solid #111; font-size:10px; margin-bottom:8px;">
           <thead>
-            <tr style="background:#F3F4F6;">
+            <tr style="background:#f3f4f6;">
               <th style="border:1px solid #111; padding:4px;">CÓD</th>
               <th style="border:1px solid #111; padding:4px; text-align:left;">DESCRIÇÃO</th>
               <th style="border:1px solid #111; padding:4px;">QTD</th>
@@ -1437,7 +1512,7 @@
 
         <div style="border:1px solid #111; padding:8px; display:flex; justify-content:space-between; align-items:center;">
           <span style="font-weight:700; font-size:10px;">TOTAL DA NOTA FISCAL:</span>
-          <span class="ocr-mark" style="font-weight:800; font-size:13px; color:#1D4ED8;">
+          <span class="ocr-mark" style="font-weight:800; font-size:13px; color:#1d4ed8;">
             R$ ${totalNf.toFixed(2).replace('.', ',')}
           </span>
         </div>
@@ -1449,7 +1524,7 @@
       tbody.innerHTML = notaAtual.itens.map((item, idx) => `
         <tr>
           <td>
-            <div style="font-weight:700; color:#fff;">${item.desc}</div>
+            <div style="font-weight:700; color:#0f172a;">${item.desc}</div>
             <div style="font-size:0.72rem; color:var(--text-muted);">Cód: ${item.cod} | Estocagem: ${item.local}</div>
           </td>
           <td><span style="font-family:'JetBrains Mono'; font-weight:600;">${item.un}</span></td>
@@ -1473,10 +1548,10 @@
 
       if (tol.status === 'ok') {
         badge.innerHTML = `<span class="badge-status badge-conferido">✓ ${tol.diff} Variação (Aprovado)</span>`;
-        card.style.borderColor = "rgba(16, 185, 129, 0.3)";
+        card.style.borderColor = "#bfdbfe";
       } else {
         badge.innerHTML = `<span class="badge-status badge-falta">⚠️ ${tol.diff} Variação (Excede Alçada)</span>`;
-        card.style.borderColor = "rgba(239, 68, 68, 0.4)";
+        card.style.borderColor = "#fca5a5";
       }
     }
 
@@ -1532,7 +1607,7 @@
           btnText.innerText = "Confirmar Recebimento & Liquidar no Sienge ERP (1 Clique)";
         } else {
           btnFinish.disabled = false;
-          btnFinish.style.background = "linear-gradient(135deg, #F59E0B, #D97706)";
+          btnFinish.style.background = "linear-gradient(135deg, #f59e0b, #d97706)";
           btnText.innerText = "Encaminhar para Alçada do Engenheiro (Divergência de Preço)";
         }
       } else {
@@ -1549,7 +1624,20 @@
     }
 
     function travarNotaPorDivergencia() {
-      // Salva no Supabase Cloud
+      notaTravada = true;
+      document.getElementById('dot3').className = "attempt-dot failed";
+      document.getElementById('attemptStatusText').innerText = "❌ BLOQUEIO: 3 tentativas de conferência física divergentes!";
+
+      document.getElementById('lockBanner').classList.add('active');
+      document.getElementById('blindCard').style.opacity = "0.5";
+      document.getElementById('blindCard').style.pointerEvents = "none";
+
+      const btnFinish = document.getElementById('btnFinish');
+      btnFinish.disabled = true;
+      btnFinish.style.background = "#94a3b8";
+      document.getElementById('btnFinishText').innerText = "🚫 NOTA TRAVADA: Notificação enviada a claudio.guidi@omnitradebrasil.com";
+
+      // Salva auditoria no Supabase
       salvarRecebimentoNoBanco({
         action: 'RECEBIMENTO_BLOQUEADO_DIVERGENCIA',
         numeroNf: notaAtual.numeroNfe,
@@ -1560,23 +1648,10 @@
         conferente: 'Conferente de Doca',
         itens: notaAtual.itens
       });
-      notaTravada = true;
-      document.getElementById('dot3').className = "attempt-dot failed";
-      document.getElementById('attemptStatusText').innerText = "❌ BLOQUEIO: 3 tentativas de conferência física divergentes!";
-
-      document.getElementById('lockBanner').classList.add('active');
-      document.getElementById('blindCard').style.opacity = "0.4";
-      document.getElementById('blindCard').style.pointerEvents = "none";
-
-      const btnFinish = document.getElementById('btnFinish');
-      btnFinish.disabled = true;
-      btnFinish.style.background = "#4B5563";
-      document.getElementById('btnFinishText').innerText = "🚫 NOTA TRAVADA: Notificação enviada a claudio.guidi@omnitradebrasil.com";
     }
 
     // AÇÃO 1: Próxima Nota sem travar a fila do recebimento
     function proximaNotaSemTravarFila() {
-      // Adiciona na fila de pendências
       let jaExiste = filaPendencias.find(p => p.numeroNfe === notaAtual.numeroNfe);
       if (!jaExiste) {
         filaPendencias.push({
@@ -1595,7 +1670,6 @@
       atualizarBadgePendencias();
       alert(`📦 Nota ${notaAtual.numeroNfe} movida para a 'Fila de Pendências'!\nO almoxarife pode prosseguir com a descarga do próximo caminhão.`);
 
-      // Carrega automaticamente a próxima nota de teste para o conferente não parar
       if (notaAtual.id === "cimento") {
         carregarExemplo("tinta");
       } else {
@@ -1617,10 +1691,10 @@
       const chkAjuste = document.getElementById('chkAjustarPedidoSienge').checked;
 
       let msgAjuste = chkAjuste 
-        ? "✓ PATCH /purchase-orders/8921/items: Quantidade do Pedido Sienge alterada de 500 para 490 SC para bater 100% com a carga física.\n"
+        ? "✓ PATCH /purchase-orders/8921/items: Quantidade do Pedido Sienge alterada de 500 para 490 SC para bater 100% com a carga física.
+"
         : "";
 
-      // Envia aprovação para Sienge e Supabase
       fetch('/api/sienge/aprovar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1644,11 +1718,10 @@
         itens: notaAtual.itens
       });
 
-      alert(`🔓 DESBLOQUEIO DE ALÇADA AUTORIZADO!\n\nSupervisor: ${email}\n${msgAjuste}✓ Nota Fiscal vinculada ao Pedido com ressalva.\n✓ Títulos gerados no Contas a Pagar do Sienge.\n✓ XML movido para XML_LIDOS.`);
+      alert(`🔓 DESBLOQUEIO DE ALÇADA AUTORIZADO!\n\nSupervisor: ${email}\n${msgAjuste}✓ Nota Fiscal vinculada ao Pedido com ressalva.\n✓ Títulos gerados no Contas a Pagar do Sienge.\n✓ XML movido para XML_LIDOS.\n✓ Auditoria salva no Supabase Cloud.`);
 
       fecharModalSupervisor();
 
-      // Remove da fila se estava nela
       filaPendencias = filaPendencias.filter(p => p.numeroNfe !== notaAtual.numeroNfe);
       atualizarBadgePendencias();
 
@@ -1666,15 +1739,15 @@
           <div class="pending-item-card">
             <div>
               <div style="display:flex; align-items:center; gap:8px;">
-                <strong style="color:#fff; font-size:0.95rem;">NF-e ${p.numeroNfe}</strong>
-                <span style="background:rgba(239,68,68,0.2); color:#FCA5A5; font-size:0.7rem; padding:2px 6px; border-radius:4px; font-weight:700;">TRAVADA</span>
+                <strong style="color:#0f172a; font-size:0.95rem;">NF-e ${p.numeroNfe}</strong>
+                <span style="background:#fee2e2; color:#b91c1c; font-size:0.7rem; padding:2px 6px; border-radius:4px; font-weight:700;">TRAVADA</span>
                 <span style="font-size:0.75rem; color:var(--text-muted);">${p.hora}</span>
               </div>
-              <div style="font-size:0.8rem; color:#BFDBFE; margin-top:2px;">${p.fornecedor} | ${p.pedidoSienge}</div>
-              <div style="font-size:0.75rem; color:#F87171; margin-top:4px;">⚠️ ${p.motivo}</div>
+              <div style="font-size:0.8rem; color:#1e40af; margin-top:2px;">${p.fornecedor} | ${p.pedidoSienge}</div>
+              <div style="font-size:0.75rem; color:#dc2626; margin-top:4px;">⚠️ ${p.motivo}</div>
             </div>
             <div style="display:flex; gap:8px;">
-              <button class="chip-btn" onclick="retomarNotaPendente('${p.numeroNfe}')" style="background:#2563EB; color:#fff; border:none; padding:8px 14px; font-weight:700;">
+              <button class="chip-btn" onclick="retomarNotaPendente('${p.numeroNfe}')" style="background:#2563eb; color:#fff; border:none; padding:8px 14px; font-weight:700;">
                 Retomar / Desbloquear
               </button>
             </div>
@@ -1704,8 +1777,6 @@
 
       btn.innerHTML = `<span class="pulse-dot"></span> 1. Movendo XML para XML_LIDOS... 2. Liquidando no Sienge...`;
 
-      setTimeout(() => {
-        // Salva no Supabase Cloud
       salvarRecebimentoNoBanco({
         action: 'RECEBIMENTO_CONCLUIDO',
         numeroNf: notaAtual.numeroNfe,
@@ -1717,12 +1788,12 @@
         itens: notaAtual.itens
       });
 
-      // Notifica movimentação de arquivo
       fetch('/api/xmls/mover-lido', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chave: notaAtual.chave }) }).catch(()=>{});
 
-      alert(`✅ SUCESSO TOTAL NA OPERAÇÃO!\n\n1. Arquivo XML movido para: C:\\D\\Omni\\XML_LIDOS\\2026-10\\${notaAtual.chave}.xml\n2. NF-e ${notaAtual.numeroNfe} vinculada ao Pedido ${notaAtual.pedidoSienge} no Sienge omnitrade.\n3. Saldo de compras baixado e estoque da Obra (${notaAtual.obra}) abastecido.\n4. Título gerado no Contas a Pagar.`);
+      setTimeout(() => {
+        alert(`✅ SUCESSO TOTAL NA OPERAÇÃO!\n\n1. Arquivo XML movido para: C:\\D\\Omni\\XML_LIDOS\\2026-10\\${notaAtual.chave}.xml\n2. NF-e ${notaAtual.numeroNfe} vinculada ao Pedido ${notaAtual.pedidoSienge} no Sienge omnitrade.\n3. Saldo de compras baixado e estoque da Obra (${notaAtual.obra}) abastecido.\n4. Título gerado no Contas a Pagar.\n5. Auditoria salva no Supabase PostgreSQL Cloud.`);
         btn.innerHTML = `✓ Concluído & Arquivado em XML_LIDOS (Sienge Doc #77821)`;
-        btn.style.background = "#059669";
+        btn.style.background = "#15803d";
       }, 1600);
     }
 
@@ -1738,7 +1809,7 @@
           <td style="text-align:center; font-weight:700;">${idx + 1}</td>
           <td>
             <strong>${item.desc}</strong><br>
-            <span style="font-size:10px; color:#4B5563;">Código Sienge: ${item.cod}</span>
+            <span style="font-size:10px; color:#4b5563;">Código Sienge: ${item.cod}</span>
           </td>
           <td style="text-align:center; font-weight:700;">${item.un}</td>
           <td style="text-align:center;">${item.local}</td>
@@ -1756,15 +1827,9 @@
       document.getElementById('printModal').classList.remove('active');
     }
 
-    // Inicialização
-    biparNota();
-  
     // =========================================================================
     // INTEGRAÇÃO REAL COM APIS SIENGE ERP E SUPABASE CLOUD
     // =========================================================================
-    let historicoRegistros = [];
-
-    // Checagem de Status Live
     async function checkSiengeStatus() {
       try {
         const res = await fetch('/api/sienge/status');
@@ -1776,7 +1841,6 @@
       } catch(e) {}
     }
 
-    // Salvar no Banco de Dados Supabase Cloud
     async function salvarRecebimentoNoBanco(payload) {
       try {
         await fetch('/api/recebimentos/salvar', {
@@ -1789,7 +1853,6 @@
       }
     }
 
-    // Modal de Histórico Banco
     function abrirModalHistoricoBanco() {
       document.getElementById('historyModal').classList.add('active');
       carregarHistoricoDoBanco();
@@ -1822,7 +1885,7 @@
 
         renderizarTabelaHistorico(historicoRegistros);
       } catch(e) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#EF4444; padding:24px;">Erro ao conectar ao banco: ' + e.message + '</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#dc2626; padding:24px;">Erro ao conectar ao banco: ' + e.message + '</td></tr>';
       }
     }
 
@@ -1838,7 +1901,7 @@
         let tagStatus = '<span class="badge-status badge-pendente">' + r.action + '</span>';
         if (r.action === 'RECEBIMENTO_CONCLUIDO') tagStatus = '<span class="badge-status badge-conferido">CONCLUÍDO 100%</span>';
         else if (r.action === 'RECEBIMENTO_BLOQUEADO_DIVERGENCIA') tagStatus = '<span class="badge-status badge-falta">BLOQUEADO</span>';
-        else if (r.action.includes('SUPERVISOR')) tagStatus = '<span class="badge-status badge-pendente" style="background:rgba(245,158,11,0.2); color:#FBBF24;">SUPERVISOR</span>';
+        else if (r.action.includes('SUPERVISOR')) tagStatus = '<span class="badge-status badge-pendente">SUPERVISOR</span>';
 
         return `
           <tr>
@@ -1895,7 +1958,6 @@
       a.click();
     }
 
-    // Consulta de Pedidos Reais no Sienge ERP
     async function consultarPedidosSiengeReal() {
       try {
         const res = await fetch('/api/sienge/purchase-orders?limit=5');
@@ -1914,7 +1976,6 @@
       }
     }
 
-    // Carregar da Pasta Física no Modo Local
     async function carregarXmlsPendentesServidor() {
       try {
         const res = await fetch('/api/xmls/pendentes');
@@ -2043,77 +2104,12 @@
       reader.readAsText(file);
     }
 
-    // Inicialização Adicional
+    // Inicialização
     window.addEventListener('DOMContentLoaded', () => {
       checkSiengeStatus();
     });
 
+    biparNota();
   </script>
-
-  <!-- MODAL: Histórico & Consultas (Supabase Cloud) -->
-  <div class="modal-overlay" id="historyModal">
-    <div class="modal-card" style="max-width: 980px;">
-      <div class="modal-header">
-        <div class="modal-title" style="display:flex; align-items:center; gap:8px;">
-          <span>📊 Histórico de Recebimentos & Auditoria Fiscal</span>
-          <span style="background:rgba(59,130,246,0.2); color:#93C5FD; font-size:0.72rem; font-weight:700; padding:2px 8px; border-radius:4px;">
-            Supabase PostgreSQL Cloud
-          </span>
-        </div>
-        <button onclick="fecharModalHistoricoBanco()" style="background:none; border:none; color:var(--text-muted); font-size:1.3rem; cursor:pointer;">&times;</button>
-      </div>
-
-      <!-- Stats Grid -->
-      <div class="stats-row-dark">
-        <div class="stat-card-dark">
-          <h5>Total Registros</h5>
-          <p id="statTotalRec">0</p>
-        </div>
-        <div class="stat-card-dark">
-          <h5>Concluídos 100%</h5>
-          <p id="statConcluidos" style="color: var(--success);">0</p>
-        </div>
-        <div class="stat-card-dark">
-          <h5>Bloqueados na Doca</h5>
-          <p id="statBloqueados" style="color: var(--danger);">0</p>
-        </div>
-        <div class="stat-card-dark">
-          <h5>Alçada Supervisor</h5>
-          <p id="statLiberados" style="color: var(--warning);">0</p>
-        </div>
-      </div>
-
-      <!-- Filtros e Busca -->
-      <div style="display:flex; gap:10px; margin-bottom:14px;">
-        <input type="text" id="filtroHistoricoInput" class="form-input" placeholder="Filtrar por NF, Fornecedor ou Pedido..." oninput="filtrarTabelaHistorico()" style="flex:1;">
-        <button class="btn-scan" onclick="carregarHistoricoDoBanco()" style="padding:0 16px;">🔄 Atualizar</button>
-        <button class="chip-btn" onclick="exportarHistoricoCsv()" style="background:#1E293B; color:#E2E8F0; padding:0 16px; font-weight:600;">📥 Exportar CSV</button>
-      </div>
-
-      <!-- Tabela de Histórico -->
-      <div class="table-dark-container">
-        <table class="table-dark">
-          <thead>
-            <tr>
-              <th>Data / Hora</th>
-              <th>Ação / Evento</th>
-              <th>Alvo (NF / Pedido)</th>
-              <th>Responsável</th>
-              <th>Status</th>
-              <th>Detalhes</th>
-            </tr>
-          </thead>
-          <tbody id="tbodyHistoricoBanco">
-            <tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:24px;">Carregando histórico do banco...</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div style="display:flex; justify-content:flex-end; margin-top:16px;">
-        <button class="chip-btn" onclick="fecharModalHistoricoBanco()" style="padding:8px 18px;">Fechar</button>
-      </div>
-    </div>
-  </div>
-
 </body>
 </html>
