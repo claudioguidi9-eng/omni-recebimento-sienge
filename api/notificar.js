@@ -163,26 +163,30 @@ module.exports = async (req, res) => {
   }
 
   // 3. Envio Real via SMTP (Google Workspace / Nodemailer)
-  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+  const smtpPass = process.env.SMTP_PASS;
+  if (smtpPass) {
+    const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
+    const smtpPort = parseInt(process.env.SMTP_PORT || '465');
+    const smtpUser = process.env.SMTP_USER || 'claudio.guidi@omnitradebrasil.com';
     try {
       const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: parseInt(process.env.SMTP_PORT || '587'),
-        secure: process.env.SMTP_PORT === '465',
+        host: smtpHost,
+        port: smtpPort,
+        secure: smtpPort === 465,
         auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS
+          user: smtpUser,
+          pass: smtpPass.replace(/\s+/g, '')
         }
       });
 
       const info = await transporter.sendMail({
-        from: process.env.EMAIL_FROM || `"OmniFiscal AI" <${process.env.SMTP_USER}>`,
+        from: process.env.EMAIL_FROM || `"OmniFiscal AI" <${smtpUser}>`,
         to: destinatario,
         subject: subject,
         html: html
       });
 
-      return res.status(200).json({ success: true, delivered: true, provider: 'smtp', messageId: info.messageId });
+      return res.status(200).json({ success: true, delivered: true, provider: 'smtp (Google Workspace)', messageId: info.messageId });
     } catch(err) {
       console.error('Erro SMTP:', err);
       return res.status(200).json({ success: true, delivered: false, provider: 'smtp', error: err.message });
