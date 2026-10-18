@@ -907,16 +907,22 @@
     </div>
   </header>
 
-  <!-- Folder Status Bar -->
+  <!-- Folder Status Bar Interativa -->
   <div class="folder-status-bar">
-    <div style="display:flex; align-items:center; gap:12px;">
-      <span>📂 Pasta de Entrada: <strong class="folder-tag">C:\D\Omni\XML_ENTRADA\</strong></span>
+    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+      <span>📂 Pasta de Entrada: <strong class="folder-tag" id="folderEntradaDisplay">C:\D\Omni\XML_ENTRADA\</strong></span>
       <span>➔</span>
-      <span>📦 Pasta de Arquivamento: <strong class="folder-tag">C:\D\Omni\XML_LIDOS\2026-10\</strong></span>
+      <span>📦 Arquivamento: <strong class="folder-tag" id="folderLidosDisplay">C:\D\Omni\XML_LIDOS\2026-10\</strong></span>
+      <button class="chip-btn" onclick="abrirModalPasta()" style="font-size:0.75rem; padding:4px 10px; display:inline-flex; align-items:center; gap:4px; font-weight:700; color:#1e40af; border-color:#93c5fd; background:#eff6ff;">
+        ⚙️ Selecionar / Alterar Pasta
+      </button>
     </div>
-    <div style="display:flex; align-items:center; gap:8px;">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <span id="badgeXmlCount" style="background:#e0f2fe; color:#0369a1; font-weight:700; font-size:0.75rem; padding:2px 8px; border-radius:12px; border:1px solid #bae6fd;">
+        📄 XMLs Prontos: <strong id="xmlCountNum">0</strong>
+      </span>
       <span style="color:#16a34a;">●</span>
-      <span>Supervisor Fiscal Configurado: <strong>claudio.guidi@omnitradebrasil.com</strong></span>
+      <span>Supervisor: <strong>claudio.guidi@omnitradebrasil.com</strong></span>
     </div>
   </div>
 
@@ -2057,6 +2063,93 @@
         alert('Pasta física disponível em modo local.');
       }
     }
+
+
+    // CONTROLE DE SELEÇÃO DINÂMICA DA PASTA DE XMLs
+    let pastaXmlEntrada = localStorage.getItem('omni_pasta_entrada') || 'C:\\D\\Omni\\XML_ENTRADA\\';
+    let pastaXmlLidos = localStorage.getItem('omni_pasta_lidos') || 'C:\\D\\Omni\\XML_LIDOS\\2026-10\\';
+    let xmlsCarregadosEmMemoria = [];
+
+    function abrirModalPasta() {
+      document.getElementById('inputCaminhoEntrada').value = pastaXmlEntrada;
+      document.getElementById('inputCaminhoLidos').value = pastaXmlLidos;
+      document.getElementById('feedbackPasta').style.display = 'none';
+      document.getElementById('folderModal').classList.add('active');
+    }
+
+    function fecharModalPasta() {
+      document.getElementById('folderModal').classList.remove('active');
+    }
+
+    function definirCaminhoSugerido(path) {
+      document.getElementById('inputCaminhoEntrada').value = path;
+    }
+
+    function salvarConfiguracaoPasta() {
+      pastaXmlEntrada = document.getElementById('inputCaminhoEntrada').value.trim() || 'C:\\D\\Omni\\XML_ENTRADA\\';
+      pastaXmlLidos = document.getElementById('inputCaminhoLidos').value.trim() || 'C:\\D\\Omni\\XML_LIDOS\\2026-10\\';
+
+      localStorage.setItem('omni_pasta_entrada', pastaXmlEntrada);
+      localStorage.setItem('omni_pasta_lidos', pastaXmlLidos);
+
+      document.getElementById('folderEntradaDisplay').innerText = pastaXmlEntrada;
+      document.getElementById('folderLidosDisplay').innerText = pastaXmlLidos;
+
+      // Avisar o backend se estiver rodando localmente
+      fetch('/api/xmls/configurar-pasta', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ caminhoEntrada: pastaXmlEntrada, caminhoLidos: pastaXmlLidos })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.total !== undefined) {
+          document.getElementById('xmlCountNum').innerText = data.total;
+          alert('Pasta configurada com sucesso! ' + data.total + ' arquivos XML encontrados em: ' + pastaXmlEntrada);
+        } else {
+          alert('Caminho salvo com sucesso: ' + pastaXmlEntrada);
+        }
+        fecharModalPasta();
+      })
+      .catch(() => {
+        alert('Caminho salvo no navegador: ' + pastaXmlEntrada);
+        fecharModalPasta();
+      });
+    }
+
+    // Leitura nativa de pasta via navegador (File System Directory)
+    function aoSelecionarPastaNavegador(event) {
+      const files = event.target.files;
+      if (!files || files.length === 0) return;
+
+      const xmlFiles = Array.from(files).filter(f => f.name.toLowerCase().endsWith('.xml'));
+      xmlsCarregadosEmMemoria = xmlFiles;
+
+      const pathAproximado = files[0].webkitRelativePath ? files[0].webkitRelativePath.split('/')[0] + '\\' : 'Pasta Selecionada\\';
+      document.getElementById('inputCaminhoEntrada').value = pathAproximado;
+
+      const fb = document.getElementById('feedbackPasta');
+      fb.style.display = 'block';
+      fb.style.background = '#dcfce7';
+      fb.style.border = '1px solid #86efac';
+      fb.style.color = '#15803d';
+      fb.innerHTML = '✓ <strong>' + xmlFiles.length + ' arquivos XML</strong> identificados e prontos para leitura na pasta!';
+
+      document.getElementById('xmlCountNum').innerText = xmlFiles.length;
+
+      // Se houver pelo menos 1 XML, já carrega o primeiro para conferência imediata
+      if (xmlFiles.length > 0) {
+        parseXmlFile(xmlFiles[0]);
+      }
+    }
+
+    // Inicializar visualização das pastas salvas
+    window.addEventListener('DOMContentLoaded', () => {
+      if (document.getElementById('folderEntradaDisplay')) {
+        document.getElementById('folderEntradaDisplay').innerText = pastaXmlEntrada;
+        document.getElementById('folderLidosDisplay').innerText = pastaXmlLidos;
+      }
+    });
 
     // Drag and Drop de XML
     const dropzone = document.getElementById('xmlDropzone');

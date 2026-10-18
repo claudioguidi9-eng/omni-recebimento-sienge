@@ -13,8 +13,8 @@ const SIENGE_BASE_URL = 'https://api.sienge.com.br/' + SIENGE_SUBDOMAIN + '/publ
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://cwukvxzdzellvbcacxyj.supabase.co';
 const SUPABASE_KEY = process.env.SUPABASE_KEY || 'sb_publishable_UllsGGPZ_8e1eBN4kXyLTw_Sa8OiHML';
 
-const DIR_PENDENTES = path.join(__dirname, 'XML_PENDENTES');
-const DIR_LIDOS = path.join(__dirname, 'XML_LIDOS');
+let DIR_PENDENTES = path.join(__dirname, 'XML_PENDENTES');
+let DIR_LIDOS = path.join(__dirname, 'XML_LIDOS');
 
 try {
   if (!fs.existsSync(DIR_PENDENTES)) fs.mkdirSync(DIR_PENDENTES, { recursive: true });
@@ -173,7 +173,40 @@ const handler = async (req, res) => {
     return;
   }
 
-  // 5. Listar XMLs Pendentes na Pasta Física ou Exemplos
+    // 5.1 Configurar Pasta de XMLs Dinâmica
+  if (pathname === '/api/xmls/configurar-pasta' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => {
+      try {
+        const payload = JSON.parse(body || '{}');
+        if (payload.caminhoEntrada) {
+          DIR_PENDENTES = payload.caminhoEntrada;
+          try {
+            if (!fs.existsSync(DIR_PENDENTES)) fs.mkdirSync(DIR_PENDENTES, { recursive: true });
+          } catch(e) {}
+        }
+        if (payload.caminhoLidos) {
+          DIR_LIDOS = payload.caminhoLidos;
+          try {
+            if (!fs.existsSync(DIR_LIDOS)) fs.mkdirSync(DIR_LIDOS, { recursive: true });
+          } catch(e) {}
+        }
+        let count = 0;
+        if (fs.existsSync(DIR_PENDENTES)) {
+          count = fs.readdirSync(DIR_PENDENTES).filter(f => f.endsWith('.xml')).length;
+        }
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ success: true, caminhoEntrada: DIR_PENDENTES, caminhoLidos: DIR_LIDOS, total: count }));
+      } catch(err) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+    return;
+  }
+
+// 5. Listar XMLs Pendentes na Pasta Física ou Exemplos
   if (pathname === '/api/xmls/pendentes') {
     try {
       let list = [];
