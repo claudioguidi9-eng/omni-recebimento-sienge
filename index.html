@@ -988,8 +988,8 @@
         <div>
           <div style="font-weight:800; font-size:0.95rem; color:#0f172a; display:flex; align-items:center; gap:8px;">
             <span>2. Conferência Física às Cegas & Alçada</span>
-            <span style="background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; font-size:0.72rem; font-weight:700; padding:3px 8px; border-radius:6px;" id="siengePoBadge">
-              Pedido Sienge: PO #8921
+            <span onclick="alterarPedidoSienge()" style="background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; font-size:0.75rem; font-weight:700; padding:3px 10px; border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; gap:5px;" id="siengePoBadge" title="Clique para alterar ou vincular o Pedido Sienge">
+              Pedido Sienge: PO #8921 <span style="font-size:10px; opacity:0.8;">✏️</span>
             </span>
           </div>
           <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
@@ -1431,7 +1431,7 @@
       atualizarTrackerTentativas();
 
       document.getElementById('danfeNumero').innerText = `NF-e ${notaAtual.numeroNfe}`;
-      document.getElementById('siengePoBadge').innerText = `Pedido Sienge: ${notaAtual.pedidoSienge}`;
+      document.getElementById('siengePoBadge').innerHTML = `Pedido Sienge: <strong>#${notaAtual.pedidoSienge}</strong> <span style="font-size:10px; opacity:0.8;">✏️</span>`;
       document.getElementById('obraName').innerText = notaAtual.obra;
 
       renderDanfeSheet();
@@ -2171,6 +2171,19 @@
       }
     }
 
+    function alterarPedidoSienge() {
+      const atual = notaAtual && notaAtual.pedidoSienge ? notaAtual.pedidoSienge : '';
+      const novoPedido = prompt('Informe o número do Pedido de Compra no Sienge ERP:', atual);
+      if (novoPedido && novoPedido.trim()) {
+        const clean = novoPedido.trim().replace(/^PO\s*#/i, '').replace(/^PED[-\s]*/i, '');
+        notaAtual.pedidoSienge = clean;
+        const elem = document.getElementById('siengePoBadge');
+        if (elem) elem.innerHTML = `Pedido Sienge: <strong>#${clean}</strong> <span style="font-size:10px; opacity:0.8;">✏️</span>`;
+        const printPo = document.getElementById('printPoNumber');
+        if (printPo) printPo.innerText = `PEDIDO SIENGE: #${clean}`;
+      }
+    }
+
     function parseXmlFile(file) {
       const reader = new FileReader();
       reader.onload = function(e) {
@@ -2184,9 +2197,33 @@
           if (!chave) chave = file.name.replace(/\D/g, '').slice(0, 44);
 
           const nNF = xmlDoc.querySelector('nNF') ? xmlDoc.querySelector('nNF').textContent : '000.088.192';
+          const serie = xmlDoc.querySelector('serie') ? xmlDoc.querySelector('serie').textContent : '1';
+          const dEmi = xmlDoc.querySelector('dhEmi') ? xmlDoc.querySelector('dhEmi').textContent.slice(0, 10) : (xmlDoc.querySelector('dEmi') ? xmlDoc.querySelector('dEmi').textContent.slice(0, 10) : new Date().toISOString().slice(0, 10));
           const xNome = xmlDoc.querySelector('emit > xNome') ? xmlDoc.querySelector('emit > xNome').textContent : 'FORNECEDOR XML CARREGADO';
           const cnpj = xmlDoc.querySelector('emit > CNPJ') ? xmlDoc.querySelector('emit > CNPJ').textContent : '00.000.000/0001-00';
-          const xPed = xmlDoc.querySelector('xPed') ? xmlDoc.querySelector('xPed').textContent : 'PO #8921';
+          
+          // Busca inteligente do Pedido de Compra:
+          // 1. Tag <xPed> em itens de produto
+          let xPed = '';
+          const xPedElem = xmlDoc.querySelector('xPed');
+          if (xPedElem && xPedElem.textContent.trim()) {
+            xPed = xPedElem.textContent.trim();
+          }
+
+          // 2. Se xPed estiver vazio ou genérico, buscar em <infCpl>, <infAdic> e texto completo
+          if (!xPed || xPed.startsWith('PO #')) {
+            const infCpl = xmlDoc.querySelector('infCpl') ? xmlDoc.querySelector('infCpl').textContent : '';
+            const infAdic = xmlDoc.querySelector('infAdic') ? xmlDoc.querySelector('infAdic').textContent : '';
+            const pool = infCpl + ' ' + infAdic + ' ' + xmlText;
+            const match = pool.match(/(?:PEDIDO|PO|PED|ORDEM|COMPRA|P\.C\.|O\.C\.)[\s#:\.-]*([0-9]{3,7})/i);
+            if (match && match[1]) {
+              xPed = match[1];
+            }
+          }
+
+          if (!xPed) {
+            xPed = '3513';
+          }
 
           const detElements = xmlDoc.querySelectorAll('det');
           const itens = [];
@@ -2213,6 +2250,8 @@
             id: 'xml_upload_' + Date.now(),
             chave: chave || '35261001637895000132550010000489121899210042',
             numeroNfe: nNF,
+            serie: serie,
+            dataEmissao: dEmi,
             fornecedor: xNome,
             cnpj: cnpj,
             obra: 'Residencial Grand Reserva - Torre A',
