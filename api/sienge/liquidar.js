@@ -106,6 +106,7 @@ module.exports = async (req, res) => {
     const cleanSerie = String(serieNf || '1').trim() || '1';
 
     const invoicePayload = {
+      notes: chaveNfe ? ('Chave NF-e: ' + chaveNfe + ' | Recebimento OmniFiscal AI') : 'Recebimento OmniFiscal AI',
       supplierId: poData.supplierId,
       number: cleanNfNum,
       series: cleanSerie,
@@ -114,6 +115,22 @@ module.exports = async (req, res) => {
       issueDate: issueDateStr,
       movementDate: new Date().toISOString().split('T')[0]
     };
+
+    // Verificar se já existe nota com esse número e fornecedor no Sienge para evitar rascunhos duplicados
+    const searchExisting = await siengeReq('GET', '/purchase-invoices?number=' + cleanNfNum + '&supplierId=' + poData.supplierId);
+    if (searchExisting.status === 200 && searchExisting.data && searchExisting.data.results && searchExisting.data.results.length > 0) {
+      const validInv = searchExisting.data.results.find(i => i.consistency === 'N' || i.itemsTotalAmount > 0);
+      if (validInv) {
+        res.status(200).json({
+          success: true,
+          alreadyDelivered: true,
+          message: 'A NF-e ' + cleanNfNum + ' já se encontra integrada no Sienge (Seq: ' + validInv.sequentialNumber + ', Total: R$ ' + validInv.itemsTotalAmount + ').',
+          sequentialNumber: validInv.sequentialNumber,
+          purchaseOrderId: poId
+        });
+        return;
+      }
+    }
 
     const invRes = await siengeReq('POST', '/purchase-invoices', invoicePayload);
     let sequentialNumber = invRes.data && invRes.data.sequentialNumber;

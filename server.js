@@ -99,6 +99,35 @@ const handler = async (req, res) => {
     return;
   }
 
+  // 2.1 Detalhes Completos e Itens de um Pedido de Compra do Sienge (Amarração NF-e)
+  if (pathname === '/api/sienge/purchase-order-details') {
+    const handler = require('./api/sienge/purchase-order-details.js');
+    req.query = Object.fromEntries(reqUrl.searchParams);
+    const mockRes = {
+      setHeader: (k, v) => res.setHeader(k, v),
+      status: (code) => {
+        res.statusCode = code;
+        return {
+          json: (data) => {
+            res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(JSON.stringify(data));
+          },
+          send: (data) => {
+            res.writeHead(code);
+            res.end(data);
+          }
+        };
+      }
+    };
+    try {
+      await handler(req, mockRes);
+    } catch(err) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: false, error: err.message }));
+    }
+    return;
+  }
+
   // 3. Salvar Recebimento no Supabase Cloud
   if (pathname === '/api/recebimentos/salvar' && req.method === 'POST') {
     let body = '';
