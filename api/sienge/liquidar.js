@@ -149,22 +149,36 @@ module.exports = async (req, res) => {
       }
     }
 
-    // 3. Obter itens e entregas agendadas do pedido
+    // 3. Obter itens e entregas agendadas do pedido (com suporte a Atendimento Parcial)
     const itemsRes = await siengeReq('GET', '/purchase-orders/' + poId + '/items');
     const poItems = (itemsRes.data && itemsRes.data.results) || [];
 
     const deliveriesOrder = [];
     for (const item of poItems) {
+      let targetQty = item.quantity || 1.0;
+
+      // Se itensRecebidos foi passado, busca quantidade faturada nesta NF-e
+      if (Array.isArray(body.itensRecebidos) && body.itensRecebidos.length > 0) {
+        const found = body.itensRecebidos.find(r => 
+          (r.cod && String(r.cod).trim() === String(item.resourceCode).trim()) ||
+          (r.itemNumber && r.itemNumber === item.itemNumber)
+        );
+        if (found && (found.qtdNfe || found.qtd)) {
+          targetQty = parseFloat(found.qtdNfe || found.qtd);
+        }
+      }
+
       const schedRes = await siengeReq('GET', `/purchase-orders/${poId}/items/${item.itemNumber}/delivery-schedules`);
       const schedules = (schedRes.data && schedRes.data.results) || [];
       if (schedules.length > 0) {
         for (const sc of schedules) {
-          const qty = (sc.openQuantity > 0) ? sc.openQuantity : (sc.sheduledQuantity || item.quantity || 1.0);
+          const maxOpen = (sc.openQuantity > 0) ? sc.openQuantity : (sc.sheduledQuantity || item.quantity || 1.0);
+          const finalDelivered = Math.min(targetQty, maxOpen);
           deliveriesOrder.push({
             purchaseOrderId: poId,
             itemNumber: item.itemNumber,
             deliveryScheduleNumber: sc.deliveryScheduleNumber || 1,
-            deliveredQuantity: qty
+            deliveredQuantity: finalDelivered
           });
         }
       } else {
@@ -172,7 +186,7 @@ module.exports = async (req, res) => {
           purchaseOrderId: poId,
           itemNumber: item.itemNumber,
           deliveryScheduleNumber: 1,
-          deliveredQuantity: item.quantity || 1.0
+          deliveredQuantity: targetQty
         });
       }
     }

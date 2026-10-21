@@ -235,8 +235,9 @@ const handler = async (req, res) => {
     return;
   }
 
-// 5. Listar XMLs Pendentes na Pasta Física ou Exemplos
+// 5. Listar XMLs Pendentes na Pasta Física ou Exemplos (com suporte a busca por NF)
   if (pathname === '/api/xmls/pendentes') {
+    const searchParam = String(reqUrl.searchParams.get('search') || reqUrl.searchParams.get('nf') || '').trim().replace(/^0+/, '');
     try {
       let list = [];
       if (fs.existsSync(DIR_PENDENTES)) {
@@ -268,7 +269,7 @@ const handler = async (req, res) => {
             nNF: nNF,
             emitente: emitente,
             vNF: vNF,
-            pedido: pedido || 'PED-2026-' + nNF,
+            pedido: pedido || '3513',
             sizeBytes: stats.size
           };
         });
@@ -304,6 +305,12 @@ const handler = async (req, res) => {
         ];
       }
 
+      if (searchParam) {
+        list = list.filter(f => {
+          const c = String(f.nNF || '').replace(/^0+/, '');
+          return c === searchParam || String(f.nNF).includes(searchParam) || String(f.chave).includes(searchParam) || String(f.filename).includes(searchParam);
+        });
+      }
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
       res.end(JSON.stringify({ total: list.length, files: list }));
     } catch (err) {
