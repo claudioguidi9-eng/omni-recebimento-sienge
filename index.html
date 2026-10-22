@@ -2250,6 +2250,11 @@
         };
       });
 
+      // Verificação se o pedido está em aprovação no Sienge ERP
+      const isEmAprovacao = (order.authorized === false) || 
+                            (order.consistent === "IN_INCLUSION") || 
+                            (order.status === "IN_APPROVAL" || order.status === "EM_APROVACAO");
+
       // Status Badge do Pedido
       let statusPoBadge = order.status || 'ABERTO';
       let statusPoBg = '#dbeafe';
@@ -2267,11 +2272,6 @@
         statusPoBg = '#fef3c7';
         statusPoColor = '#b45309';
       }
-
-      // Verificação se o pedido está em aprovação no Sienge ERP
-      const isEmAprovacao = (order.authorized === false) || 
-                            (order.consistent === "IN_INCLUSION") || 
-                            (order.status === "IN_APPROVAL" || order.status === "EM_APROVACAO");
 
       let warningBanner = '';
       if (isEmAprovacao) {
