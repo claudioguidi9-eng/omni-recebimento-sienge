@@ -6,6 +6,10 @@
   <title>OmniFiscal AI | Recebimento Cego, XML Inbox & Sienge ERP</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2563eb">
+  <link rel="icon" type="image/x-icon" href="/assets/omnitrade.ico">
+  <link rel="apple-touch-icon" href="/assets/omnitrade_logo_192.png">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -1206,10 +1210,15 @@
     </div>
 
     <div class="header-actions">
+        <!-- Botão Baixar Atalho Desktop -->
+        <button class="btn-pending-queue" style="border-color:#00ADEF; color:#38bdf8; background:rgba(0,173,239,0.18); font-weight:700; box-shadow:0 1px 6px rgba(0,173,239,0.25);" onclick="abrirModalAtalhoDesktop()" title="Baixar atalho oficial com ícone corporativo para a Área de Trabalho">
+          <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          <span>Baixar Atalho Desktop</span>
+        </button>
       <!-- Botão de Fila de Pendências -->
       <button class="btn-pending-queue" onclick="abrirModalPendencias()">
         <span>⚠️ Notas Pendentes</span>
-        <span class="badge-count" id="pendingCountBadge">1</span>
+        <span class="badge-count" id="pendingCountBadge">0</span>
       </button>
 
       <!-- Botão de Histórico Supabase -->
@@ -1269,7 +1278,7 @@
         </div>
 
         <div class="scanner-input-group">
-          <input type="text" id="chaveInput" class="scanner-input" placeholder="Bipe o código de barras ou digite a chave de 44 dígitos..." value="35261001637895000132550010000489121899210042">
+          <input type="text" id="chaveInput" class="scanner-input" placeholder="Bipe o código de barras ou digite a chave de 44 dígitos..." >
           <button class="btn-scan" onclick="biparNota()">
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             Bipar & Buscar XML
@@ -1287,6 +1296,10 @@
         </div>
 
         <div class="quick-chips">
+            <button class="chip-btn" onclick="limparTudoParaProducao()" title="Zerar tela e limpar dados para simulação real com a equipe" style="font-weight:700; color:#dc2626; border-color:#fca5a5; background:#fff1f2; padding:6px 12px; display:inline-flex; align-items:center; gap:6px;">
+              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              Zerar Tela (Modo Real)
+            </button>
           <span class="chip-label">Testar Bipagem Rápida:</span>
           <button class="chip-btn" onclick="carregarExemplo('cimento')">🟢 Cimento Votorantim (500 sc)</button>
           <button class="chip-btn" onclick="carregarExemplo('gerdau')">🟡 Aço Gerdau (Preço +10%)</button>
@@ -1489,7 +1502,92 @@
 
   
   <!-- MODAL: Tela do Pedido & Amarração XML x Pedido Sienge ERP -->
-  <div class="modal-overlay" id="poModal">
+  
+    <!-- MODAL: Baixar Atalho para o Desktop / Equipe -->
+    <div class="modal-overlay" id="modalAtalhoDesktop">
+      <div class="modal-card" style="max-width: 680px;">
+        <div class="modal-header" style="background: linear-gradient(135deg, #0b1329 0%, #1e293b 100%); color: white; border-bottom: 2px solid #2563eb; padding: 18px 24px; border-radius: 12px 12px 0 0;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="background: #2563eb; color: #ffffff; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(37,99,235,0.4);">
+              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            </div>
+            <div>
+              <div class="modal-title" style="color: white; font-size: 1.1rem; font-weight: 800; margin: 0;">Atalho Corporativo OmniFiscal AI</div>
+              <div style="font-size: 0.76rem; color: #94a3b8; margin-top: 2px;">Crie o atalho na Área de Trabalho com o logotipo oficial 3D em alta resolução</div>
+            </div>
+          </div>
+          <button class="chip-btn" onclick="fecharModalAtalhoDesktop()" style="color: white; border-color: #475569; background: rgba(255,255,255,0.08); padding: 4px 10px; font-size: 14px;">✕</button>
+        </div>
+
+        <div style="padding: 24px; max-height: calc(85vh - 120px); overflow-y: auto;">
+          <!-- Opção 1: Instalador Automático .BAT -->
+          <div style="background: linear-gradient(135deg, #0b1329 0%, #1e293b 100%); border: 1px solid #0284c7; border-radius: 12px; padding: 20px; margin-bottom: 18px; color: white;">
+            <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;">
+              <div style="flex: 1;">
+                <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(0, 173, 239, 0.2); border: 1px solid #00ADEF; color: #38bdf8; font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 4px; margin-bottom: 8px;">
+                  <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                  RECOMENDADO PARA COMPARTILHAR COM A EQUIPE
+                </div>
+                <h4 style="font-size: 15px; font-weight: 700; color: #ffffff; margin: 0 0 6px 0;">
+                  1. Baixar Instalador Automático (.bat)
+                </h4>
+                <p style="font-size: 12px; color: #cbd5e1; margin: 0 0 14px 0; line-height: 1.5;">
+                  Baixe o arquivo <strong>Criar_Atalho_OmniFiscal.bat</strong> e envie pelo WhatsApp, Teams ou Rede. Qualquer colaborador da empresa só precisa dar <strong>2 cliques</strong> nele para criar na hora o atalho oficial com o <strong>ícone corporativo 3D</strong> na Área de Trabalho do Windows (em janela de app nativo)!
+                </p>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                  <button onclick="baixarScriptInstaladorBat()" class="chip-btn" style="background: #2563eb; color: #ffffff; font-weight: 800; border: none; padding: 10px 18px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 2px 10px rgba(37, 99, 235, 0.4);">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Baixar Instalador (.bat)
+                  </button>
+                  <button onclick="baixarAtalhoUrlDireto()" class="chip-btn" style="background: rgba(255,255,255,0.1); border-color: #64748b; color: #e2e8f0; font-size: 12px; padding: 10px 16px;">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    Baixar Atalho Direto (.url)
+                  </button>
+                </div>
+              </div>
+              <div style="background: rgba(255,255,255,0.06); padding: 14px; border-radius: 10px; text-align: center; min-width: 105px;">
+                <img src="/assets/omnitrade_logo_256.png" style="width: 58px; height: 58px; object-fit: contain; margin-bottom: 4px;" alt="Logo Omnitrade">
+                <div style="font-size: 10px; color: #94a3b8; font-weight: 600;">Ícone Oficial 3D</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Opção 2: Instalar no Navegador (Edge / Chrome PWA) -->
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 18px;">
+            <div style="display: inline-flex; align-items: center; gap: 6px; background: #e0f2fe; color: #0369a1; font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 4px; margin-bottom: 8px;">
+              <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              INSTALAÇÃO DIRETA NESTE NAVEGADOR
+            </div>
+            <h4 style="font-size: 15px; font-weight: 700; color: #0f172a; margin: 0 0 6px 0;">
+              2. Instalar pelo Microsoft Edge ou Google Chrome (PWA)
+            </h4>
+            <p style="font-size: 12px; color: #64748b; margin: 0 0 12px 0; line-height: 1.5;">
+              Instale o sistema como um programa de computador no seu Windows:
+            </p>
+
+            <div style="margin-bottom: 12px;">
+              <button id="btn-pwa-install" class="chip-btn" onclick="executarInstalacaoPWA()" style="background: #0284c7; color: white; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border: none; border-radius: 8px;">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Instalar Aplicativo no Windows
+              </button>
+            </div>
+
+            <div style="background: white; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px 16px; font-size: 11.5px; color: #334155; line-height: 1.6;">
+              <div style="font-weight: 700; margin-bottom: 4px; color: #0f172a;">Ou faça em 3 cliques pelo menu do Edge / Chrome:</div>
+              1. Clique nos <strong>três pontinhos (...)</strong> no canto superior direito do navegador.<br>
+              2. Passe o mouse em <strong>Aplicativos (Apps)</strong> e selecione <strong>"Instalar este site como aplicativo"</strong>.<br>
+              3. Clique em <strong>Instalar</strong>. Pronto! O atalho com o ícone oficial será fixado no Windows.
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end;">
+            <button class="chip-btn" onclick="fecharModalAtalhoDesktop()" style="padding: 8px 18px; font-weight: 600;">Fechar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="poModal">
     <div class="po-modal-card">
       <div class="po-modal-header">
         <div>
@@ -1839,21 +1937,9 @@
     };
 
     // Fila de Notas Pendentes (Quarentena)
-    let filaPendencias = [
-      {
-        id: "pend_01",
-        numeroNfe: "000.033.411",
-        fornecedor: "TUBOS & CONEXÕES TIGRE S.A.",
-        chave: "42261001122334400019955001000033411122334455",
-        pedidoSienge: "3530",
-        obra: "Residencial Grand Reserva",
-        motivo: "Falta física de 15 Joelhos 90º na 3ª recontagem",
-        hora: "10:24",
-        exemploRef: "cimento"
-      }
-    ];
+    let filaPendencias = [];
 
-    let notaAtual = dadosExemplos.cimento;
+    let notaAtual = null;
     let tentativaAtual = 1;
     let maxTentativas = 3;
     let notaTravada = false;
@@ -2734,6 +2820,26 @@
 
       // Limpar cabeçalho e badges
       document.getElementById('danfeNumero').innerText = 'Aguardando Leitura de XML / NF-e';
+      // Renderizar estado limpo no DANFE
+      const danfeBox = document.getElementById('danfeHtmlBox');
+      if (danfeBox) {
+        danfeBox.innerHTML = `
+          <div style="padding: 48px 20px; text-align: center; color: #64748b;">
+            <div style="width: 56px; height: 56px; border-radius: 12px; background: #e0f2fe; color: #0284c7; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 14px;">
+              <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            </div>
+            <h3 style="font-size: 1.05rem; font-weight: 800; color: #0f172a; margin-bottom: 6px;">Pronto para Novo Recebimento Fiscal</h3>
+            <p style="font-size: 0.82rem; max-width: 440px; margin: 0 auto 16px auto; line-height: 1.5; color: #475569;">
+              Arraste e solte o arquivo <strong>XML da NF-e</strong> na área acima, bipe a chave de acesso ou pesquise pelo número da nota para iniciar a conferência cega.
+            </p>
+            <div style="display: inline-flex; align-items: center; gap: 8px; background: #f1f5f9; border: 1px solid #cbd5e1; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; color: #0369a1; font-weight: 600;">
+              <span style="width: 8px; height: 8px; background: #22c55e; border-radius: 50%; display: inline-block;"></span>
+              Conexão Ativa com Sienge ERP (omnitrade)
+            </div>
+          </div>
+        `;
+      }
+
       const poBadge = document.getElementById('siengePoBadge');
       if (poBadge) {
         poBadge.innerHTML = 'Pedido Sienge: <strong>--</strong> <span style="font-size:10px; opacity:0.8;">✏️</span>';
@@ -2818,7 +2924,16 @@
       if (textAtt) textAtt.innerText = 'Aguardando início da contagem física';
     }
 
-    function biparNota() {
+        function biparNota() {
+      if (!notaAtual) {
+        const chave = (document.getElementById('chaveInput') ? document.getElementById('chaveInput').value : '').trim();
+        if (chave) {
+          buscarPorNumeroNf();
+          return;
+        }
+        alert('Nenhuma nota fiscal carregada.\n\nPor favor, arraste o arquivo XML da NF-e ou utilize os exemplos de teste.');
+        return;
+      }
       tentativaAtual = 1;
       notaTravada = false;
       document.getElementById('lockBanner').classList.remove('active');
@@ -3787,8 +3902,88 @@
       checkSiengeStatus();
     });
 
-    biparNota();
+    // Inicio zerado pronto para producao
+      resetarTelaParaProximaNota();
   
-  </script>
+  
+    // --- Controle de Instalação e Modal Atalho Desktop ---
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const btn = document.getElementById('btn-pwa-install');
+      if (btn) {
+        btn.innerHTML = '<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Instalar Aplicativo Agora (1 Clique)';
+      }
+    });
+
+    function abrirModalAtalhoDesktop() {
+      const modal = document.getElementById('modalAtalhoDesktop');
+      if (modal) modal.classList.add('active');
+    }
+
+    function fecharModalAtalhoDesktop() {
+      const modal = document.getElementById('modalAtalhoDesktop');
+      if (modal) modal.classList.remove('active');
+    }
+
+    function baixarScriptInstaladorBat() {
+      const batText = `@echo off\r\nchcp 65001 >nul\r\ntitle Instalador do Atalho - OmniFiscal AI\r\n\r\necho ============================================================\r\necho      INSTALADOR DO ATALHO - OMNITRADE BRASIL\r\necho      OmniFiscal AI | Recebimento Cego & Sienge ERP\r\necho ============================================================\r\necho.\r\n\r\nset "DEST_DIR=%LOCALAPPDATA%\\Omnitrade"\r\nif not exist "%DEST_DIR%" mkdir "%DEST_DIR%"\r\n\r\nset "ICO_PATH=%DEST_DIR%\\omnitrade.ico"\r\nset "URL_PROD=https://omni-recebimento-sienge.vercel.app/"\r\nset "ICO_URL=https://omni-recebimento-sienge.vercel.app/assets/omnitrade.ico"\r\n\r\necho [1/3] Baixando icone corporativo oficial...\r\npowershell -NoProfile -ExecutionPolicy Bypass -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; (New-Object System.Net.WebClient).DownloadFile('%ICO_URL%', '%ICO_PATH%')"\r\n\r\nif not exist "%ICO_PATH%" (\r\n    echo [AVISO] Nao foi possivel baixar o icone online. Criando atalho padrao...\r\n) else (\r\n    echo [OK] Icone corporativo oficial instalado com sucesso!\r\n)\r\n\r\necho.\r\necho [2/3] Localizando Area de Trabalho...\r\nfor /f "usebackq tokens=*" %%A in (\`powershell -NoProfile -Command "[Environment]::GetFolderPath('Desktop')"\`) do set "DESKTOP_DIR=%%A"\r\n\r\nif "%DESKTOP_DIR%"=="" set "DESKTOP_DIR=%USERPROFILE%\\Desktop"\r\necho Destino: %DESKTOP_DIR%\r\n\r\necho.\r\necho [3/3] Criando atalho oficial na Area de Trabalho...\r\n\r\npowershell -NoProfile -ExecutionPolicy Bypass -Command ^\r\n  "$WshShell = New-Object -ComObject WScript.Shell; " ^\r\n  "$edge = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe'; " ^\r\n  "if (!(Test-Path $edge)) { $edge = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' }; " ^\r\n  "if (Test-Path $edge) { " ^\r\n  "  $sc = $WshShell.CreateShortcut('%DESKTOP_DIR%\\OmniFiscal AI - Recebimento Sienge.lnk'); " ^\r\n  "  $sc.TargetPath = $edge; " ^\r\n  "  $sc.Arguments = '--app=%URL_PROD%'; " ^\r\n  "  if (Test-Path '%ICO_PATH%') { $sc.IconLocation = '%ICO_PATH%,0' }; " ^\r\n  "  $sc.Description = 'OmniFiscal AI - Recebimento Cego e Sienge ERP - Omnitrade Brasil'; " ^\r\n  "  $sc.Save(); " ^\r\n  "} else { " ^\r\n  "  $sc = $WshShell.CreateShortcut('%DESKTOP_DIR%\\OmniFiscal AI - Recebimento Sienge.lnk'); " ^\r\n  "  $sc.TargetPath = '%URL_PROD%'; " ^\r\n  "  $sc.Save(); " ^\r\n  }"\r\n\r\n(\r\necho [InternetShortcut]\r\necho URL=%URL_PROD%\r\necho IconFile=%ICO_PATH%\r\necho IconIndex=0\r\n) > "%DESKTOP_DIR%\\OmniFiscal AI - Recebimento Sienge.url"\r\n\r\necho.\r\necho ============================================================\r\necho   ATALHO CRIADO COM SUCESSO NA AREA DE TRABALHO!\r\necho   Basta dar duplo clique em 'OmniFiscal AI - Recebimento Sienge'\r\necho ============================================================\r\necho.\r\npause\r\n`;
+
+      const blob = new Blob([batText], { type: 'application/x-bat;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'Criar_Atalho_OmniFiscal.bat';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      alert('Download do instalador "Criar_Atalho_OmniFiscal.bat" iniciado!\n\nEnvie para a equipe ou execute com 2 cliques para criar o atalho oficial na sua Área de Trabalho.');
+    }
+
+    function baixarAtalhoUrlDireto() {
+      const urlContent = `[InternetShortcut]\r\nURL=https://omni-recebimento-sienge.vercel.app/\r\nIconIndex=0\r\n`;
+      const blob = new Blob([urlContent], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'OmniFiscal AI - Recebimento Sienge.url';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    async function executarInstalacaoPWA() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const choice = await deferredPrompt.userChoice;
+        if (choice.outcome === 'accepted') {
+          alert('Aplicativo OmniFiscal AI instalado com sucesso no seu Windows!');
+          fecharModalAtalhoDesktop();
+        }
+        deferredPrompt = null;
+      } else {
+        alert("Para instalar direto pelo navegador:\n\n1. Clique no menu '...' no topo direito do Microsoft Edge ou Google Chrome;\n2. Passe o mouse em 'Aplicativos' (ou 'Apps') e clique em 'Instalar este site como aplicativo';\n3. Confirme em 'Instalar'.\n\nOu utilize a Opção 1 para baixar o instalador 'Criar_Atalho_OmniFiscal.bat'!");
+      }
+    }
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(err => {
+          console.warn('SW registration failed:', err);
+        });
+      });
+    }
+
+    function limparTudoParaProducao() {
+      resetarTelaParaProximaNota();
+      filaPendencias = [];
+      atualizarBadgePendencias();
+      alert('Ambiente pronto e 100% ZERADO para o teste real!\n\nAgora você pode arrastar o arquivo XML real da NF-e ou bipar com o leitor.');
+    }
+
+</script>
 </body>
 </html>

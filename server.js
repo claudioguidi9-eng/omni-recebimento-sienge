@@ -429,6 +429,28 @@ const handler = async (req, res) => {
     return;
   }
 
+    // 8.0 Servir arquivos estaticos (manifest.json, sw.js, assets/*)
+  if (pathname !== '/' && !pathname.startsWith('/api/')) {
+    const staticFile = path.join(__dirname, pathname);
+    if (fs.existsSync(staticFile) && fs.statSync(staticFile).isFile()) {
+      const ext = path.extname(staticFile).toLowerCase();
+      const mimeTypes = {
+        '.json': 'application/json; charset=utf-8',
+        '.js': 'application/javascript; charset=utf-8',
+        '.ico': 'image/x-icon',
+        '.png': 'image/png',
+        '.svg': 'image/svg+xml',
+        '.bat': 'application/x-bat',
+        '.url': 'text/plain; charset=utf-8',
+        '.html': 'text/html; charset=utf-8',
+        '.css': 'text/css; charset=utf-8'
+      };
+      res.writeHead(200, { 'Content-Type': mimeTypes[ext] || 'application/octet-stream' });
+      fs.createReadStream(staticFile).pipe(res);
+      return;
+    }
+  }
+
   // 8. Servir Frontend index.html em qualquer outra rota
   const indexPath = path.join(__dirname, 'index.html');
   if (fs.existsSync(indexPath)) {
