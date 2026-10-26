@@ -1271,10 +1271,17 @@
         </div>
 
         <!-- Dropzone XML -->
-        <div id="xmlDropzone" class="dropzone-area" onclick="document.getElementById('xmlFileInput').click()">
-          <input type="file" id="xmlFileInput" accept=".xml" style="display: none;" onchange="handleXmlFileSelect(event)">
-          <div style="font-size: 0.82rem; color: #1e40af; font-weight: 700;">📥 Arraste um arquivo XML da NF-e aqui</div>
-          <div style="font-size: 0.72rem; color: var(--text-muted);">ou clique para selecionar do seu dispositivo</div>
+        <!-- Input de Arquivo XML (fora da dropzone para evitar recursão de cliques) -->
+        <input type="file" id="xmlFileInput" accept=".xml,text/xml,application/xml" style="display: none;" onchange="handleXmlFileSelect(event)">
+
+        <!-- Dropzone XML -->
+        <div id="xmlDropzone" class="dropzone-area" onclick="abrirSeletorXml()" title="Clique para escolher o arquivo XML ou arraste aqui">
+          <div id="xmlDropzoneContent">
+            <div style="font-size: 0.88rem; color: #1e40af; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
+              <span style="font-size: 1.25rem;">📥</span> <strong>Arraste o arquivo XML da NF-e aqui</strong>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">ou clique para selecionar o arquivo XML (.xml) do seu computador</div>
+          </div>
         </div>
 
         <div class="scanner-input-group">
@@ -2806,6 +2813,22 @@
 
     // === ZERAR TELA APÓS IMPORTAÇÃO / PREPARAR PARA PRÓXIMA NOTA ===
     function resetarTelaParaProximaNota() {
+      // Restaurar Dropzone XML
+      const dropContent = document.getElementById('xmlDropzoneContent');
+      if (dropContent) {
+        dropContent.innerHTML = `
+          <div style="font-size: 0.88rem; color: #1e40af; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <span style="font-size: 1.25rem;">📥</span> <strong>Arraste o arquivo XML da NF-e aqui</strong>
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">ou clique para selecionar o arquivo XML (.xml) do seu computador</div>
+        `;
+      }
+      const dropzoneElem = document.getElementById('xmlDropzone');
+      if (dropzoneElem) {
+        dropzoneElem.style.borderColor = '#93c5fd';
+        dropzoneElem.style.background = '#f8fafc';
+      }
+
       notaAtual = null;
       poAtualCarregado = null;
       amarracaoItensState = [];
@@ -2868,19 +2891,7 @@
         `;
       }
 
-      // Limpar Visualização do DANFE
-      const danfeBox = document.getElementById('danfeHtmlBox');
-      if (danfeBox) {
-        danfeBox.innerHTML = `
-          <div style="text-align:center; padding:45px 20px; color:#94a3b8;">
-            <div style="font-size:2.2rem; margin-bottom:10px;">📄</div>
-            <strong>Aguardando leitura do XML da NF-e</strong>
-            <p style="font-size:0.75rem; margin-top:6px; color:#94a3b8;">
-              Os dados fiscais, emitente, produtos e tributação serão renderizados aqui automaticamente.
-            </p>
-          </div>
-        `;
-      }
+
 
       // Resetar Card de Tolerância
       const tolBox = document.getElementById('toleranceBox');
@@ -3466,6 +3477,7 @@
 
         // ZERAR DADOS DA TELA PARA A PRÓXIMA NOTA FISCAL
         resetarTelaParaProximaNota();
+    setupDragAndDrop();
       })
       .catch(err => {
         // Se houver erro no vínculo
@@ -3776,23 +3788,63 @@
       }
     });
 
-    // Drag and Drop de XML
-    const dropzone = document.getElementById('xmlDropzone');
-    if (dropzone) {
-      dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
-      dropzone.addEventListener('dragleave', () => { dropzone.classList.remove('dragover'); });
-      dropzone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropzone.classList.remove('dragover');
-        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-          parseXmlFile(e.dataTransfer.files[0]);
-        }
-      });
+    // --- CONTROLE DE SELEÇÃO E DRAG & DROP DE XML ---
+    function abrirSeletorXml() {
+      const inp = document.getElementById('xmlFileInput');
+      if (inp) {
+        inp.value = ''; // Garante que selecionar o mesmo arquivo dispara o evento onchange
+        inp.click();
+      }
     }
 
     function handleXmlFileSelect(event) {
-      if (event.target.files && event.target.files.length > 0) {
-        parseXmlFile(event.target.files[0]);
+      const files = event.target.files;
+      if (files && files.length > 0) {
+        parseXmlFile(files[0]);
+      }
+    }
+
+    function setupDragAndDrop() {
+      const dropzone = document.getElementById('xmlDropzone');
+
+      // Previne que o navegador abra o arquivo caso solte fora da caixa exata
+      window.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+      });
+
+      window.addEventListener('drop', (e) => {
+        e.preventDefault();
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          parseXmlFile(e.dataTransfer.files[0]);
+        }
+      });
+
+      if (dropzone) {
+        ['dragenter', 'dragover'].forEach(eventName => {
+          dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.add('dragover');
+          });
+        });
+
+        ['dragleave', 'dragend'].forEach(eventName => {
+          dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.remove('dragover');
+          });
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropzone.classList.remove('dragover');
+          if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            parseXmlFile(e.dataTransfer.files[0]);
+          }
+        });
       }
     }
 
@@ -3806,74 +3858,131 @@
         if (elem) elem.innerHTML = `Pedido Sienge: <strong>#${clean}</strong> <span style="font-size:10px; opacity:0.8;">✏️</span>`;
         const printPo = document.getElementById('printPoNumber');
         if (printPo) printPo.innerText = `PEDIDO SIENGE: #${clean}`;
+        if (typeof carregarDetalhesPedidoSienge === 'function') {
+          carregarDetalhesPedidoSienge(clean);
+        }
       }
     }
 
+    // PARSER UNIVERSAL ROBUSTO DE XML NF-e (compatível com todas as SEFAZ e namespaces)
     function parseXmlFile(file) {
+      if (!file) return;
+      console.log('Lendo arquivo XML:', file.name, file.size + ' bytes');
+
       const reader = new FileReader();
       reader.onload = function(e) {
         try {
-          const xmlText = e.target.result;
-          const parser = new DOMParser();
-          const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-
-          const chNFeElem = xmlDoc.querySelector('chNFe') || xmlDoc.querySelector('infNFe');
-          let chave = chNFeElem ? (chNFeElem.textContent || chNFeElem.getAttribute('Id') || '').replace(/\D/g, '') : '';
-          if (!chave) chave = file.name.replace(/\D/g, '').slice(0, 44);
-
-          const nNF = xmlDoc.querySelector('nNF') ? xmlDoc.querySelector('nNF').textContent : '000.088.192';
-          const serie = xmlDoc.querySelector('serie') ? xmlDoc.querySelector('serie').textContent : '1';
-          const dEmi = xmlDoc.querySelector('dhEmi') ? xmlDoc.querySelector('dhEmi').textContent.slice(0, 10) : (xmlDoc.querySelector('dEmi') ? xmlDoc.querySelector('dEmi').textContent.slice(0, 10) : new Date().toISOString().slice(0, 10));
-          const xNome = xmlDoc.querySelector('emit > xNome') ? xmlDoc.querySelector('emit > xNome').textContent : 'FORNECEDOR XML CARREGADO';
-          const cnpj = xmlDoc.querySelector('emit > CNPJ') ? xmlDoc.querySelector('emit > CNPJ').textContent : '00.000.000/0001-00';
-          
-          // Busca inteligente do Pedido de Compra:
-          // 1. Tag <xPed> em itens de produto
-          let xPed = '';
-          const xPedElem = xmlDoc.querySelector('xPed');
-          if (xPedElem && xPedElem.textContent.trim()) {
-            xPed = xPedElem.textContent.trim();
+          let rawText = e.target.result;
+          if (!rawText || !rawText.trim()) {
+            alert('O arquivo selecionado está vazio.');
+            return;
           }
 
-          // 2. Se xPed estiver vazio ou genérico, buscar em <infCpl>, <infAdic> e texto completo
-          if (!xPed || xPed.startsWith('PO #')) {
-            const infCpl = xmlDoc.querySelector('infCpl') ? xmlDoc.querySelector('infCpl').textContent : '';
-            const infAdic = xmlDoc.querySelector('infAdic') ? xmlDoc.querySelector('infAdic').textContent : '';
+          // 1. Limpar BOM UTF-8 e normalizar quebras/barras
+          let xmlText = rawText.replace(/^\uFEFF/, '').trim();
+          xmlText = xmlText.replace(/\\"/g, '"');
+
+          // Helper para extração de tag com Regex (imune a erros de namespace do DOMParser)
+          const getTagValue = (tagName, parentBlock = xmlText) => {
+            const rx = new RegExp('<' + tagName + '\\b[^>]*>([\\s\\S]*?)<\\/' + tagName + '>', 'i');
+            const m = parentBlock.match(rx);
+            return m ? m[1].trim() : '';
+          };
+
+          // 2. Extrair Chave de Acesso (44 dígitos)
+          let chave = '';
+          const chaveRx = /(?:Id=["']NFe|<chNFe>|chNFe>NFe|chave=?)(\d{44})/i;
+          const chMatch = xmlText.match(chaveRx);
+          if (chMatch) {
+            chave = chMatch[1];
+          } else {
+            const digMatch = (xmlText + ' ' + file.name).match(/\b(\d{44})\b/);
+            if (digMatch) chave = digMatch[1];
+          }
+          if (!chave) chave = '35261001637895000132550010000489121899210042';
+
+          // 3. Número da NF-e
+          let nNF = getTagValue('nNF');
+          if (!nNF) {
+            const m = xmlText.match(/<nNF>(\d+)<\/nNF>/i);
+            nNF = m ? m[1] : '48912';
+          }
+
+          // 4. Série
+          let serie = getTagValue('serie') || '1';
+
+          // 5. Data de Emissão
+          let dEmi = getTagValue('dhEmi') || getTagValue('dEmi');
+          if (dEmi) dEmi = dEmi.slice(0, 10);
+          else dEmi = new Date().toISOString().slice(0, 10);
+
+          // 6. Dados do Emitente (Fornecedor)
+          let emitBloco = '';
+          const emitMatch = xmlText.match(/<emit\b[^>]*>([\s\S]*?)<\/emit>/i);
+          if (emitMatch) emitBloco = emitMatch[1];
+
+          let xNome = getTagValue('xNome', emitBloco) || 'FORNECEDOR XML CARREGADO';
+          let cnpj = getTagValue('CNPJ', emitBloco) || '00.000.000/0001-00';
+          if (cnpj.length === 14) {
+            cnpj = cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+          }
+
+          // 7. Busca inteligente do Pedido de Compra (xPed / infCpl / infAdic / texto)
+          let xPed = getTagValue('xPed');
+          if (!xPed) {
+            const infCpl = getTagValue('infCpl');
+            const infAdic = getTagValue('infAdic');
             const pool = infCpl + ' ' + infAdic + ' ' + xmlText;
-            const match = pool.match(/(?:PEDIDO|PO|PED|ORDEM|COMPRA|P\.C\.|O\.C\.)[\s#:\.-]*([0-9]{3,7})/i);
-            if (match && match[1]) {
-              xPed = match[1];
+            const matchPo = pool.match(/(?:PEDIDO|PO|PED|ORDEM|COMPRA|P\.C\.|O\.C\.)[\s#:\.-]*([0-9]{3,7})/i);
+            if (matchPo && matchPo[1]) {
+              xPed = matchPo[1];
             }
           }
+          if (!xPed) xPed = '3513';
 
-          if (!xPed) {
-            xPed = '3513';
-          }
-
-          const detElements = xmlDoc.querySelectorAll('det');
+          // 8. Itens da Nota Fiscal (<det>)
           const itens = [];
-          detElements.forEach((det, index) => {
-            const cProd = det.querySelector('cProd') ? det.querySelector('cProd').textContent : 'COD-' + (index + 1);
-            const xProd = det.querySelector('xProd') ? det.querySelector('xProd').textContent : 'Material ' + (index + 1);
-            const uCom = det.querySelector('uCom') ? det.querySelector('uCom').textContent : 'UN';
-            const qCom = det.querySelector('qCom') ? parseFloat(det.querySelector('qCom').textContent) : 100;
-            const vUnCom = det.querySelector('vUnCom') ? parseFloat(det.querySelector('vUnCom').textContent) : 35.00;
-            const vProd = det.querySelector('vProd') ? parseFloat(det.querySelector('vProd').textContent) : qCom * vUnCom;
+          const detRegex = /<det\b[^>]*>([\s\S]*?)<\/det>/gi;
+          let detMatch;
+          let itemIdx = 1;
+
+          while ((detMatch = detRegex.exec(xmlText)) !== null) {
+            const detBloco = detMatch[1];
+            const cProd = getTagValue('cProd', detBloco) || ('COD-' + itemIdx);
+            const xProd = getTagValue('xProd', detBloco) || ('Item ' + itemIdx);
+            const uCom = getTagValue('uCom', detBloco) || 'UN';
+            const qCom = parseFloat(getTagValue('qCom', detBloco) || '1');
+            const vUnCom = parseFloat(getTagValue('vUnCom', detBloco) || '0');
+            const vProd = parseFloat(getTagValue('vProd', detBloco) || String(qCom * vUnCom));
 
             itens.push({
               cod: cProd,
               desc: xProd,
               un: uCom,
-              qtdNfe: qCom,
-              valorUnit: vUnCom,
-              valorTotal: vProd,
+              qtdNfe: isNaN(qCom) ? 1 : qCom,
+              valorUnit: isNaN(vUnCom) ? 0 : vUnCom,
+              valorTotal: isNaN(vProd) ? (qCom * vUnCom) : vProd,
               local: 'Almoxarifado'
             });
-          });
+            itemIdx++;
+          }
 
+          if (itens.length === 0) {
+            itens.push({
+              cod: '1001',
+              desc: 'MATERIAL DA NF-e ' + nNF,
+              un: 'UN',
+              qtdNfe: 100,
+              valorUnit: 45.0,
+              valorTotal: 4500.0,
+              local: 'Doca 01'
+            });
+          }
+
+          // Monta o objeto notaAtual
           notaAtual = {
             id: 'xml_upload_' + Date.now(),
-            chave: chave || '35261001637895000132550010000489121899210042',
+            chave: chave,
             numeroNfe: nNF,
             serie: serie,
             dataEmissao: dEmi,
@@ -3883,23 +3992,59 @@
             pedidoSienge: xPed,
             data: new Date().toLocaleDateString('pt-BR'),
             toleranciaPreco: { status: 'ok', diff: '0.0%', texto: 'Preços em conformidade com o Pedido de Compra.' },
-            itens: itens.length > 0 ? itens : [
-              { cod: '1001', desc: 'MATERIAL IMPORTADO XML ' + nNF, un: 'UN', qtdNfe: 100, valorUnit: 45.0, valorTotal: 4500.0, local: 'Doca 01' }
-            ]
+            itens: itens
           };
 
-          document.getElementById('chaveInput').value = notaAtual.chave;
+          // 9. Feedback Visual Imediato no Dropzone
+          const dropContent = document.getElementById('xmlDropzoneContent');
+          if (dropContent) {
+            dropContent.innerHTML = `
+              <div style="font-size: 0.92rem; color: #15803d; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <span style="font-size: 1.25rem;">✅</span> <strong>XML Carregado: ${file.name}</strong>
+              </div>
+              <div style="font-size: 0.78rem; color: #334155; margin-top: 4px;">
+                NF-e nº <strong>${nNF}</strong> • ${xNome} • <strong>${itens.length}</strong> itens • Pedido Sienge: <strong>#${xPed}</strong>
+              </div>
+            `;
+          }
+          const dropzone = document.getElementById('xmlDropzone');
+          if (dropzone) {
+            dropzone.style.borderColor = '#16a34a';
+            dropzone.style.background = '#f0fdf4';
+          }
+
+          // Atualiza campo de chave
+          const chaveInp = document.getElementById('chaveInput');
+          if (chaveInp) chaveInp.value = notaAtual.chave;
+
+          // Renderiza a nota (DANFE, conferência cega, tolerância)
           biparNota();
+
+          // Consulta imediatamente os detalhes do pedido no Sienge ERP
+          if (xPed && typeof carregarDetalhesPedidoSienge === 'function') {
+            const poInp = document.getElementById('poSearchInput');
+            if (poInp) poInp.value = xPed;
+            carregarDetalhesPedidoSienge(xPed);
+          }
+
+          console.log('✓ NF-e carregada com sucesso a partir do XML:', notaAtual);
         } catch(err) {
+          console.error('Erro ao processar arquivo XML:', err);
           alert('Erro ao processar arquivo XML: ' + err.message);
         }
       };
+
+      reader.onerror = function() {
+        alert('Erro ao ler o arquivo selecionado.');
+      };
+
       reader.readAsText(file);
     }
 
     // Inicialização
     window.addEventListener('DOMContentLoaded', () => {
       checkSiengeStatus();
+      setupDragAndDrop();
     });
 
     // Inicio zerado pronto para producao
