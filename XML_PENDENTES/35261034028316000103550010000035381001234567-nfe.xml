@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
+  <NFe>
+    <infNFe Id="NFe35261034028316000103550010000035381001234567" versao="4.00">
+      <ide>
+        <nNF>99120</nNF>
+        <serie>1</serie>
+        <dhEmi>2026-10-20T11:00:00-03:00</dhEmi>
+      </ide>
+      <emit>
+        <CNPJ>03289012000199</CNPJ>
+        <xNome>FORTBRAS SUPRIMENTOS E AUTOPECAS LTDA</xNome>
+        <xFant>FORTBRAS SUPRIMENTOS</xFant>
+      </emit>
+      <dest>
+        <CNPJ>34028316000103</CNPJ>
+        <xNome>OMNI TRADE BRASIL REVESTIMENTOS METALICOS LTDA</xNome>
+      </dest>
+      <det nItem="1">
+        <prod>
+          <cProd>PAR-HEX-M10</cProd>
+          <cEAN>7893456789012</cEAN>
+          <xProd>PARAFUSO SEXTAVADO ACO INOX M10X50</xProd>
+          <uCom>UN</uCom>
+          <qCom>1000.0000</qCom>
+          <vUnCom>1.8500</vUnCom>
+          <vProd>1850.00</vProd>
+        </prod>
+      </det>
+      <det nItem="2">
+        <prod>
+          <cProd>POR-AUT-M10</cProd>
+          <cEAN>7893456789013</cEAN>
+          <xProd>PORCA AUTO-TRAVANTE NYLON M10</xProd>
+          <uCom>UN</uCom>
+          <qCom>1000.0000</qCom>
+          <vUnCom>0.8235</vUnCom>
+          <vProd>823.54</vProd>
+        </prod>
+      </det>
+      <total>
+        <ICMSTot>
+          <vNF>2673.54</vNF>
+        </ICMSTot>
+      </total>
+      <infAdic>
+        <infCpl>Pedido Sienge ERP: 3538. Obra #1212 Comprador Jefferson Filho.</infCpl>
+      </infAdic>
+    </infNFe>
+  </NFe>
+</nfeProc>

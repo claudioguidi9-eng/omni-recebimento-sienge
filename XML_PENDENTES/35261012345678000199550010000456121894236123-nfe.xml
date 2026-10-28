@@ -1,29 +1,51 @@
-﻿<?xml version=" 1.0\ encoding=\UTF-8\?>
-<nfeProc xmlns=\http://www.portalfiscal.inf.br/nfe\ versao=\4.00\>
- <NFe>
- <infNFe Id=\NFe35261012345678000199550010000456121894236123\ versao=\4.00\>
- <ide>
- <nNF>45612</nNF>
- <serie>1</serie>
- <dhEmi>2026-10-15T09:30:00-03:00</dhEmi>
- </ide>
- <emit>
- <CNPJ>17227090000140</CNPJ>
- <xNome>GERDAU ACOMINAS S.A.</xNome>
- <xFant>GERDAU</xFant>
- </emit>
- <dest>
- <CNPJ>34028316000103</CNPJ>
- <xNome>OMNI TRADE BRASIL REVESTIMENTOS METALICOS LTDA</xNome>
- </dest>
- <total>
- <ICMSTot>
- <vNF>14500.00</vNF>
- </ICMSTot>
- </total>
- <infAdic>
- <infCpl>Pedido de Compra Sienge: PED-2026-8841. Local entrega: Obra Central SP.</infCpl>
- </infAdic>
- </infNFe>
- </NFe>
+<?xml version="1.0" encoding="UTF-8"?>
+<nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
+  <NFe>
+    <infNFe Id="NFe35261012345678000199550010000456121894236123" versao="4.00">
+      <ide>
+        <nNF>45612</nNF>
+        <serie>1</serie>
+        <dhEmi>2026-10-15T09:30:00-03:00</dhEmi>
+      </ide>
+      <emit>
+        <CNPJ>17227090000140</CNPJ>
+        <xNome>GERDAU ACOMINAS S.A.</xNome>
+        <xFant>GERDAU</xFant>
+      </emit>
+      <dest>
+        <CNPJ>34028316000103</CNPJ>
+        <xNome>OMNI TRADE BRASIL REVESTIMENTOS METALICOS LTDA</xNome>
+      </dest>
+      <det nItem="1">
+        <prod>
+          <cProd>ACO-CA50-10MM</cProd>
+          <cEAN>7891234567890</cEAN>
+          <xProd>VERGALHAO ACO CA-50 10MM BARRA 12M</xProd>
+          <uCom>KG</uCom>
+          <qCom>1500.0000</qCom>
+          <vUnCom>7.0000</vUnCom>
+          <vProd>10500.00</vProd>
+        </prod>
+      </det>
+      <det nItem="2">
+        <prod>
+          <cProd>ACO-CA50-12MM</cProd>
+          <cEAN>7891234567891</cEAN>
+          <xProd>VERGALHAO ACO CA-50 12.5MM BARRA 12M</xProd>
+          <uCom>KG</uCom>
+          <qCom>500.0000</qCom>
+          <vUnCom>8.0000</vUnCom>
+          <vProd>4000.00</vProd>
+        </prod>
+      </det>
+      <total>
+        <ICMSTot>
+          <vNF>14500.00</vNF>
+        </ICMSTot>
+      </total>
+      <infAdic>
+        <infCpl>Pedido de Compra Sienge: PED-2026-8841. Local entrega: Obra Central SP.</infCpl>
+      </infAdic>
+    </infNFe>
+  </NFe>
 </nfeProc>

@@ -1,29 +1,51 @@
-﻿<?xml version=\1.0\ encoding=\UTF-8\?>
-<nfeProc xmlns=\http://www.portalfiscal.inf.br/nfe\ versao=\4.00\>
- <NFe>
- <infNFe Id=\NFe35261098765432000188550010000881921498172635\ versao=\4.00\>
- <ide>
- <nNF>88192</nNF>
- <serie>1</serie>
- <dhEmi>2026-10-16T14:15:00-03:00</dhEmi>
- </ide>
- <emit>
- <CNPJ>01637795000132</CNPJ>
- <xNome>VOTORANTIM CIMENTOS S.A.</xNome>
- <xFant>VOTORANTIM</xFant>
- </emit>
- <dest>
- <CNPJ>34028316000103</CNPJ>
- <xNome>OMNI TRADE BRASIL REVESTIMENTOS METALICOS LTDA</xNome>
- </dest>
- <total>
- <ICMSTot>
- <vNF>19600.00</vNF>
- </ICMSTot>
- </total>
- <infAdic>
- <infCpl>Pedido de Compra Sienge: PED-2026-8910. Condicao 30 dias.</infCpl>
- </infAdic>
- </infNFe>
- </NFe>
+<?xml version="1.0" encoding="UTF-8"?>
+<nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
+  <NFe>
+    <infNFe Id="NFe35261098765432000188550010000881921498172635" versao="4.00">
+      <ide>
+        <nNF>88192</nNF>
+        <serie>1</serie>
+        <dhEmi>2026-10-16T14:15:00-03:00</dhEmi>
+      </ide>
+      <emit>
+        <CNPJ>01637795000132</CNPJ>
+        <xNome>VOTORANTIM CIMENTOS S.A.</xNome>
+        <xFant>VOTORANTIM</xFant>
+      </emit>
+      <dest>
+        <CNPJ>34028316000103</CNPJ>
+        <xNome>OMNI TRADE BRASIL REVESTIMENTOS METALICOS LTDA</xNome>
+      </dest>
+      <det nItem="1">
+        <prod>
+          <cProd>CIM-CP2-50</cProd>
+          <cEAN>7892345678901</cEAN>
+          <xProd>CIMENTO VOTORAN CP-II-F-32 SACO 50KG</xProd>
+          <uCom>SC</uCom>
+          <qCom>400.0000</qCom>
+          <vUnCom>36.5000</vUnCom>
+          <vProd>14600.00</vProd>
+        </prod>
+      </det>
+      <det nItem="2">
+        <prod>
+          <cProd>ARG-AC3-20</cProd>
+          <cEAN>7892345678902</cEAN>
+          <xProd>ARGAMASSA COLANTE AC-III CINZA 20KG</xProd>
+          <uCom>SC</uCom>
+          <qCom>200.0000</qCom>
+          <vUnCom>25.0000</vUnCom>
+          <vProd>5000.00</vProd>
+        </prod>
+      </det>
+      <total>
+        <ICMSTot>
+          <vNF>19600.00</vNF>
+        </ICMSTot>
+      </total>
+      <infAdic>
+        <infCpl>Ordem de Compra: PED-2026-8910. Carga paletizada.</infCpl>
+      </infAdic>
+    </infNFe>
+  </NFe>
 </nfeProc>

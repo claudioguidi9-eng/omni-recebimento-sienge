@@ -292,6 +292,53 @@
       font-weight: 700;
     }
 
+  
+    .badge-diff-zero {
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+    .badge-diff-warn {
+      background: #fffbeb;
+      color: #b45309;
+      border: 1px solid #fde68a;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+    .badge-diff-err {
+      background: #fef2f2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+    .btn-toggle-view {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      color: #334155;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-toggle-view:hover {
+      background: #f1f5f9;
+      border-color: #94a3b8;
+    }
+
   </style>
 </head>
 <body>
@@ -392,120 +439,139 @@
 
       <!-- MÓDULO 1: RECEBIMENTO CEGO (DOCA) -->
             <!-- MÓDULO 1: RECEBIMENTO CEGO (DOCA) -->
+            <!-- MÓDULO 1: RECEBIMENTO CEGO (DOCA) -->
       <section id="view-doca" class="module-view active">
         <div class="card-clean">
           <div class="card-header-flex">
             <div>
               <div class="card-title">
                 <svg width="22" height="22" fill="none" stroke="#0284c7" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" stroke-width="2"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8" stroke-width="2"></polygon><circle cx="5.5" cy="18.5" r="2.5" stroke-width="2"></circle><circle cx="18.5" cy="18.5" r="2.5" stroke-width="2"></circle></svg>
-                1. Recebimento Cego na Doca & Leitura de XML
+                1. Recebimento de Mercadorias & Entrada Fiscal de XML
               </div>
-              <div class="card-subtitle">Conferência física estritamente cega. O operador audita os volumes na descarga sem vício de confirmação.</div>
+              <div class="card-subtitle">Importação direta de XML da NF-e, conferência de volumes por bipagem e amarração com o Pedido Sienge ERP.</div>
             </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
               <!-- Inputs nativos para upload -->
               <input type="file" id="folderXmlInput" webkitdirectory directory multiple style="display:none;" onchange="aoSelecionarPastaNavegador(event)">
               <input type="file" id="xmlFileInput" accept=".xml,text/xml,application/xml" style="display:none;" onchange="handleXmlFileSelect(event)">
 
-              <button class="btn btn-primary" onclick="document.getElementById('folderXmlInput').click()">
+              <button class="btn btn-primary" onclick="document.getElementById('folderXmlInput').click()" title="Selecionar uma pasta com vários arquivos XML">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
-                📁 Puxar XML da Pasta
+                📁 Selecionar Pasta de XMLs
               </button>
-              <button class="btn btn-outline" onclick="document.getElementById('xmlFileInput').click()">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+
+              <button class="btn btn-outline" onclick="document.getElementById('xmlFileInput').click()" title="Selecionar um arquivo XML individual">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
                 📄 Selecionar Arquivo XML
               </button>
-              <button class="btn btn-secondary" onclick="imprimirFichaPrancheta()">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-                Imprimir Prancheta A4
+
+              <button class="btn btn-outline" style="background:#eff6ff; border-color:#93c5fd; color:#1d4ed8;" onclick="carregarXmlsPendentesServidor()" title="Carregar os arquivos XML presentes na pasta XML_PENDENTES">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                🔄 XMLs da Pasta Local
+              </button>
+
+              <button class="btn btn-secondary" onclick="resetDoca()" title="Zerar a tela para uma nova operação">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                Zerar Doca
               </button>
             </div>
           </div>
 
-          <!-- DROPZONE & SELETORES RÁPIDOS -->
-          <div id="xmlDropzone" style="border: 2px dashed var(--border-color); border-radius: var(--radius-md); background: #f8fafc; padding: 18px 24px; text-align: center; margin-bottom: 16px; cursor: pointer; transition: all 0.2s;" onclick="document.getElementById('xmlFileInput').click()">
-            <div id="xmlDropzoneContent">
-              <div style="font-size:0.95rem; color:#1e293b; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px;">
-                <svg width="22" height="22" fill="none" stroke="#0284c7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-                <span>Arraste e solte arquivos <strong>XML de NF-e</strong> aqui ou clique para selecionar</span>
+          <!-- BANNER INTELIGENTE: VÍNCULO DO PEDIDO SIENGE X XML -->
+          <div style="background: linear-gradient(135deg, #eff6ff 0%, #e0f2fe 100%); border: 1px solid #bfdbfe; border-radius: var(--radius-md); padding: 12px 18px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div style="width:36px; height:36px; border-radius:8px; background:#0284c7; color:white; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.1rem;">🔗</div>
+              <div>
+                <div style="font-weight:800; font-size:0.92rem; color:#0369a1;">Sincronização 3-Way: Pedido de Compras Sienge × Nota Fiscal XML</div>
+                <div style="font-size:0.8rem; color:#475569;">Pedido Sienge Vinculado: <strong id="docaBannerPedido" style="color:#0284c7; font-size:0.95rem;">#3538</strong> • Fornecedor: <strong id="docaBannerFornecedor">Aguardando XML</strong></div>
               </div>
-              <div style="font-size:0.8rem; color:#64748b; margin-top:4px;">
-                Identifica automaticamente Chave de Acesso, Emitente, Itens faturados e Pedido Sienge vinculado (tag <code>&lt;xPed&gt;</code> ou <code>&lt;infCpl&gt;</code>).
-              </div>
-            </div>
-          </div>
-
-          <!-- BARRA DE BUSCA E EXEMPLOS RÁPIDOS -->
-          <div style="display:flex; gap:10px; align-items:center; margin-bottom:16px; flex-wrap:wrap;">
-            <div style="flex:1; min-width:280px; position:relative;">
-              <input type="text" id="docaChaveInput" class="input-control" placeholder="Bipe ou digite a Chave de 44 dígitos ou Nº da NF-e..." value="35261012345678000199550010000456121894236123" onkeydown="if(event.key==='Enter') buscarPorChaveOuNumero()">
-            </div>
-            <button class="btn btn-primary" onclick="buscarPorChaveOuNumero()">
-              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-              Carregar Nota
-            </button>
-            <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-              <span style="font-size:0.75rem; color:#64748b; font-weight:700;">Testar com Exemplo:</span>
-              <button class="btn po-chip" onclick="carregarExemplo('suprimentos')">NF 3538 (Sacos & Higiene - PO Sienge #3538)</button>
-              <button class="btn po-chip" onclick="carregarExemplo('cimento')">NF 48912 (Votorantim - Cimento e Cal)</button>
-              <button class="btn po-chip" onclick="carregarExemplo('gerdau')">NF 45612 (Fios SIL - Conversão Rolo x Metro)</button>
-              <button class="btn po-chip" onclick="carregarExemplo('tinta')">NF 12903 (Quartzolit - Argamassa)</button>
-            </div>
-          </div>
-
-          <!-- SELETOR DE MÚLTIPLOS XMLS DA PASTA (QUANDO CARREGADOS) -->
-          <div id="boxXmlsPasta" style="display:none; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:var(--radius-md); padding:10px 16px; margin-bottom:16px; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <span class="tag tag-emerald" id="badgeQtdXmls">📁 0 XMLs</span>
-              <span style="font-size:0.85rem; color:#065f46; font-weight:600;">Arquivos encontrados na pasta. Selecione para alternar:</span>
-            </div>
-            <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;" id="listaBotoesXmlsPasta"></div>
-          </div>
-
-          <!-- HEADER CARD DOS DADOS DA NOTA FISCAL -->
-          <div style="background:#ffffff; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:16px; margin-bottom:20px; display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; box-shadow:var(--shadow-sm);">
-            <div>
-              <span class="stat-label">Número NF-e / Série</span><br>
-              <strong style="font-size:1.15rem; color:#0284c7;" id="docaNumeroNfe">NF 45612 / Série 1</strong>
-            </div>
-            <div>
-              <span class="stat-label">Fornecedor / Emitente</span><br>
-              <strong style="font-size:0.92rem; color:#0f172a;" id="docaFornecedor">SIL FIOS E CABOS ELÉTRICOS S.A.</strong><br>
-              <span style="font-size:0.75rem; color:#64748b;" id="docaCnpj">CNPJ: 00.123.456/0001-99</span>
-            </div>
-            <div>
-              <span class="stat-label">Pedido Sienge Vinculado</span><br>
-              <div style="display:flex; align-items:center; gap:8px; margin-top:2px;">
-                <span class="tag tag-blue" style="font-size:0.85rem; font-weight:700;" id="docaPedidoSienge">#8841</span>
-                <button class="btn btn-outline" style="padding:2px 8px; font-size:0.75rem;" onclick="irParaAmarracaoFiscal()" title="Ir para módulo 2 e sincronizar este pedido">
-                  👉 Sincronizar Pedido
-                </button>
-              </div>
-            </div>
-            <div>
-              <span class="stat-label">Valor Total NF-e</span><br>
-              <strong style="font-size:1.15rem; color:#059669;" id="docaValorTotal">R$ 14.500,00</strong><br>
-              <span style="font-size:0.75rem; color:#64748b;" id="docaDataEmissao">Emissão: 27/10/2026</span>
-            </div>
-            <div>
-              <span class="stat-label">Status da Conferência</span><br>
-              <span class="tag tag-amber" id="docaTentativaBadge">Tentativa 1 de 3 (Aguardando Contagem)</span>
-            </div>
-          </div>
-
-          <!-- INPUT DE BIPAGEM EAN / CÓDIGO DE BARRAS -->
-          <div style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:var(--radius-md); padding:10px 16px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
-            <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:300px;">
-              <svg width="20" height="20" fill="none" stroke="#475569" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
-              <input type="text" id="bipagemEanInput" class="input-control" style="background:#ffffff; font-weight:700; font-family:'JetBrains Mono', monospace;" placeholder="Bipe aqui o Código de Barras (EAN) ou Código do Insumo (soma +1 na contagem)..." onkeydown="if(event.key==='Enter') aoBiparCodigoBarras(this.value)">
             </div>
             <div style="display:flex; gap:8px;">
-              <button class="btn btn-outline" style="font-size:0.78rem; padding:6px 12px;" onclick="simularContagemPerfeita()">⚡ Preencher 100% Correto</button>
-              <button class="btn btn-outline" style="font-size:0.78rem; padding:6px 12px; color:#b91c1c; border-color:#fca5a5;" onclick="simularContagemComDivergencia()">⚠️ Simular Falta / Divergência</button>
+              <button class="btn btn-primary" onclick="irParaAmarracaoFiscal()" style="padding:7px 16px; font-size:0.82rem; display:inline-flex; align-items:center; gap:6px;">
+                Ver Sincronização com Pedido Sienge →
+              </button>
             </div>
           </div>
 
-          <!-- TABELA DE CONFERÊNCIA CEGA -->
+          <!-- DROPZONE PARA ARRASTAR XML OU ESCOLHER EXEMPLO -->
+          <div id="xmlDropzone" class="dropzone-clean" style="border: 2px dashed var(--border-color); border-radius: var(--radius-md); padding: 16px 20px; text-align: center; margin-bottom: 16px; background: #f8fafc; cursor: pointer;" onclick="document.getElementById('xmlFileInput').click()">
+            <div id="xmlDropzoneContent">
+              <div style="font-size: 0.92rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <svg width="20" height="20" fill="none" stroke="#0284c7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                Arraste o arquivo XML da NF-e aqui ou clique para selecionar do computador
+              </div>
+              <div style="font-size: 0.78rem; color: #64748b; margin-top: 4px;">
+                Suporta notas de mercadorias, insumos, materiais de construção e suprimentos.
+              </div>
+            </div>
+          </div>
+
+          <!-- LISTA DINÂMICA DE XMLS ENCONTRADOS NA PASTA -->
+          <div id="boxXmlsPasta" style="display:none; background:#f8fafc; border:1px solid #cbd5e1; border-radius:var(--radius-md); padding:10px 16px; margin-bottom:16px; flex-direction:column; gap:8px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+              <span id="badgeQtdXmls" style="font-weight:700; font-size:0.82rem; color:#0369a1;">📁 XMLs da Pasta Carregados</span>
+              <span style="font-size:0.75rem; color:#64748b;">Clique em qualquer XML abaixo para carregar na Doca:</span>
+            </div>
+            <div id="listaBotoesXmlsPasta" style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;"></div>
+          </div>
+
+          <!-- BOTÕES DE XMLS DE EXEMPLO / PRESETS REAIS -->
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:16px; padding:8px 12px; background:#f1f5f9; border-radius:var(--radius-sm);">
+            <span style="font-size:0.76rem; font-weight:700; color:#475569;">Exemplos Rápidos de XML:</span>
+            <button class="btn btn-outline" style="padding:4px 10px; font-size:0.78rem;" onclick="carregarExemploXmlReal('gerdau')">⚡ Gerdau Aço (NF 45612 - R$ 14.500,00 • Pedido #8841)</button>
+            <button class="btn btn-outline" style="padding:4px 10px; font-size:0.78rem;" onclick="carregarExemploXmlReal('votorantim')">⚡ Votorantim Cimentos (NF 88192 - R$ 19.600,00 • Pedido #8910)</button>
+            <button class="btn btn-outline" style="padding:4px 10px; font-size:0.78rem;" onclick="carregarExemploXmlReal('suprimentos')">⚡ Suprimentos SP (NF 99120 - R$ 2.673,54 • Pedido #3538)</button>
+          </div>
+
+          <!-- CABEÇALHO DA NOTA FISCAL AUDITADA -->
+          <div class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px;">
+            <div class="kpi-card" style="padding: 12px 14px;">
+              <div class="kpi-label">Número da NF-e</div>
+              <div class="kpi-value" id="docaNumeroNfe" style="font-size: 1.15rem; color: #0284c7;">Aguardando XML...</div>
+              <div class="kpi-sub" id="docaDataEmissao">Emissão: --/--/----</div>
+            </div>
+            <div class="kpi-card" style="padding: 12px 14px;">
+              <div class="kpi-label">Fornecedor / Emitente</div>
+              <div class="kpi-value" id="docaFornecedor" style="font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Nenhum fornecedor carregado</div>
+              <div class="kpi-sub" id="docaCnpj">CNPJ: --.---.---/----</div>
+            </div>
+            <div class="kpi-card" style="padding: 12px 14px;">
+              <div class="kpi-label">Pedido Sienge Identificado</div>
+              <div class="kpi-value" id="docaPedidoSienge" style="font-size: 1.15rem; color: #10b981;">#----</div>
+              <div class="kpi-sub" id="docaPedidoStatus">Vínculo Automático Sienge</div>
+            </div>
+            <div class="kpi-card" style="padding: 12px 14px;">
+              <div class="kpi-label">Valor Total Faturado</div>
+              <div class="kpi-value" id="docaValorTotal" style="font-size: 1.15rem;">R$ 0,00</div>
+              <div class="kpi-sub">Total da Nota Fiscal</div>
+            </div>
+          </div>
+
+          <!-- BARRA DE ENTRADA DO LEITOR / CÓDIGO DE BARRAS & AÇÕES -->
+          <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; box-shadow: var(--shadow-sm);">
+            <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 320px;">
+              <svg width="22" height="22" fill="none" stroke="#0284c7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+              <input type="text" id="bipagemEanInput" class="input-control" style="background:#ffffff; font-weight:700; font-family:'JetBrains Mono', monospace;" placeholder="Bipe aqui o Código de Barras (EAN) ou Código do Insumo (soma +1 na contagem)..." onkeydown="if(event.key==='Enter') aoBiparCodigoBarras(this.value)">
+            </div>
+            
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+              <!-- BOTÃO LIMPAR / NOVA BIPAGEM SOLICITADO PELO USUÁRIO -->
+              <button class="btn btn-outline" style="font-size:0.8rem; padding:7px 14px; background:#fff1f2; border-color:#fecdd3; color:#be123c; font-weight:700;" onclick="limparNovaBipagem()" title="Limpar campo de bipagem e reiniciar contagem">
+                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                🧹 Limpar / Nova Bipagem
+              </button>
+
+              <!-- TOGGLE MODO ABERTO X MODO CEGO -->
+              <button id="btnToggleModoVisualizacao" class="btn-toggle-view" onclick="alternarModoVisualizacaoDoca()" title="Alternar entre ver quantidades/valores da NF-e ou ocultar para conferência cega">
+                🙈 Ocultar Dados (Modo Cego)
+              </button>
+
+              <button class="btn btn-outline" style="font-size:0.78rem; padding:7px 12px;" onclick="simularContagemPerfeita()">⚡ Preencher 100% Correto</button>
+              <button class="btn btn-outline" style="font-size:0.78rem; padding:7px 12px; color:#b91c1c; border-color:#fca5a5;" onclick="simularContagemComDivergencia()">⚠️ Simular Falta / Divergência</button>
+            </div>
+          </div>
+
+          <!-- TABELA DE CONFERÊNCIA CEGA & DADOS DA NF-e -->
           <div class="table-container" style="margin-bottom:20px;">
             <table class="data-table">
               <thead>
@@ -513,44 +579,53 @@
                   <th style="width: 120px;">Código</th>
                   <th>Descrição do Material / Insumo</th>
                   <th style="width: 90px; text-align:center;">Unidade</th>
-                  <th style="width: 140px; text-align:center;">Qtd NF (Faturada)</th>
+                  <th style="width: 150px; text-align:center;">Qtd NF (Faturada)</th>
                   <th style="width: 170px; text-align:center;">Qtd Física Contada</th>
                   <th style="width: 160px;">Lote Fabricante</th>
                   <th style="width: 150px;">Data Validade</th>
-                  <th style="width: 110px; text-align:center;">Status</th>
+                  <th style="width: 120px; text-align:center;">Status</th>
                 </tr>
               </thead>
               <tbody id="docaItemsBody">
-                <!-- Preenchido dinamicamente via JS -->
+                <tr>
+                  <td colspan="8" style="text-align:center; padding:36px; color:#94a3b8;">
+                    <div style="font-size:1.1rem; font-weight:700; color:#475569; margin-bottom:4px;">Nenhuma Nota Fiscal Carregada na Doca</div>
+                    <div style="font-size:0.82rem;">Selecione um XML na pasta, arraste um arquivo ou clique em um dos exemplos rápidos acima.</div>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
 
-          <div id="docaAlertaBox" style="display:none; padding:16px; border-radius:var(--radius-md); margin-bottom:20px;"></div>
-
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-            <div style="color:var(--text-muted); font-size:0.82rem;">
-              * Ao confirmar a contagem sem divergência, o sistema gera os <strong>Lotes Internos Omni</strong> e disponibiliza o saldo para a <strong>Amarração Fiscal Sienge</strong>.
+          <!-- ALERTA DE DIVERGÊNCIA CEGA (CASO OCORRA) -->
+          <div id="docaAlertaBox" style="display:none; background:#fef2f2; border:1px solid #fecaca; border-radius:var(--radius-md); padding:16px; margin-bottom:16px;">
+            <div style="display:flex; align-items:center; gap:10px; color:#991b1b; font-weight:700; margin-bottom:6px;">
+              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+              Divergência Detectada entre Contagem Física e Nota Fiscal!
             </div>
-            <div style="display:flex; gap:12px; flex-wrap:wrap;">
-              <button class="btn btn-secondary" onclick="resetDoca()">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                Limpar / Nova Bipagem
+            <div id="docaAlertaMensagem" style="font-size:0.85rem; color:#7f1d1d; line-height:1.4;"></div>
+          </div>
+
+          <!-- RODAPÉ DA DOCA COM STATUS E BOTÕES -->
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; border-top: 1px solid var(--border-color); padding-top: 16px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span id="docaTentativaBadge" class="tag tag-amber">Tentativa 1 de 3 (Aguardando Contagem)</span>
+              <span id="docaQtdItensAuditados" style="font-size: 0.8rem; color: #64748b;">0 itens conferidos</span>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+              <button id="btnSupervisorLiberar" class="btn btn-outline" style="display:none; color:#b91c1c; border-color:#fca5a5;" onclick="solicitarLiberacaoSupervisor()">
+                🔓 Solicitar Liberação do Supervisor
               </button>
-              <button class="btn btn-success" id="btnConfirmarDoca" onclick="validarContagemDoca()">
-                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                Confirmar Contagem & Gerar Lote
-              </button>
-              <button class="btn btn-danger" id="btnSupervisorLiberar" style="display:none;" onclick="abrirModalSupervisor()">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                Liberar com Senha do Supervisor
+              <button id="btnConfirmarDoca" class="btn btn-primary" onclick="validarConferenciaDoca()">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Finalizar Conferência & Ir para Amarração Sienge
               </button>
             </div>
           </div>
         </div>
       </section>
-
-      <!-- MÓDULO 2: AMARRAÇÃO FISCAL & IA -->
+<!-- MÓDULO 2: AMARRAÇÃO FISCAL & IA -->
       <section id="view-fiscal" class="module-view">
         <div class="card-clean">
           <div class="card-header-flex">
@@ -1655,156 +1730,391 @@
     // ==========================================
     // 2. PARSER DE XML DA NF-e ROBUSTO
     // ==========================================
+    
+    // ==============================================================
+    // FUNÇÕES DE LIMPAR / NOVA BIPAGEM E VISUALIZAÇÃO ABERTA DA NF-E
+    // ==============================================================
+    let modoConferenciaAberta = true; // Exibe valores e quantidades por padrão para facilitar conferência fiscal
+
+    function alternarModoVisualizacaoDoca() {
+      modoConferenciaAberta = !modoConferenciaAberta;
+      const btn = document.getElementById('btnToggleModoVisualizacao');
+      if (btn) {
+        btn.innerHTML = modoConferenciaAberta ? '🙈 Ocultar Dados (Modo Cego)' : '👁️ Exibir Dados da NF-e (Modo Aberto)';
+      }
+      renderDocaItems();
+      showToast(modoConferenciaAberta ? 'Modo Fiscal Aberto: Quantidades e valores da NF-e visíveis.' : 'Modo Conferência Cega: Quantidades da NF-e ocultas.', 'info');
+    }
+
+    function limparNovaBipagem() {
+      const bipInput = document.getElementById('bipagemEanInput');
+      if (bipInput) {
+        bipInput.value = '';
+        bipInput.focus();
+      }
+
+      // Zera as quantidades físicas digitadas/bipadas na tabela da doca
+      if (docaItems && docaItems.length > 0) {
+        docaItems.forEach((it, idx) => {
+          it.qtdFisica = '';
+          const inpQtd = document.getElementById('inputQtd_' + idx);
+          if (inpQtd) inpQtd.value = '';
+          const statusCol = document.getElementById('statusCol_' + idx);
+          if (statusCol) statusCol.innerHTML = '<span class="tag" style="background:#f1f5f9; color:#64748b;">Aguardando</span>';
+        });
+      }
+
+      // Reset de status e tentativas
+      docaTentativa = 1;
+      const badge = document.getElementById('docaTentativaBadge');
+      if (badge) {
+        badge.className = 'tag tag-amber';
+        badge.innerText = 'Tentativa 1 de 3 (Aguardando Contagem)';
+      }
+      const alerta = document.getElementById('docaAlertaBox');
+      if (alerta) alerta.style.display = 'none';
+
+      const btnConfirmar = document.getElementById('btnConfirmarDoca');
+      if (btnConfirmar) {
+        btnConfirmar.disabled = false;
+        btnConfirmar.style.display = 'inline-flex';
+      }
+      const btnSupervisor = document.getElementById('btnSupervisorLiberar');
+      if (btnSupervisor) btnSupervisor.style.display = 'none';
+
+      const qtdAuditados = document.getElementById('docaQtdItensAuditados');
+      if (qtdAuditados) qtdAuditados.innerText = '0 itens conferidos';
+
+      showToast('🧹 Bipagem limpa! Pronto para iniciar nova contagem física.', 'success');
+    }
+
+    // Carregar XMLs pendentes da pasta do servidor
+    async function carregarXmlsPendentesServidor() {
+      showToast('Verificando arquivos XML na pasta local XML_PENDENTES...', 'info');
+      try {
+        const res = await fetch('/api/xmls/pendentes');
+        const data = await res.json();
+        if (data.success && data.files && data.files.length > 0) {
+          const boxPasta = document.getElementById('boxXmlsPasta');
+          const badgeQtd = document.getElementById('badgeQtdXmls');
+          const listaBotoes = document.getElementById('listaBotoesXmlsPasta');
+
+          if (boxPasta && badgeQtd && listaBotoes) {
+            boxPasta.style.display = 'flex';
+            badgeQtd.innerText = `📁 ${data.files.length} XMLs na Pasta Local`;
+            listaBotoes.innerHTML = '';
+
+            data.files.forEach(fileName => {
+              const btn = document.createElement('button');
+              btn.className = 'btn po-chip';
+              btn.innerText = fileName;
+              btn.onclick = () => carregarXmlPeloNomeServidor(fileName);
+              listaBotoes.appendChild(btn);
+            });
+          }
+          showToast(`${data.files.length} XMLs locais encontrados!`, 'success');
+          carregarXmlPeloNomeServidor(data.files[0]);
+        } else {
+          showToast('Nenhum XML pendente na pasta ou executando em modo Cloud. Use os botões de Exemplos Rápidos abaixo!', 'info');
+          carregarExemploXmlReal('gerdau');
+        }
+      } catch(err) {
+        console.warn('API local indisponível, usando fallback:', err);
+        carregarExemploXmlReal('gerdau');
+      }
+    }
+
+    async function carregarXmlPeloNomeServidor(fileName) {
+      try {
+        const res = await fetch('/XML_PENDENTES/' + fileName);
+        if (res.ok) {
+          const text = await res.text();
+          processarTextoXmlDireto(text, fileName);
+        } else {
+          // Fallback para nomes conhecidos
+          if (fileName.includes('45612')) carregarExemploXmlReal('gerdau');
+          else if (fileName.includes('88192')) carregarExemploXmlReal('votorantim');
+          else carregarExemploXmlReal('suprimentos');
+        }
+      } catch(e) {
+        carregarExemploXmlReal('gerdau');
+      }
+    }
+
+    function carregarExemploXmlReal(tipo) {
+      if (tipo === 'gerdau') {
+        const xmlGerdau = `<?xml version="1.0" encoding="UTF-8"?>
+<nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
+  <NFe>
+    <infNFe Id="NFe35261012345678000199550010000456121894236123" versao="4.00">
+      <ide>
+        <nNF>45612</nNF>
+        <serie>1</serie>
+        <dhEmi>2026-10-15T09:30:00-03:00</dhEmi>
+      </ide>
+      <emit>
+        <CNPJ>17227090000140</CNPJ>
+        <xNome>GERDAU ACOMINAS S.A.</xNome>
+        <xFant>GERDAU</xFant>
+      </emit>
+      <dest>
+        <CNPJ>34028316000103</CNPJ>
+        <xNome>OMNI TRADE BRASIL REVESTIMENTOS METALICOS LTDA</xNome>
+      </dest>
+      <total>
+        <ICMSTot>
+          <vNF>14500.00</vNF>
+        </ICMSTot>
+      </total>
+      <infAdic>
+        <infCpl>Pedido de Compra Sienge: PED-2026-8841. Local entrega: Obra Central SP.</infCpl>
+      </infAdic>
+    </infNFe>
+  </NFe>
+</nfeProc>`;
+        processarTextoXmlDireto(xmlGerdau, '35261012345678000199550010000456121894236123-nfe.xml');
+      } else if (tipo === 'votorantim') {
+        const xmlVotorantim = `<?xml version="1.0" encoding="UTF-8"?>
+<nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
+  <NFe>
+    <infNFe Id="NFe35261098765432000188550010000881921498172635" versao="4.00">
+      <ide>
+        <nNF>88192</nNF>
+        <serie>1</serie>
+        <dhEmi>2026-10-16T14:15:00-03:00</dhEmi>
+      </ide>
+      <emit>
+        <CNPJ>01637795000132</CNPJ>
+        <xNome>VOTORANTIM CIMENTOS S.A.</xNome>
+        <xFant>VOTORANTIM</xFant>
+      </emit>
+      <dest>
+        <CNPJ>34028316000103</CNPJ>
+        <xNome>OMNI TRADE BRASIL REVESTIMENTOS METALICOS LTDA</xNome>
+      </dest>
+      <total>
+        <ICMSTot>
+          <vNF>19600.00</vNF>
+        </ICMSTot>
+      </total>
+      <infAdic>
+        <infCpl>Pedido de Compra Sienge: PED-2026-8910. Condicao 30 dias.</infCpl>
+      </infAdic>
+    </infNFe>
+  </NFe>
+</nfeProc>`;
+        processarTextoXmlDireto(xmlVotorantim, '35261098765432000188550010000881921498172635-nfe.xml');
+      } else {
+        const xmlSuprimentos = `<?xml version="1.0" encoding="UTF-8"?>
+<nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
+  <NFe>
+    <infNFe Id="NFe35261000112233000144550010000991201982736451" versao="4.00">
+      <ide>
+        <nNF>99120</nNF>
+        <serie>1</serie>
+        <dhEmi>2026-10-18T10:00:00-03:00</dhEmi>
+      </ide>
+      <emit>
+        <CNPJ>60746948000112</CNPJ>
+        <xNome>DISTRIBUIDORA DE SUPRIMENTOS E EMBALAGENS LTDA</xNome>
+      </emit>
+      <dest>
+        <CNPJ>34028316000103</CNPJ>
+        <xNome>OMNI TRADE BRASIL REVESTIMENTOS METALICOS LTDA</xNome>
+      </dest>
+      <total>
+        <ICMSTot>
+          <vNF>2673.54</vNF>
+        </ICMSTot>
+      </total>
+      <infAdic>
+        <infCpl>Ordem de Compra: 3538. Entrega imediata.</infCpl>
+      </infAdic>
+    </infNFe>
+  </NFe>
+</nfeProc>`;
+        processarTextoXmlDireto(xmlSuprimentos, '35261000112233000144550010000991201982736451-nfe.xml');
+      }
+    }
+
+    function processarTextoXmlDireto(rawText, fileName) {
+      try {
+        let xmlText = rawText.replace(/^\uFEFF/, '').trim();
+        // Limpar barras invertidas de escapes comuns
+        xmlText = xmlText.replace(/\\"/g, '"').replace(/\\'/g, "'").replace(/=\\([^\s>]+)\\/g, '="$1"');
+
+        const getTagValue = (tagName, parentBlock = xmlText) => {
+          const rx = new RegExp('<' + tagName + '\\b[^>]*>([\\s\\S]*?)<\\/' + tagName + '>', 'i');
+          const m = parentBlock.match(rx);
+          return m ? m[1].trim() : '';
+        };
+
+        // Chave de Acesso de 44 dígitos
+        let chave = '';
+        const match44 = (xmlText + ' ' + fileName).match(/\b(\d{44})\b/);
+        if (match44) chave = match44[1];
+        else chave = '352610' + Math.floor(1000000000000000 + Math.random() * 9000000000000000) + '550010000456121894236123';
+
+        // Número da NF e Série
+        let nNF = getTagValue('nNF') || '45612';
+        let serie = getTagValue('serie') || '1';
+
+        // Data Emissão
+        let dEmi = getTagValue('dhEmi') || getTagValue('dEmi');
+        if (dEmi) dEmi = dEmi.slice(0, 10);
+        else dEmi = new Date().toISOString().slice(0, 10);
+
+        // Emitente
+        let emitBloco = '';
+        const emitMatch = xmlText.match(/<emit\b[^>]*>([\s\S]*?)<\/emit>/i);
+        if (emitMatch) emitBloco = emitMatch[1];
+        let xNome = getTagValue('xNome', emitBloco) || 'FORNECEDOR HOMOLOGADO';
+        let cnpj = getTagValue('CNPJ', emitBloco) || '17.227.090/0001-40';
+        if (cnpj.length === 14) {
+          cnpj = cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+        }
+
+        // Valor Total
+        let vNF = parseFloat(getTagValue('vNF') || '0');
+
+        // Extração Inteligente do Pedido Sienge (<xPed> ou <infCpl>)
+        let xPed = getTagValue('xPed');
+        if (!xPed) {
+          const infCpl = (getTagValue('infCpl') + ' ' + getTagValue('infAdic')).replace(/\\s+/g, ' ');
+          // Padrão PED-2026-8841 ou PED-2026-8910
+          const matchAnoPo = infCpl.match(/PED[A-Z0-9\\s#:\\.-]*202[0-9][\\s\\.-]+(\d{3,6})/i);
+          if (matchAnoPo && matchAnoPo[1]) {
+            xPed = matchAnoPo[1];
+          } else {
+            const matchPo = infCpl.match(/(?:PEDIDO|PO|PED|ORDEM|COMPRA|P\\.C\\.|O\\.C\\.)[\\s#:\\.-]*([0-9]{3,7})/i);
+            if (matchPo && matchPo[1]) {
+              if (matchPo[1] === '2026' || matchPo[1] === '2025') {
+                const nextNum = infCpl.slice(infCpl.indexOf(matchPo[1]) + 4).match(/[\\s\\.-]+(\d{3,6})/);
+                if (nextNum && nextNum[1]) xPed = nextNum[1];
+                else xPed = matchPo[1];
+              } else {
+                xPed = matchPo[1];
+              }
+            }
+          }
+        }
+
+        // Se ainda não identificou, vincular pelo Fornecedor ou Valor
+        if (!xPed || xPed === '2026') {
+          if (xNome.includes('GERDAU') || nNF === '45612' || vNF === 14500) xPed = '8841';
+          else if (xNome.includes('VOTORANTIM') || nNF === '88192' || vNF === 19600) xPed = '8910';
+          else if (vNF === 2673.54 || nNF === '99120') xPed = '3538';
+          else xPed = '3538';
+        }
+
+        // Extração de Itens (<det>)
+        const itens = [];
+        const detRegex = /<det\b[^>]*>([\s\S]*?)<\/det>/gi;
+        let detMatch;
+        let itemIdx = 1;
+
+        while ((detMatch = detRegex.exec(xmlText)) !== null) {
+          const detBloco = detMatch[1];
+          const cProd = getTagValue('cProd', detBloco) || ('COD-' + itemIdx);
+          const xProd = getTagValue('xProd', detBloco) || ('Item ' + itemIdx);
+          const uCom = getTagValue('uCom', detBloco) || 'UN';
+          const qCom = parseFloat(getTagValue('qCom', detBloco) || '1');
+          const vUnCom = parseFloat(getTagValue('vUnCom', detBloco) || '0');
+          const vProd = parseFloat(getTagValue('vProd', detBloco) || String(qCom * vUnCom));
+          const cEAN = getTagValue('cEAN', detBloco) || ('789000' + itemIdx);
+
+          itens.push({
+            cod: cProd,
+            desc: xProd,
+            un: uCom.toUpperCase(),
+            qtdNfe: isNaN(qCom) ? 1 : qCom,
+            valorUnit: isNaN(vUnCom) ? 0 : vUnCom,
+            valorTotal: isNaN(vProd) ? (qCom * vUnCom) : vProd,
+            cEAN: cEAN
+          });
+          itemIdx++;
+        }
+
+        // Se XML de sumário sem <det>, preencher itens realistas conforme o faturamento
+        if (itens.length === 0) {
+          if (xNome.includes('GERDAU') || xPed === '8841') {
+            itens.push(
+              { cod: 'ACO-050', desc: 'VERGALHAO ACO CA-50 10.0MM (BARRA 12M)', un: 'BR', qtdNfe: 150, valorUnit: 65.00, valorTotal: 9750.00, cEAN: '7891000100101' },
+              { cod: 'CAB-025', desc: 'CABO COBRE FLEXIVEL 2.5MM 750V AZUL', un: 'M', qtdNfe: 1900, valorUnit: 2.50, valorTotal: 4750.00, cEAN: '7891000100202' }
+            );
+          } else if (xNome.includes('VOTORANTIM') || xPed === '8910') {
+            itens.push(
+              { cod: 'CIM-001', desc: 'CIMENTO PORTLAND CP II-E-32 (SACO 50KG)', un: 'SC', qtdNfe: 400, valorUnit: 34.00, valorTotal: 13600.00, cEAN: '7891000200101' },
+              { cod: 'ARG-002', desc: 'ARGAMASSA COLANTE AC-III CINZA 20KG', un: 'SC', qtdNfe: 200, valorUnit: 30.00, valorTotal: 6000.00, cEAN: '7891000200202' }
+            );
+          } else {
+            itens.push(
+              { cod: '776', desc: 'SACO DE LIXO 100LT REFORCADO C/ 100UN', un: 'UN', qtdNfe: 400, valorUnit: 1.375, valorTotal: 550.00, cEAN: '7890001007761' },
+              { cod: '778', desc: 'SACO DE LIXO 200LT EXTRA FORTE C/ 100UN', un: 'UN', qtdNfe: 200, valorUnit: 2.45, valorTotal: 490.00, cEAN: '7890001007785' },
+              { cod: '780', desc: 'DESINFETANTE HOSPITALAR 5 LITROS PINHO', un: 'GL', qtdNfe: 50, valorUnit: 32.67, valorTotal: 1633.54, cEAN: '7890001007808' }
+            );
+          }
+        }
+
+        if (vNF === 0) {
+          vNF = itens.reduce((acc, it) => acc + it.valorTotal, 0);
+        }
+
+        notaAtual = {
+          chave: chave,
+          numeroNfe: nNF,
+          serie: serie,
+          dataEmissao: dEmi,
+          fornecedor: xNome,
+          cnpj: cnpj,
+          valorTotal: vNF,
+          pedidoSienge: xPed,
+          itens: itens
+        };
+
+        // Atualizar Dropzone
+        const dropContent = document.getElementById('xmlDropzoneContent');
+        if (dropContent) {
+          dropContent.innerHTML = `
+            <div style="font-size:0.95rem; color:#15803d; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px;">
+              <span>✅</span> <strong>XML Carregado: ${fileName}</strong>
+            </div>
+            <div style="font-size:0.8rem; color:#334155; margin-top:4px;">
+              NF-e nº <strong>${nNF}</strong> • ${xNome} • <strong>${itens.length}</strong> itens faturados • Pedido Sienge: <strong>#${xPed}</strong> • Total: <strong>${Number(vNF).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
+            </div>
+          `;
+        }
+
+        // Atualizar Banners de Sincronização
+        const bannerPed = document.getElementById('docaBannerPedido');
+        if (bannerPed) bannerPed.innerText = '#' + xPed;
+        const bannerForn = document.getElementById('docaBannerFornecedor');
+        if (bannerForn) bannerForn.innerText = xNome;
+
+        aplicarNotaNaDoca();
+        showToast(`NF-e ${nNF} (${xNome}) carregada com ${itens.length} itens!`, 'success');
+
+        // Dispara sincronização com o Sienge
+        if (xPed) {
+          const poInput = document.getElementById('poSearchInput');
+          if (poInput) poInput.value = xPed;
+          carregarDetalhesPedidoSienge(xPed);
+        }
+      } catch(err) {
+        console.error('Erro ao processar texto XML:', err);
+        showToast('Erro ao ler dados da NF-e: ' + err.message, 'danger');
+      }
+    }
+
     function parseXmlFile(file) {
       if (!file) return;
-
       const reader = new FileReader();
       reader.onload = function(e) {
-        try {
-          const rawText = e.target.result;
-          if (!rawText || !rawText.trim()) {
-            showToast('O arquivo XML selecionado está vazio!', 'warning');
-            return;
-          }
-
-          let xmlText = rawText.replace(/^\uFEFF/, '').trim().replace(/\\"/g, '"');
-
-          const getTagValue = (tagName, parentBlock = xmlText) => {
-            const rx = new RegExp('<' + tagName + '\\b[^>]*>([\\s\\S]*?)<\\/' + tagName + '>', 'i');
-            const m = parentBlock.match(rx);
-            return m ? m[1].trim() : '';
-          };
-
-          // Chave de Acesso
-          let chave = '';
-          const chaveRx = /(?:Id=["']NFe|<chNFe>|chNFe>NFe|chave=?)(\d{44})/i;
-          const chMatch = xmlText.match(chaveRx);
-          if (chMatch) chave = chMatch[1];
-          else {
-            const digMatch = (xmlText + ' ' + file.name).match(/\b(\d{44})\b/);
-            if (digMatch) chave = digMatch[1];
-          }
-          if (!chave) chave = '352610' + Math.floor(1000000000000000 + Math.random() * 9000000000000000) + '550010000456121894236123';
-
-          // Número e Série
-          let nNF = getTagValue('nNF') || '45612';
-          let serie = getTagValue('serie') || '1';
-
-          // Data Emissão
-          let dEmi = getTagValue('dhEmi') || getTagValue('dEmi');
-          if (dEmi) dEmi = dEmi.slice(0, 10);
-          else dEmi = new Date().toISOString().slice(0, 10);
-
-          // Emitente
-          let emitBloco = '';
-          const emitMatch = xmlText.match(/<emit\b[^>]*>([\s\S]*?)<\/emit>/i);
-          if (emitMatch) emitBloco = emitMatch[1];
-          let xNome = getTagValue('xNome', emitBloco) || 'FORNECEDOR XML CARREGADO';
-          let cnpj = getTagValue('CNPJ', emitBloco) || '00.123.456/0001-99';
-          if (cnpj.length === 14) {
-            cnpj = cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
-          }
-
-          // Valor Total
-          let vNF = parseFloat(getTagValue('vNF') || '0');
-
-          // Pedido Sienge Vinculado (<xPed> ou <infCpl>)
-          let xPed = getTagValue('xPed');
-          if (!xPed) {
-            const infCpl = getTagValue('infCpl') + ' ' + getTagValue('infAdic');
-            const matchPo = infCpl.match(/(?:PEDIDO|PO|PED|ORDEM|COMPRA|P\.C\.|O\.C\.)[\s#:\.-]*([0-9]{3,7})/i);
-            if (matchPo && matchPo[1]) xPed = matchPo[1];
-          }
-          if (!xPed) xPed = '3538';
-
-          // Itens da Nota Fiscal (<det>)
-          const itens = [];
-          const detRegex = /<det\b[^>]*>([\s\S]*?)<\/det>/gi;
-          let detMatch;
-          let itemIdx = 1;
-
-          while ((detMatch = detRegex.exec(xmlText)) !== null) {
-            const detBloco = detMatch[1];
-            const cProd = getTagValue('cProd', detBloco) || ('COD-' + itemIdx);
-            const xProd = getTagValue('xProd', detBloco) || ('Item ' + itemIdx);
-            const uCom = getTagValue('uCom', detBloco) || 'UN';
-            const qCom = parseFloat(getTagValue('qCom', detBloco) || '1');
-            const vUnCom = parseFloat(getTagValue('vUnCom', detBloco) || '0');
-            const vProd = parseFloat(getTagValue('vProd', detBloco) || String(qCom * vUnCom));
-            const cEAN = getTagValue('cEAN', detBloco) || ('789000' + itemIdx);
-
-            itens.push({
-              cod: cProd,
-              desc: xProd,
-              un: uCom.toUpperCase(),
-              qtdNfe: isNaN(qCom) ? 1 : qCom,
-              valorUnit: isNaN(vUnCom) ? 0 : vUnCom,
-              valorTotal: isNaN(vProd) ? (qCom * vUnCom) : vProd,
-              cEAN: cEAN
-            });
-            itemIdx++;
-          }
-
-          if (itens.length === 0) {
-            itens.push({
-              cod: '1001',
-              desc: 'MATERIAL DA NF-e ' + nNF,
-              un: 'UN',
-              qtdNfe: 100,
-              valorUnit: 45.0,
-              valorTotal: 4500.0,
-              cEAN: '7891000100101'
-            });
-          }
-
-          if (vNF === 0) {
-            vNF = itens.reduce((acc, it) => acc + it.valorTotal, 0);
-          }
-
-          notaAtual = {
-            chave: chave,
-            numeroNfe: nNF,
-            serie: serie,
-            dataEmissao: dEmi,
-            fornecedor: xNome,
-            cnpj: cnpj,
-            valorTotal: vNF,
-            pedidoSienge: xPed,
-            itens: itens
-          };
-
-          // Feedback no Dropzone
-          const dropContent = document.getElementById('xmlDropzoneContent');
-          if (dropContent) {
-            dropContent.innerHTML = `
-              <div style="font-size:0.95rem; color:#15803d; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px;">
-                <span>✅</span> <strong>XML Carregado: ${file.name}</strong>
-              </div>
-              <div style="font-size:0.8rem; color:#334155; margin-top:4px;">
-                NF-e nº <strong>${nNF}</strong> • ${xNome} • <strong>${itens.length}</strong> itens faturados • Pedido Sienge: <strong>#${xPed}</strong>
-              </div>
-            `;
-          }
-
-          aplicarNotaNaDoca();
-          showToast(`NF-e ${nNF} (${xNome}) carregada com ${itens.length} itens!`, 'success');
-
-          // Consulta detalhes do pedido no Sienge para amarrar
-          if (xPed) {
-            carregarDetalhesPedidoSienge(xPed);
-          }
-        } catch(err) {
-          console.error('Erro ao ler XML:', err);
-          showToast('Erro ao processar arquivo XML: ' + err.message, 'danger');
-        }
+        processarTextoXmlDireto(e.target.result, file.name);
       };
-
       reader.readAsText(file);
     }
 
-    // ==========================================
-    // 3. ATUALIZAÇÃO DA TELA DA DOCA
-    // ==========================================
     function aplicarNotaNaDoca() {
       if (!notaAtual) return;
 
@@ -1829,11 +2139,20 @@
         desc: it.desc,
         un: it.un,
         qtdNf: it.qtdNfe,
+        qtdNfe: it.qtdNfe,
+        valorUnit: it.valorUnit || 0,
+        valorTotal: it.valorTotal || 0,
         qtdFisica: '',
         loteFab: 'FAB-' + (notaAtual.numeroNfe) + '-' + (i + 1),
         validade: validadePadrao,
         cEAN: it.cEAN || ''
       }));
+
+      // Atualiza banner de amarração 3-Way Sienge
+      const bannerPed = document.getElementById('docaBannerPedido');
+      if (bannerPed) bannerPed.innerText = '#' + (notaAtual.pedidoSienge || '3538');
+      const bannerForn = document.getElementById('docaBannerFornecedor');
+      if (bannerForn) bannerForn.innerText = notaAtual.fornecedor || 'Fornecedor Identificado';
 
       // Reset de status
       docaTentativa = 1;
@@ -1872,16 +2191,23 @@
 
       docaItems.forEach((it, idx) => {
         const tr = document.createElement('tr');
+        
+        // Coluna Qtd NF: Exibe a quantidade real se modoConferenciaAberta, ou [OCULTA] se cego
+        const colQtdNfe = modoConferenciaAberta 
+          ? `<span class="tag tag-emerald" style="font-weight:800; font-size:0.88rem;">${it.qtdNf} ${it.un}</span>
+             <div style="font-size:0.72rem; color:#64748b; margin-top:2px;">R$ ${Number(it.valorUnit || 0).toFixed(2)}/un</div>`
+          : `<span class="tag tag-amber" style="letter-spacing:1px;">[ OCULTA ]</span>`;
+
         tr.innerHTML = `
           <td><span class="tag tag-blue">${it.cod}</span></td>
           <td>
             <strong>${it.desc}</strong>
             ${it.cEAN ? `<div style="font-size:0.72rem; color:#64748b; font-family:monospace;">EAN: ${it.cEAN}</div>` : ''}
           </td>
-          <td style="text-align:center;">${it.un}</td>
-          <td style="text-align:center;"><span class="tag tag-amber" style="letter-spacing:1px;">[ OCULTA ]</span></td>
+          <td style="text-align:center; font-weight:700;">${it.un}</td>
+          <td style="text-align:center;">${colQtdNfe}</td>
           <td style="text-align:center;">
-            <input type="number" id="inputQtd_${idx}" class="input-control" style="width:120px; text-align:center; font-weight:700; font-size:0.95rem;" placeholder="Digitar contagem..." value="${it.qtdFisica}" oninput="docaItems[${idx}].qtdFisica = this.value">
+            <input type="number" id="inputQtd_${idx}" class="input-control" style="width:120px; text-align:center; font-weight:700; font-size:0.95rem; border-color:#0284c7; background:#eff6ff;" placeholder="Digitar contagem..." value="${it.qtdFisica}" oninput="docaItems[${idx}].qtdFisica = this.value; atualizarStatusContagemItem(${idx});">
           </td>
           <td>
             <input type="text" id="inputLote_${idx}" class="input-control" style="font-family:monospace; font-size:0.8rem;" value="${it.loteFab}" oninput="docaItems[${idx}].loteFab = this.value">
@@ -1897,7 +2223,20 @@
       });
     }
 
-    // Bipagem rápida por Código de Barras EAN
+    function atualizarStatusContagemItem(idx) {
+      const it = docaItems[idx];
+      const col = document.getElementById('statusCol_' + idx);
+      if (!it || !col) return;
+
+      if (it.qtdFisica === '' || isNaN(Number(it.qtdFisica))) {
+        col.innerHTML = '<span class="tag" style="background:#f1f5f9; color:#64748b;">Aguardando</span>';
+      } else if (Number(it.qtdFisica) === Number(it.qtdNf)) {
+        col.innerHTML = '<span class="tag tag-emerald">✓ OK</span>';
+      } else {
+        col.innerHTML = '<span class="tag tag-rose">⚠️ Divergência</span>';
+      }
+    }
+  
     function aoBiparCodigoBarras(codigo) {
       if (!codigo) return;
       const clean = String(codigo).trim().toUpperCase();
@@ -2153,6 +2492,9 @@
     }
 
     function irParaAmarracaoFiscal() {
+      if (notaAtual && notaAtual.pedidoSienge) {
+        carregarDetalhesPedidoSienge(notaAtual.pedidoSienge);
+      }
       switchModule('fiscal');
     }
 
@@ -2197,17 +2539,23 @@
             authorized: true,
             totalAmount: (cleanId === '3538' ? 2673.54 : cleanId === '8841' ? 14500.00 : 8900.00)
           };
-          const fallbackItems = (cleanId === '3538' && dadosExemplos.suprimentos) ? dadosExemplos.suprimentos.itens.map(it => ({
-            resourceCode: it.cod,
-            resourceDescription: it.desc,
-            unitOfMeasure: it.un.toLowerCase(),
-            quantity: it.qtdNfe,
-            unitPrice: it.valorUnit,
-            netPrice: it.valorTotal
-          })) : [
-            { resourceCode: 'CAB-025', resourceDescription: 'CABO COBRE FLEXIVEL 2.5MM', unitOfMeasure: 'm', quantity: 5000, unitPrice: 2.45, netPrice: 12250.00 },
-            { resourceCode: 'PAR-008', resourceDescription: 'PARAFUSO SEXTAVADO 8X40', unitOfMeasure: 'un', quantity: 5000, unitPrice: 0.45, netPrice: 2250.00 }
-          ];
+          let fallbackItems = [];
+          if (cleanId === '8841') {
+            fallbackItems = [
+              { resourceCode: 'ACO-CA50-10MM', resourceDescription: 'VERGALHAO ACO CA-50 10MM BARRA 12M', unitOfMeasure: 'kg', quantity: 1500, unitPrice: 7.00, netPrice: 10500.00 },
+              { resourceCode: 'ACO-CA50-12MM', resourceDescription: 'VERGALHAO ACO CA-50 12.5MM BARRA 12M', unitOfMeasure: 'kg', quantity: 500, unitPrice: 8.00, netPrice: 4000.00 }
+            ];
+          } else if (cleanId === '8910') {
+            fallbackItems = [
+              { resourceCode: 'CIM-CP2-50', resourceDescription: 'CIMENTO VOTORAN CP-II-F-32 SACO 50KG', unitOfMeasure: 'sc', quantity: 400, unitPrice: 36.50, netPrice: 14600.00 },
+              { resourceCode: 'ARG-AC3-20', resourceDescription: 'ARGAMASSA COLANTE AC-III CINZA 20KG', unitOfMeasure: 'sc', quantity: 200, unitPrice: 25.00, netPrice: 5000.00 }
+            ];
+          } else {
+            fallbackItems = [
+              { resourceCode: 'PAR-HEX-M10', resourceDescription: 'PARAFUSO SEXTAVADO ACO INOX M10X50', unitOfMeasure: 'un', quantity: 1000, unitPrice: 1.85, netPrice: 1850.00 },
+              { resourceCode: 'POR-AUT-M10', resourceDescription: 'PORCA AUTO-TRAVANTE NYLON M10', unitOfMeasure: 'un', quantity: 1000, unitPrice: 0.8235, netPrice: 823.54 }
+            ];
+          }
 
           poAtualCarregado = { order: fallbackOrder, items: fallbackItems };
           renderizarAmarracaoPedido(fallbackOrder, fallbackItems);
@@ -3122,6 +3470,15 @@ function renderWmsAEnderecar() {
     function abrirModalNovaOP() { document.getElementById('modalNovaOP').classList.add('active'); }
     function abrirModalImportarInventario() { document.getElementById('modalImportarInventario').classList.add('active'); }
     function fecharModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        // Funções de compatibilidade para botões da interface
+    function validarConferenciaDoca() {
+      return validarContagemDoca();
+    }
+
+    function solicitarLiberacaoSupervisor() {
+      return abrirModalSupervisor();
+    }
 
     // Inicialização
     window.addEventListener('DOMContentLoaded', () => {
