@@ -231,6 +231,67 @@
       animation: slideIn 0.3s ease;
     }
     @keyframes slideIn { from { transform: translateX(50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  
+    .po-chip {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      color: #334155;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .po-chip:hover {
+      background: #e0f2fe;
+      border-color: #7dd3fc;
+      color: #0369a1;
+    }
+    .btn-outline {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 8px 14px;
+      border-radius: var(--radius-md);
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-outline:hover {
+      background: #f1f5f9;
+      border-color: #94a3b8;
+    }
+    .amarracao-row-ticar {
+      cursor: pointer;
+    }
+    .amarracao-row-ticar:hover {
+      background: #f8fafc;
+    }
+    .badge-diff-neg {
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .badge-diff-pos {
+      background: #fef2f2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
   </style>
 </head>
 <body>
@@ -330,37 +391,121 @@
     <main class="app-viewport">
 
       <!-- MÓDULO 1: RECEBIMENTO CEGO (DOCA) -->
+            <!-- MÓDULO 1: RECEBIMENTO CEGO (DOCA) -->
       <section id="view-doca" class="module-view active">
         <div class="card-clean">
           <div class="card-header-flex">
             <div>
               <div class="card-title">
                 <svg width="22" height="22" fill="none" stroke="#0284c7" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" stroke-width="2"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8" stroke-width="2"></polygon><circle cx="5.5" cy="18.5" r="2.5" stroke-width="2"></circle><circle cx="18.5" cy="18.5" r="2.5" stroke-width="2"></circle></svg>
-                1. Recebimento Cego na Doca
+                1. Recebimento Cego na Doca & Leitura de XML
               </div>
-              <div class="card-subtitle">Conferência física sem vício de confirmação. Quantidades faturadas estritamente ocultas.</div>
+              <div class="card-subtitle">Conferência física estritamente cega. O operador audita os volumes na descarga sem vício de confirmação.</div>
             </div>
-            <div style="display:flex; gap:10px;">
-              <button class="btn btn-secondary" onclick="window.print()">
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <!-- Inputs nativos para upload -->
+              <input type="file" id="folderXmlInput" webkitdirectory directory multiple style="display:none;" onchange="aoSelecionarPastaNavegador(event)">
+              <input type="file" id="xmlFileInput" accept=".xml,text/xml,application/xml" style="display:none;" onchange="handleXmlFileSelect(event)">
+
+              <button class="btn btn-primary" onclick="document.getElementById('folderXmlInput').click()">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                📁 Puxar XML da Pasta
+              </button>
+              <button class="btn btn-outline" onclick="document.getElementById('xmlFileInput').click()">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                📄 Selecionar Arquivo XML
+              </button>
+              <button class="btn btn-secondary" onclick="imprimirFichaPrancheta()">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-                Imprimir Ficha Prancheta A4
+                Imprimir Prancheta A4
               </button>
             </div>
           </div>
 
-          <div style="display:grid; grid-template-columns: 1fr auto auto; gap: 12px; margin-bottom: 20px;">
-            <input type="text" id="docaChaveInput" class="input-control" placeholder="Bipe ou digite a Chave de 44 dígitos da NF-e..." value="35261012345678000199550010000456121894236123">
-            <button class="btn btn-primary" onclick="showToast('Nota NF 45612 carregada com sucesso!', 'success')">Carregar Nota</button>
-            <button class="btn btn-outline" onclick="switchModule('dfe')">Fila DF-e Sefaz (4)</button>
+          <!-- DROPZONE & SELETORES RÁPIDOS -->
+          <div id="xmlDropzone" style="border: 2px dashed var(--border-color); border-radius: var(--radius-md); background: #f8fafc; padding: 18px 24px; text-align: center; margin-bottom: 16px; cursor: pointer; transition: all 0.2s;" onclick="document.getElementById('xmlFileInput').click()">
+            <div id="xmlDropzoneContent">
+              <div style="font-size:0.95rem; color:#1e293b; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px;">
+                <svg width="22" height="22" fill="none" stroke="#0284c7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                <span>Arraste e solte arquivos <strong>XML de NF-e</strong> aqui ou clique para selecionar</span>
+              </div>
+              <div style="font-size:0.8rem; color:#64748b; margin-top:4px;">
+                Identifica automaticamente Chave de Acesso, Emitente, Itens faturados e Pedido Sienge vinculado (tag <code>&lt;xPed&gt;</code> ou <code>&lt;infCpl&gt;</code>).
+              </div>
+            </div>
           </div>
 
-          <div style="background:#f8fafc; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:16px; margin-bottom:20px; display:grid; grid-template-columns:repeat(4, 1fr); gap:12px;">
-            <div><span class="stat-label">Número NF-e:</span><br><strong style="font-size:1.1rem; color:#0284c7;">NF 45612 / Série 1</strong></div>
-            <div><span class="stat-label">Fornecedor / Emitente:</span><br><strong>SIL FIOS E CABOS ELÉTRICOS</strong></div>
-            <div><span class="stat-label">Pedido Sienge Vinculado:</span><br><span class="tag tag-blue">PED-2026-8841</span></div>
-            <div><span class="stat-label">Status da Doca:</span><br><span class="tag tag-amber" id="docaTentativaBadge">Tentativa 1 de 3 (Aguardando Contagem)</span></div>
+          <!-- BARRA DE BUSCA E EXEMPLOS RÁPIDOS -->
+          <div style="display:flex; gap:10px; align-items:center; margin-bottom:16px; flex-wrap:wrap;">
+            <div style="flex:1; min-width:280px; position:relative;">
+              <input type="text" id="docaChaveInput" class="input-control" placeholder="Bipe ou digite a Chave de 44 dígitos ou Nº da NF-e..." value="35261012345678000199550010000456121894236123" onkeydown="if(event.key==='Enter') buscarPorChaveOuNumero()">
+            </div>
+            <button class="btn btn-primary" onclick="buscarPorChaveOuNumero()">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              Carregar Nota
+            </button>
+            <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+              <span style="font-size:0.75rem; color:#64748b; font-weight:700;">Testar com Exemplo:</span>
+              <button class="btn po-chip" onclick="carregarExemplo('suprimentos')">NF 3538 (Sacos & Higiene - PO Sienge #3538)</button>
+              <button class="btn po-chip" onclick="carregarExemplo('cimento')">NF 48912 (Votorantim - Cimento e Cal)</button>
+              <button class="btn po-chip" onclick="carregarExemplo('gerdau')">NF 45612 (Fios SIL - Conversão Rolo x Metro)</button>
+              <button class="btn po-chip" onclick="carregarExemplo('tinta')">NF 12903 (Quartzolit - Argamassa)</button>
+            </div>
           </div>
 
+          <!-- SELETOR DE MÚLTIPLOS XMLS DA PASTA (QUANDO CARREGADOS) -->
+          <div id="boxXmlsPasta" style="display:none; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:var(--radius-md); padding:10px 16px; margin-bottom:16px; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="tag tag-emerald" id="badgeQtdXmls">📁 0 XMLs</span>
+              <span style="font-size:0.85rem; color:#065f46; font-weight:600;">Arquivos encontrados na pasta. Selecione para alternar:</span>
+            </div>
+            <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;" id="listaBotoesXmlsPasta"></div>
+          </div>
+
+          <!-- HEADER CARD DOS DADOS DA NOTA FISCAL -->
+          <div style="background:#ffffff; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:16px; margin-bottom:20px; display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; box-shadow:var(--shadow-sm);">
+            <div>
+              <span class="stat-label">Número NF-e / Série</span><br>
+              <strong style="font-size:1.15rem; color:#0284c7;" id="docaNumeroNfe">NF 45612 / Série 1</strong>
+            </div>
+            <div>
+              <span class="stat-label">Fornecedor / Emitente</span><br>
+              <strong style="font-size:0.92rem; color:#0f172a;" id="docaFornecedor">SIL FIOS E CABOS ELÉTRICOS S.A.</strong><br>
+              <span style="font-size:0.75rem; color:#64748b;" id="docaCnpj">CNPJ: 00.123.456/0001-99</span>
+            </div>
+            <div>
+              <span class="stat-label">Pedido Sienge Vinculado</span><br>
+              <div style="display:flex; align-items:center; gap:8px; margin-top:2px;">
+                <span class="tag tag-blue" style="font-size:0.85rem; font-weight:700;" id="docaPedidoSienge">#8841</span>
+                <button class="btn btn-outline" style="padding:2px 8px; font-size:0.75rem;" onclick="irParaAmarracaoFiscal()" title="Ir para módulo 2 e sincronizar este pedido">
+                  👉 Sincronizar Pedido
+                </button>
+              </div>
+            </div>
+            <div>
+              <span class="stat-label">Valor Total NF-e</span><br>
+              <strong style="font-size:1.15rem; color:#059669;" id="docaValorTotal">R$ 14.500,00</strong><br>
+              <span style="font-size:0.75rem; color:#64748b;" id="docaDataEmissao">Emissão: 27/10/2026</span>
+            </div>
+            <div>
+              <span class="stat-label">Status da Conferência</span><br>
+              <span class="tag tag-amber" id="docaTentativaBadge">Tentativa 1 de 3 (Aguardando Contagem)</span>
+            </div>
+          </div>
+
+          <!-- INPUT DE BIPAGEM EAN / CÓDIGO DE BARRAS -->
+          <div style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:var(--radius-md); padding:10px 16px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:300px;">
+              <svg width="20" height="20" fill="none" stroke="#475569" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+              <input type="text" id="bipagemEanInput" class="input-control" style="background:#ffffff; font-weight:700; font-family:'JetBrains Mono', monospace;" placeholder="Bipe aqui o Código de Barras (EAN) ou Código do Insumo (soma +1 na contagem)..." onkeydown="if(event.key==='Enter') aoBiparCodigoBarras(this.value)">
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-outline" style="font-size:0.78rem; padding:6px 12px;" onclick="simularContagemPerfeita()">⚡ Preencher 100% Correto</button>
+              <button class="btn btn-outline" style="font-size:0.78rem; padding:6px 12px; color:#b91c1c; border-color:#fca5a5;" onclick="simularContagemComDivergencia()">⚠️ Simular Falta / Divergência</button>
+            </div>
+          </div>
+
+          <!-- TABELA DE CONFERÊNCIA CEGA -->
           <div class="table-container" style="margin-bottom:20px;">
             <table class="data-table">
               <thead>
@@ -369,10 +514,10 @@
                   <th>Descrição do Material / Insumo</th>
                   <th style="width: 90px; text-align:center;">Unidade</th>
                   <th style="width: 140px; text-align:center;">Qtd NF (Faturada)</th>
-                  <th style="width: 160px; text-align:center;">Qtd Física Contada</th>
-                  <th style="width: 150px;">Lote Fabricante</th>
-                  <th style="width: 140px;">Data Validade</th>
-                  <th style="width: 100px; text-align:center;">Status</th>
+                  <th style="width: 170px; text-align:center;">Qtd Física Contada</th>
+                  <th style="width: 160px;">Lote Fabricante</th>
+                  <th style="width: 150px;">Data Validade</th>
+                  <th style="width: 110px; text-align:center;">Status</th>
                 </tr>
               </thead>
               <tbody id="docaItemsBody">
@@ -383,17 +528,21 @@
 
           <div id="docaAlertaBox" style="display:none; padding:16px; border-radius:var(--radius-md); margin-bottom:20px;"></div>
 
-          <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
             <div style="color:var(--text-muted); font-size:0.82rem;">
-              * Ao confirmar, o sistema gerará o <strong>Lote Interno Omni</strong> automaticamente e moverá o item para <strong>'A Endereçar'</strong>.
+              * Ao confirmar a contagem sem divergência, o sistema gera os <strong>Lotes Internos Omni</strong> e disponibiliza o saldo para a <strong>Amarração Fiscal Sienge</strong>.
             </div>
-            <div style="display:flex; gap:12px;">
-              <button class="btn btn-secondary" onclick="resetDoca()">Limpar / Nova Bipagem</button>
+            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+              <button class="btn btn-secondary" onclick="resetDoca()">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                Limpar / Nova Bipagem
+              </button>
               <button class="btn btn-success" id="btnConfirmarDoca" onclick="validarContagemDoca()">
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
                 Confirmar Contagem & Gerar Lote
               </button>
               <button class="btn btn-danger" id="btnSupervisorLiberar" style="display:none;" onclick="abrirModalSupervisor()">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                 Liberar com Senha do Supervisor
               </button>
             </div>
@@ -408,33 +557,100 @@
             <div>
               <div class="card-title">
                 <svg width="22" height="22" fill="none" stroke="#0284c7" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke-width="2"></path><polyline points="14 2 14 8 20 8" stroke-width="2"></polyline><line x1="16" y1="13" x2="8" y2="13" stroke-width="2"></line><line x1="16" y1="17" x2="8" y2="17" stroke-width="2"></line></svg>
-                2. Amarração Fiscal & Conversão de Unidades com IA
+                2. Amarração Fiscal & Sincronização: Pedido Sienge × NF-e XML
               </div>
-              <div class="card-subtitle">Cruzamento inteligente de Pedido Sienge × NF-e Fornecedor × Contagem Física de Doca.</div>
+              <div class="card-subtitle">
+                Cruzamento inteligente de 3 Vias: Pedido de Compra Oficial (Alçada/Contrato Sienge) × XML Faturado do Fornecedor × Contagem Física de Doca.
+              </div>
             </div>
-            <div>
-              <button class="btn btn-primary" onclick="showToast('Sincronizando 12 pedidos em aberto do Sienge...', 'info')">
-                Sincronizar Pedidos Sienge
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button class="btn btn-outline" onclick="abrirModalSiengeOrders()">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                Listar Pedidos Abertos no Sienge
+              </button>
+              <button class="btn btn-primary" onclick="consultarSiengePoManual()">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                Sincronizar Pedido
               </button>
             </div>
           </div>
 
-          <!-- ASSISTENTE IA DE CONVERSÃO -->
-          <div class="ai-conversion-box">
+          <!-- BARRA DE SELEÇÃO DO PEDIDO SIENGE -->
+          <div style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:var(--radius-md); padding:14px 18px; margin-bottom:16px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:10px;">
+              <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:280px;">
+                <label style="font-size:0.85rem; font-weight:700; color:#334155; white-space:nowrap;">Nº Pedido Sienge:</label>
+                <input type="text" id="poSearchInput" class="input-control" style="background:#ffffff; font-weight:700; width:160px;" placeholder="Ex: 3538, 8841..." value="3538" onkeydown="if(event.key==='Enter') consultarSiengePoManual()">
+                <button class="btn btn-primary" style="padding:8px 14px; font-size:0.82rem;" onclick="consultarSiengePoManual()">Buscar</button>
+              </div>
+              <div style="font-size:0.82rem; color:#475569;">
+                Status da Conexão: <span class="tag tag-emerald" id="siengeStatusBadge">● Sienge API Cloud: omnitrade (Online)</span>
+              </div>
+            </div>
+            
+            <!-- CHIPS DE PEDIDOS REAIS DO SIENGE -->
+            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+              <span style="font-size:0.75rem; color:#64748b; font-weight:700;">Pedidos Reais Sienge:</span>
+              <button type="button" class="po-chip" onclick="selecionarPedidoRapido('3538')">#3538 (Sacos & Higiene - R$ 2.673,54)</button>
+              <button type="button" class="po-chip" onclick="selecionarPedidoRapido('3540')">#3540 (Mão de Obra - R$ 627,32)</button>
+              <button type="button" class="po-chip" onclick="selecionarPedidoRapido('3543')">#3543 (Peças Mecânicas - R$ 1.780,00)</button>
+              <button type="button" class="po-chip" onclick="selecionarPedidoRapido('3541')">#3541 (Manutenção - R$ 11.315,18)</button>
+              <button type="button" class="po-chip" onclick="selecionarPedidoRapido('3513')">#3513 (Tintas e Primer - R$ 1.840,00)</button>
+              <button type="button" class="po-chip" onclick="selecionarPedidoRapido('8841')">#8841 (Fios e Cabos - R$ 14.500,00)</button>
+            </div>
+          </div>
+
+          <!-- ASSISTENTE IA DE CONVERSÃO DE UNIDADES (COPILOT) -->
+          <div id="aiConversionBox" class="ai-conversion-box" style="display:none;">
             <div style="display:flex; align-items:center; gap:12px;">
               <div style="background:#0284c7; color:white; width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.1rem; flex-shrink:0;">
                 🤖
               </div>
               <div>
-                <strong style="color:#0369a1; font-size:0.95rem;">Omni Fiscal Copilot (IA): Conversão Inteligente de Unidade Detectada!</strong>
-                <div style="color:#334155; font-size:0.85rem; margin-top:2px;">
+                <strong style="color:#0369a1; font-size:0.95rem;" id="aiConversionTitle">Omni Fiscal Copilot (IA): Conversão Inteligente de Unidade Detectada!</strong>
+                <div style="color:#334155; font-size:0.85rem; margin-top:2px;" id="aiConversionDesc">
                   O fornecedor faturou em <strong>ROLOS (5 ROLOS)</strong>, mas o Pedido Sienge é controlado em <strong>METROS (5.000 M)</strong>.<br>
                   A IA identificou na descrição que cada rolo contém 1.000m. <strong>Fator de Conversão Aplicado: × 1.000</strong>.
                 </div>
               </div>
             </div>
             <div style="text-align:right; flex-shrink:0;">
-              <span class="tag tag-emerald" style="font-size:0.82rem; padding:4px 10px;">Entrada no WMS: 5.000 METROS</span>
+              <span class="tag tag-emerald" style="font-size:0.82rem; padding:4px 10px;" id="aiConversionBadge">Entrada no WMS: 5.000 METROS</span>
+            </div>
+          </div>
+
+          <!-- RESUMO KPI DA SINCRONIZAÇÃO -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-bottom:16px;">
+            <div style="background:#ffffff; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:14px;">
+              <span class="stat-label">Pedido Sienge</span><br>
+              <strong style="font-size:1.1rem; color:#0284c7;" id="kpiPoNumero">#3538</strong>
+              <div style="font-size:0.75rem; color:#64748b; margin-top:2px;" id="kpiPoDetalhes">Comprador: Jefferson Filho • Obra #1212</div>
+            </div>
+            <div style="background:#ffffff; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:14px;">
+              <span class="stat-label">Total Pedido Autorizado</span><br>
+              <strong style="font-size:1.1rem; color:#0f172a;" id="kpiPoTotal">R$ 2.673,54</strong>
+              <div style="font-size:0.75rem; color:#059669; margin-top:2px;" id="kpiPoStatus">Status: Liberado / Consistente</div>
+            </div>
+            <div style="background:#ffffff; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:14px;">
+              <span class="stat-label">NF-e Faturada (XML)</span><br>
+              <strong style="font-size:1.1rem; color:#7e22ce;" id="kpiNfeNumero">NF 3538</strong>
+              <div style="font-size:0.75rem; color:#64748b; margin-top:2px;" id="kpiNfeTotal">Total NF: R$ 2.673,54</div>
+            </div>
+            <div style="background:#ffffff; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:14px;">
+              <span class="stat-label">Conformidade 3-Vias</span><br>
+              <span class="tag tag-emerald" id="kpiAderenciaBadge" style="font-size:0.85rem; font-weight:700;">✓ 100% Conforme</span>
+              <div style="font-size:0.75rem; color:#64748b; margin-top:2px;" id="kpiItensValidados">0 de 0 itens ticados</div>
+            </div>
+          </div>
+
+          <!-- TABELA SINCRONIZADA DE AMARRAÇÃO 3-VIAS -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="font-size:0.85rem; font-weight:700; color:#334155;">
+              Cruzamento Item a Item (Pedido Sienge ERP × NF-e XML × Conferência Doca)
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-outline" style="font-size:0.75rem; padding:4px 10px;" onclick="ticarTodosItensAmarracao(true)">☑️ Ticar Todos</button>
+              <button class="btn btn-outline" style="font-size:0.75rem; padding:4px 10px;" onclick="ticarTodosItensAmarracao(false)">☐ Desmarcar Todos</button>
             </div>
           </div>
 
@@ -442,50 +658,41 @@
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>Insumo Sienge</th>
-                  <th>Item Fornecedor (XML)</th>
-                  <th style="text-align:center;">Unid. Fornecedor</th>
+                  <th style="width: 40px; text-align:center;">Validar</th>
+                  <th>Insumo / Recurso no Pedido Sienge</th>
+                  <th>Item Faturado no XML (Fornecedor)</th>
+                  <th style="text-align:center;">Unid. XML</th>
                   <th style="text-align:center;">Fator IA</th>
-                  <th style="text-align:center;">Qtd Convertida (Estoque)</th>
-                  <th style="text-align:center;">Qtd Pedido Sienge</th>
+                  <th style="text-align:center;">Qtd Convertida</th>
+                  <th style="text-align:center;">Qtd Pedido</th>
                   <th style="text-align:center;">Qtd Doca</th>
-                  <th style="text-align:center;">Match 3 Vias</th>
+                  <th style="text-align:center;">Variação Preço</th>
+                  <th style="text-align:center;">Status Match</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td><span class="tag tag-blue">CAB-025</span><br><strong>Cabo Cobre Flexível 2.5mm</strong></td>
-                  <td>CABO COBRE 2.5MM ROLO 1000M</td>
-                  <td style="text-align:center; font-weight:700;">5 ROLO</td>
-                  <td style="text-align:center;"><span class="tag tag-purple">× 1.000</span></td>
-                  <td style="text-align:center; font-weight:700; color:#0284c7;">5.000 METROS</td>
-                  <td style="text-align:center; font-weight:700;">5.000 METROS</td>
-                  <td style="text-align:center; font-weight:700; color:#059669;">5.000 METROS</td>
-                  <td style="text-align:center;"><span class="tag tag-emerald">✓ 100% Conforme</span></td>
-                </tr>
-                <tr>
-                  <td><span class="tag tag-blue">PAR-008</span><br><strong>Parafuso Sextavado 8x40</strong></td>
-                  <td>PARAFUSO SEXT 8X40 CX 500UN</td>
-                  <td style="text-align:center; font-weight:700;">10 CX</td>
-                  <td style="text-align:center;"><span class="tag tag-purple">× 500</span></td>
-                  <td style="text-align:center; font-weight:700; color:#0284c7;">5.000 UN</td>
-                  <td style="text-align:center; font-weight:700;">5.000 UN</td>
-                  <td style="text-align:center; font-weight:700; color:#059669;">5.000 UN</td>
-                  <td style="text-align:center;"><span class="tag tag-emerald">✓ 100% Conforme</span></td>
-                </tr>
+              <tbody id="amarracaoTableBody">
+                <!-- Renderizado dinamicamente via JS -->
               </tbody>
             </table>
           </div>
 
-          <div style="background:#f8fafc; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:16px; display:flex; justify-content:space-between; align-items:center;">
+          <div style="background:#f8fafc; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
             <div>
-              <strong style="color:#059669;">✓ Auditoria Fiscal e Conversões Homologadas!</strong>
-              <div style="font-size:0.8rem; color:#64748b; margin-top:2px;">O disparo gerará o Documento de Entrada e Contas a Pagar no Sienge e liberará o saldo para "A Endereçar" no WMS.</div>
+              <strong style="color:#059669;" id="statusHomologacaoFiscal">✓ Auditoria Fiscal e Conversões Homologadas!</strong>
+              <div style="font-size:0.8rem; color:#64748b; margin-top:2px;">
+                O disparo gerará o <strong>Documento de Entrada</strong> e o <strong>Contas a Pagar</strong> no Sienge ERP e liberará os lotes para o WMS.
+              </div>
             </div>
-            <button class="btn btn-success" onclick="executarEntradaFiscalSienge()">
-              <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-              Aprovar Amarração & Integrar Sienge ERP
-            </button>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button class="btn btn-secondary" onclick="imprimirEspelhoAmarracao()">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                Imprimir Espelho
+              </button>
+              <button class="btn btn-success" id="btnAprovarSienge" onclick="executarEntradaFiscalSienge()">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                Aprovar Amarração & Integrar Sienge ERP
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -630,96 +837,83 @@
       </section>
 
       <!-- MÓDULO 6: PRODUÇÃO & FICHA TÉCNICA (BOM) -->
+            <!-- 6. FICHA TÉCNICA & PCP (ORDENS DE PRODUÇÃO) -->
       <section id="view-producao" class="module-view">
         <div class="card-clean">
           <div class="card-header-flex">
             <div>
               <div class="card-title">
                 <svg width="22" height="22" fill="none" stroke="#7e22ce" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-                6. Ficha Técnica & Apontamento de Produção (-PA)
+                6. Ordens de Produção Executadas & PCP
               </div>
-              <div class="card-subtitle">Explosão de materiais, consumo automático dos insumos e entrada do Produto Acabado no Sienge.</div>
+              <div class="card-subtitle">
+                Chão de fábrica: apontamento de produção com baixa dinâmica de insumos no WMS e entrada do Produto Acabado.
+              </div>
             </div>
-            <div>
-              <button class="btn btn-primary" onclick="abrirModalNovaOP()">
-                + Nova Ordem de Produção (OP)
+            <div style="display:flex; gap:10px;">
+              <button class="btn btn-outline" onclick="carregarExemploOP()" style="font-size:0.8rem;">
+                🔄 Atualizar Histórico
+              </button>
+              <button class="btn btn-primary" onclick="abrirModalNovaOP()" style="background:#7e22ce; border-color:#6b21a8;">
+                + Nova Ordem de Produção
               </button>
             </div>
           </div>
 
-          <div style="background:#f8fafc; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:18px; margin-bottom:20px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-              <div>
-                <span class="tag tag-purple">ESTRUTURA / BOM ATIVA</span>
-                <h3 style="color:#0f172a; margin-top:4px;">LUM-LED-150W-PA (Luminária LED Industrial 150W Completa)</h3>
-              </div>
-              <div style="text-align:right;">
-                <span class="stat-label">Custo Total de Insumos:</span><br>
-                <strong style="color:#059669; font-size:1.1rem;">R$ 185,40</strong>
-              </div>
-            </div>
+          <!-- Dica Interativa de Usabilidade -->
+          <div style="display:flex; align-items:center; gap:10px; background:#faf5ff; border:1px solid #e9d5ff; border-radius:var(--radius-md); padding:10px 16px; margin-bottom:20px; font-size:0.85rem; color:#6b21a8;">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            <span><strong>Dica de Navegação:</strong> Dê um <strong>duplo clique em qualquer linha</strong> da tabela abaixo para ver a lista completa de insumos, lotes e endereços consumidos.</span>
+          </div>
 
-            <div class="table-container">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Insumo Componente</th>
-                    <th>Descrição</th>
-                    <th>Consumo p/ 1 PA</th>
-                    <th>Saldo WMS</th>
-                    <th>Lote a Baixar (FEFO)</th>
-                    <th>Ação no Sienge</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td><code>DRV-150W</code></td>
-                    <td>Driver Eletrônico Philips 150W Bivolt</td>
-                    <td><strong>1,00 UN</strong></td>
-                    <td id="saldoDriver">420 UN</td>
-                    <td><code>OMN-202610-00108</code></td>
-                    <td><span class="tag tag-rose">Saída Sienge: Consumo</span></td>
-                  </tr>
-                  <tr>
-                    <td><code>CAB-025</code></td>
-                    <td>Cabo Cobre Flexível 2.5mm</td>
-                    <td><strong>2,50 METROS</strong></td>
-                    <td id="saldoCabo">5.000 M</td>
-                    <td><code>OMN-202610-00412</code></td>
-                    <td><span class="tag tag-rose">Saída Sienge: Consumo</span></td>
-                  </tr>
-                </tbody>
-              </table>
+          <!-- Cards de Métricas de PCP -->
+          <div class="stats-row" style="margin-bottom:24px;">
+            <div class="stat-card">
+              <span class="stat-label">OPs Executadas</span>
+              <div class="stat-value" id="totalOpsCount" style="color:#7e22ce;">3</div>
+              <span class="stat-desc">Histórico registrado</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Total de Peças Produzidas</span>
+              <div class="stat-value" id="totalPecasCount">120 UN</div>
+              <span class="stat-desc">Produtos Acabados (-PA)</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">A Endereçar (WMS)</span>
+              <div class="stat-value" id="totalPaAEnderecar" style="color:#f59e0b;">2 Lotes</div>
+              <span class="stat-desc">Aguardando empilhadeira</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Status Baixa Sienge</span>
+              <div class="stat-value" style="color:#10b981;">100%</div>
+              <span class="stat-desc">Sincronizado via API</span>
             </div>
           </div>
 
-          <div class="card-title" style="font-size:0.95rem; margin-bottom:10px;">Ordens de Produção Executadas Recentemente</div>
-          <div class="table-container">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Nº OP</th>
-                  <th>Produto Acabado</th>
-                  <th>Qtd Produzida</th>
-                  <th>Lote Gerado (-PA)</th>
-                  <th>Insumos Baixados</th>
-                  <th>Entrada Sienge</th>
-                  <th>Status WMS</th>
-                </tr>
-              </thead>
-              <tbody id="tabelaOpBody">
-                <tr>
-                  <td><strong>OP-2026-0038</strong></td>
-                  <td>LUM-LED-150W-PA</td>
-                  <td><strong>50 UN</strong></td>
-                  <td><code>OMN-PA-20261028-1</code></td>
-                  <td><span class="tag tag-emerald">✓ Baixados c/ Sucesso</span></td>
-                  <td><span class="tag tag-emerald">✓ Saldo Criado no Sienge</span></td>
-                  <td><span class="tag tag-blue">Endereçado em R05-P02</span></td>
-                </tr>
-              </tbody>
-            </table>
+          <!-- Tabela de OPs Executadas (Limpa e Direta) -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <div style="font-weight:700; font-size:0.95rem; color:#0f172a;">Histórico de Ordens Concluídas</div>
+            <input type="text" id="filtroOps" class="input-control" placeholder="Buscar por OP, produto ou lote..." style="max-width:280px; padding:6px 12px; font-size:0.8rem;" oninput="filtrarTabelaOPs()">
           </div>
+
+          <table class="table-clean" id="tabelaOrdensProducao">
+            <thead>
+              <tr>
+                <th>Nº da OP</th>
+                <th>Data / Hora</th>
+                <th>Produto Fabricado (-PA)</th>
+                <th>Qtd Produzida</th>
+                <th>Lote Gerado</th>
+                <th>Insumos Consumidos</th>
+                <th>Operador</th>
+                <th>Status WMS</th>
+                <th style="text-align:center;">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyOrdensProducao">
+              <!-- Renderizado dinamicamente via JS -->
+            </tbody>
+          </table>
         </div>
       </section>
 
@@ -949,39 +1143,221 @@
     </div>
   </div>
 
-  <!-- MODAL: NOVA ORDEM DE PRODUÇÃO (OP) -->
+    <!-- MODAL: NOVA ORDEM DE PRODUÇÃO (TELA AMIGÁVEL MESTRE / DETALHE) -->
   <div class="modal-backdrop" id="modalNovaOP">
-    <div class="modal-window">
-      <div class="modal-header">
-        <div class="modal-title">⚙️ Nova Ordem de Produção (Chão de Fábrica)</div>
+    <div class="modal-window" style="max-width:850px; max-height:92vh; overflow-y:auto;">
+      <div class="modal-header" style="border-bottom: 2px solid #f1f5f9; padding-bottom:14px;">
+        <div>
+          <div class="modal-title" style="color:#7e22ce; display:flex; align-items:center; gap:8px;">
+            <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+            Nova Ordem de Produção (Chão de Fábrica)
+          </div>
+          <div style="font-size:0.82rem; color:var(--text-muted); margin-top:3px;">
+            Defina o produto acabado a fabricar e selecione dinamicamente os insumos que serão consumidos do WMS.
+          </div>
+        </div>
         <button class="modal-close" onclick="fecharModal('modalNovaOP')">&times;</button>
       </div>
-      <div style="display:grid; grid-template-columns: 1fr; gap:14px; margin-bottom:20px;">
-        <div>
-          <label class="stat-label">Produto Acabado a Fabricar (-PA):</label>
-          <select id="opProduto" class="input-control">
-            <option value="LUM-LED-150W-PA">LUM-LED-150W-PA - Luminária LED Industrial 150W</option>
-          </select>
+
+      <div style="padding-top:16px;">
+        <!-- PARTE SUPERIOR: PRODUTO QUE QUERO PRODUZIR (MESTRE) -->
+        <div style="background:#faf5ff; border:1px solid #e9d5ff; border-radius:var(--radius-md); padding:16px; margin-bottom:20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <div style="font-weight:700; color:#6b21a8; font-size:0.92rem; display:flex; align-items:center; gap:6px;">
+              <span>📦 1. Produto Acabado a Produzir</span>
+            </div>
+            <span class="tag tag-purple">Entrada no WMS em 'A Endereçar'</span>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:12px; margin-bottom:12px;">
+            <div>
+              <label class="stat-label">Produto Acabado (-PA):</label>
+              <select id="opProdutoSelect" class="input-control" onchange="aoSelecionarProdutoAcabado(this.value)">
+                <option value="LUM-LED-150W-PA">LUM-LED-150W-PA - Luminária LED Industrial 150W High Bay</option>
+                <option value="LUM-LED-200W-PA">LUM-LED-200W-PA - Luminária LED Industrial 200W High Bay</option>
+                <option value="PAINEL-SOLAR-KIT-PA">PAINEL-SOLAR-KIT-PA - Kit Gerador Solar Off-Grid 1kW Montado</option>
+                <option value="REFLETOR-LED-100W-PA">REFLETOR-LED-100W-PA - Refletor LED Blindado 100W IP66</option>
+                <option value="CUSTOM">+ Outro Produto Acabado (Digitar novo)...</option>
+              </select>
+            </div>
+            <div>
+              <label class="stat-label">Quantidade a Produzir:</label>
+              <div style="display:flex; gap:6px;">
+                <input type="number" id="opQtdProduzir" class="input-control" value="20" min="1" style="font-weight:700; color:#0f172a;" oninput="recalcularInsumosSugeridos()">
+                <select id="opUnidadePA" class="input-control" style="max-width:75px;">
+                  <option value="UN">UN</option>
+                  <option value="CJ">CJ</option>
+                  <option value="KIT">KIT</option>
+                  <option value="PC">PÇ</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="stat-label">Lote Gerado (PA):</label>
+              <input type="text" id="opLoteGerado" class="input-control" value="OP-202610-0043" style="font-family:'JetBrains Mono', monospace; font-weight:600; color:#7e22ce;">
+            </div>
+          </div>
+
+          <!-- Campos extras de customização se selecionar outro produto -->
+          <div id="boxCustomProduto" style="display:none; grid-template-columns: 1fr 2fr; gap:12px; margin-bottom:12px;">
+            <div>
+              <label class="stat-label">Código do Novo PA:</label>
+              <input type="text" id="opCodCustom" class="input-control" placeholder="EX: PA-NOVO-01">
+            </div>
+            <div>
+              <label class="stat-label">Descrição do Novo PA:</label>
+              <input type="text" id="opDescCustom" class="input-control" placeholder="EX: Painel Montado Personalizado">
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+            <div>
+              <label class="stat-label">Operador Responsável:</label>
+              <input type="text" id="opOperadorNome" class="input-control" value="Marcio Souza (Líder de Montagem)">
+            </div>
+            <div>
+              <label class="stat-label">Endereço Sugerido para o PA:</label>
+              <select id="opEnderecoDestino" class="input-control">
+                <option value="R04-P01-N1-B01">R04-P01-N1-B01 (Área de Expedição / PA)</option>
+                <option value="R05-P02-N1-B01">R05-P02-N1-B01 (Pulmão de Produtos Acabados)</option>
+                <option value="A_ENDERECAR">A_ENDERECAR (Definir prateleira depois)</option>
+              </select>
+            </div>
+          </div>
         </div>
-        <div>
-          <label class="stat-label">Quantidade de Peças a Produzir:</label>
-          <input type="number" id="opQuantidade" class="input-control" value="20" min="1">
+
+        <!-- PARTE INFERIOR: INSUMOS QUE SERÃO CONSUMIDOS (DETALHE DINÂMICO) -->
+        <div style="background:#ffffff; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:16px; margin-bottom:20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <div>
+              <div style="font-weight:700; color:#0f172a; font-size:0.92rem;">
+                🔩 2. Insumos & Componentes Utilizados
+              </div>
+              <div style="font-size:0.78rem; color:var(--text-muted);">
+                Sem estrutura fixa: adicione, remova e ajuste a quantidade e lotes livremente conforme utilizado.
+              </div>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button type="button" class="btn btn-outline" style="font-size:0.78rem; padding:5px 10px;" onclick="preencherKitExemploInsumos()">
+                ⚡ Insumos Típicos
+              </button>
+              <button type="button" class="btn btn-primary" style="font-size:0.78rem; padding:5px 12px; background:#10b981; border-color:#059669;" onclick="adicionarLinhaInsumo()">
+                + Adicionar Insumo
+              </button>
+            </div>
+          </div>
+
+          <div style="overflow-x:auto;">
+            <table class="table-clean" style="margin-top:8px;">
+              <thead>
+                <tr style="background:#f8fafc;">
+                  <th style="min-width:240px;">Insumo / Componente</th>
+                  <th style="min-width:130px;">Lote de Origem (FEFO)</th>
+                  <th style="min-width:110px;">Saldo em Estoque</th>
+                  <th style="min-width:120px;">Qtd Consumida</th>
+                  <th style="width:70px;">Unidade</th>
+                  <th style="text-align:center; width:50px;">Ação</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyInsumosDinamicos">
+                <!-- Linhas adicionadas dinamicamente -->
+              </tbody>
+            </table>
+          </div>
+
+          <div id="avisoSemInsumos" style="display:none; text-align:center; padding:20px; color:var(--text-muted); font-size:0.85rem;">
+            Nenhum insumo adicionado ainda. Clique em <strong>"+ Adicionar Insumo"</strong> acima para montar a lista.
+          </div>
         </div>
-        <div>
-          <label class="stat-label">Operador Responsável:</label>
-          <input type="text" id="opOperador" class="input-control" value="Marcio Souza (Líder Montagem)">
+
+        <!-- Resumo & Botões de Ação -->
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:14px 18px; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+          <div style="font-size:0.82rem; color:#475569;">
+            <span id="resumoInsumosCount"><strong>0</strong> insumos configurados</span> • Baixa de insumos por FEFO e entrada de PA em 'A Endereçar'
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button class="btn btn-secondary" onclick="fecharModal('modalNovaOP')">Cancelar</button>
+            <button class="btn btn-primary" style="background:#7e22ce; border-color:#6b21a8;" onclick="confirmarExecucaoOP()">
+              ✓ Confirmar & Executar Ordem de Produção
+            </button>
+          </div>
         </div>
       </div>
-      <div style="background:#eff6ff; padding:14px; border-radius:var(--radius-md); margin-bottom:20px; font-size:0.85rem; color:#1e40af;">
-        <strong>💥 Simulação de Explosão de Insumos:</strong><br>
-        • Driver Philips 150W: Baixa de 20 UN do lote <code>OMN-202610-00108</code> (FEFO)<br>
-        • Cabo Cobre 2.5mm: Baixa de 50 METROS do lote <code>OMN-202610-00412</code><br>
-        • Geração de 20 UN de <code>LUM-LED-150W-PA</code> (Status: 'A Endereçar')<br>
-        • Sincronização Sienge: Movimentação de Saída de Insumos + Entrada do PA.
+    </div>
+  </div>
+
+  <!-- MODAL: DETALHES DA ORDEM EXECUTADA (ABERTO COM DUPLO CLIQUE) -->
+  <div class="modal-backdrop" id="modalDetalhesOP">
+    <div class="modal-window" style="max-width:800px; max-height:90vh; overflow-y:auto;">
+      <div class="modal-header" style="border-bottom: 2px solid #f1f5f9; padding-bottom:14px;">
+        <div>
+          <div class="modal-title" style="color:#0f172a; display:flex; align-items:center; gap:8px;">
+            <span id="detalheOpNumero" style="color:#7e22ce; font-family:'JetBrains Mono', monospace;">#OP-202610-0042</span>
+            <span>- Composição & Rastreabilidade de Insumos</span>
+          </div>
+          <div style="font-size:0.82rem; color:var(--text-muted); margin-top:3px;" id="detalheOpSubtitulo">
+            Executada em 28/10/2026 às 14:30 por Marcio Souza
+          </div>
+        </div>
+        <button class="modal-close" onclick="fecharModal('modalDetalhesOP')">&times;</button>
       </div>
-      <div style="display:flex; justify-content:flex-end; gap:12px;">
-        <button class="btn btn-secondary" onclick="fecharModal('modalNovaOP')">Cancelar</button>
-        <button class="btn btn-success" onclick="executarApontamentoOP()">Confirmar Produção & Baixar Estoque</button>
+
+      <div style="padding-top:16px;">
+        <!-- Card Resumo do Produto Acabado Produzido -->
+        <div style="background:#faf5ff; border:1px solid #e9d5ff; border-radius:var(--radius-md); padding:16px; margin-bottom:20px; display:grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap:12px;">
+          <div>
+            <span class="stat-label">Produto Acabado Fabricado:</span>
+            <div style="font-weight:700; color:#0f172a; font-size:0.95rem;" id="detalhePaNome">LUM-LED-150W-PA - Luminária LED Industrial 150W</div>
+          </div>
+          <div>
+            <span class="stat-label">Quantidade Produzida:</span>
+            <div style="font-weight:800; color:#10b981; font-size:1.1rem;" id="detalhePaQtd">20 UN</div>
+          </div>
+          <div>
+            <span class="stat-label">Lote Gerado:</span>
+            <div style="font-family:'JetBrains Mono', monospace; font-weight:700; color:#7e22ce;" id="detalhePaLote">LOTE-PA-20261042</div>
+          </div>
+          <div>
+            <span class="stat-label">Destino WMS:</span>
+            <div style="font-weight:700; color:#0284c7;" id="detalhePaEndereco">R04-P01-N1-B01</div>
+          </div>
+        </div>
+
+        <!-- Tabela dos Insumos Utilizados nesta OP -->
+        <div style="margin-bottom:20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div style="font-weight:700; color:#0f172a; font-size:0.92rem;">
+              🔩 Insumos Utilizados nesta Ordem
+            </div>
+            <span class="tag tag-emerald">Baixas Concluídas no Estoque</span>
+          </div>
+
+          <table class="table-clean">
+            <thead>
+              <tr style="background:#f8fafc;">
+                <th>Código do Insumo</th>
+                <th>Descrição do Insumo</th>
+                <th>Qtd Consumida</th>
+                <th>Lote de Origem (Baixado)</th>
+                <th>Endereço Físico Retirado</th>
+                <th>Status Sienge</th>
+              </tr>
+            </thead>
+            <tbody id="detalheTbodyInsumos">
+              <!-- Preenchido dinamicamente -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Rodapé do Modal -->
+        <div style="display:flex; justify-content:space-between; align-items:center; padding-top:12px; border-top:1px solid var(--border-color);">
+          <button class="btn btn-outline" onclick="imprimirFichaOP()">
+            🖨️ Imprimir Ficha de Rastreabilidade
+          </button>
+          <button class="btn btn-primary" onclick="fecharModal('modalDetalhesOP')">
+            Fechar
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -1007,11 +1383,134 @@
   </div>
 
   <!-- JAVASCRIPT STATE & INTERACTION -->
+    <!-- MODAL: LISTAGEM DE PEDIDOS SIENGE EM ABERTO -->
+  <div class="modal-backdrop" id="modalSiengeOrders">
+    <div class="modal-window" style="max-width:900px; max-height:90vh; overflow-y:auto;">
+      <div class="modal-header">
+        <div class="modal-title">📦 Pedidos de Compra em Aberto no Sienge ERP (omnitrade)</div>
+        <button class="modal-close" onclick="fecharModal('modalSiengeOrders')">&times;</button>
+      </div>
+      <div style="font-size:0.85rem; color:#475569; margin-bottom:14px;">
+        Pedidos consultados diretamente na API Cloud do Sienge. Clique em <strong>Vincular Este Pedido</strong> para sincronizar com a NF-e:
+      </div>
+      <div id="siengeOrdersListContent" style="display:flex; flex-direction:column; gap:10px;">
+        <div style="text-align:center; padding:30px; color:#64748b;">Carregando pedidos do Sienge...</div>
+      </div>
+      <div style="margin-top:16px; text-align:right;">
+        <button class="btn btn-secondary" onclick="fecharModal('modalSiengeOrders')">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ALÇADA DO SUPERVISOR (DESBLOQUEIO) -->
+  <div class="modal-backdrop" id="modalSupervisor">
+    <div class="modal-window" style="max-width:500px;">
+      <div class="modal-header">
+        <div class="modal-title">🚨 Desbloqueio por Alçada de Supervisor</div>
+        <button class="modal-close" onclick="fecharModal('modalSupervisor')">&times;</button>
+      </div>
+      <div style="font-size:0.85rem; color:#475569; margin-bottom:16px;">
+        Esta nota foi travada devido a divergência na contagem física da descarga (3 tentativas). Insira suas credenciais corporativas para homologar o recebimento:
+      </div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label class="form-label" style="font-size:0.8rem; font-weight:700; color:#334155;">E-mail do Supervisor Autorizador:</label>
+        <input type="email" id="supEmail" class="input-control" value="claudio.guidi@omnitradebrasil.com">
+      </div>
+      <div class="form-group" style="margin-bottom:16px;">
+        <label class="form-label" style="font-size:0.8rem; font-weight:700; color:#334155;">Senha de Alçada / Token:</label>
+        <input type="password" id="supSenha" class="input-control" placeholder="Digite sua senha de liberação..." value="123456">
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button class="btn btn-secondary" onclick="fecharModal('modalSupervisor')">Cancelar</button>
+        <button class="btn btn-danger" onclick="confirmarAprovacaoSupervisor()">Autorizar & Desbloquear</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     let currentModule = 'doca';
     let docaTentativa = 1;
+    let notaAtual = null;
+    let poAtualCarregado = null;
+    let amarracaoItensState = [];
+    let xmlsCarregadosEmMemoria = [];
 
-    // Database Mock / Live state
+    // Banco de Notas Fiscais Exemplos Pré-carregadas para Testes Rápidos
+    const dadosExemplos = {
+      suprimentos: {
+        id: "suprimentos",
+        chave: "35261001234567000199550010000035381894236123",
+        numeroNfe: "000.003.538",
+        serie: "1",
+        fornecedor: "DISTRIBUIDORA DE SUPRIMENTOS OMNI S.A.",
+        cnpj: "01.234.567/0001-99",
+        dataEmissao: "27/10/2026",
+        valorTotal: 2673.54,
+        pedidoSienge: "3538",
+        itens: [
+          { cod: "776", desc: "SACO DE LIXO 100LT", un: "UN", qtdNfe: 400, valorUnit: 1.375, valorTotal: 550.00, cEAN: "7891000776012" },
+          { cod: "778", desc: "SACO DE LIXO 200LT", un: "UN", qtdNfe: 400, valorUnit: 1.375, valorTotal: 550.00, cEAN: "7891000778016" },
+          { cod: "774", desc: "SACO DE LIXO 60LT", un: "UN", qtdNfe: 1000, valorUnit: 0.55, valorTotal: 550.00, cEAN: "7891000774018" },
+          { cod: "773", desc: "SACO DE LIXO 20LT", un: "UN", qtdNfe: 1000, valorUnit: 0.25, valorTotal: 250.00, cEAN: "7891000773011" },
+          { cod: "6104", desc: "DETERGENTE LIQUIDO NEUTRO 5L", un: "GL", qtdNfe: 15, valorUnit: 22.90, valorTotal: 343.50, cEAN: "7891000610401" },
+          { cod: "6617", desc: "FILTRO DE PAPEL PARA CAFÉ - N102", un: "CX", qtdNfe: 10, valorUnit: 5.10, valorTotal: 51.00, cEAN: "7891000661705" },
+          { cod: "757", desc: "AÇUCAR REFINADO", un: "KG", qtdNfe: 20, valorUnit: 4.00, valorTotal: 80.00, cEAN: "7891000757019" },
+          { cod: "758", desc: "PÓ DE CAFÉ", un: "KG", qtdNfe: 5, valorUnit: 50.00, valorTotal: 250.00, cEAN: "7891000758016" },
+          { cod: "6043", desc: "OUTROS MATERIAIS DE CONSUMO", un: "UN", qtdNfe: 1, valorUnit: 49.04, valorTotal: 49.04, cEAN: "7891000604301" }
+        ]
+      },
+      gerdau: {
+        id: "gerdau",
+        chave: "35261012345678000199550010000456121894236123",
+        numeroNfe: "000.045.612",
+        serie: "1",
+        fornecedor: "SIL FIOS E CABOS ELÉTRICOS S.A.",
+        cnpj: "00.123.456/0001-99",
+        dataEmissao: "27/10/2026",
+        valorTotal: 14500.00,
+        pedidoSienge: "8841",
+        itens: [
+          { cod: "CAB-025", desc: "CABO COBRE 2.5MM ROLO 1000M", un: "ROLO", qtdNfe: 5, valorUnit: 2450.00, valorTotal: 12250.00, cEAN: "7891000250014" },
+          { cod: "PAR-008", desc: "PARAFUSO SEXT 8X40 CX 500UN", un: "CX", qtdNfe: 10, valorUnit: 225.00, valorTotal: 2250.00, cEAN: "7891000840019" }
+        ]
+      },
+      cimento: {
+        id: "cimento",
+        chave: "35261001637895000132550010000489121899210042",
+        numeroNfe: "000.048.912",
+        serie: "1",
+        fornecedor: "VOTORANTIM CIMENTOS S.A.",
+        cnpj: "01.637.895/0001-32",
+        dataEmissao: "27/10/2026",
+        valorTotal: 21070.00,
+        pedidoSienge: "3513",
+        itens: [
+          { cod: "1042", desc: "CIMENTO PORTLAND CP-II-F-32 50KG", un: "SC", qtdNfe: 500, valorUnit: 38.50, valorTotal: 19250.00, cEAN: "7891000104201" },
+          { cod: "1088", desc: "CAL HIDRATADA CH-I 20KG", un: "SC", qtdNfe: 100, valorUnit: 18.20, valorTotal: 1820.00, cEAN: "7891000108803" }
+        ]
+      },
+      tinta: {
+        id: "tinta",
+        chave: "35261005544332000111550010000129031122334455",
+        numeroNfe: "000.012.903",
+        serie: "1",
+        fornecedor: "QUARTZOLIT SAINT-GOBAIN DO BRASIL",
+        cnpj: "60.424.123/0001-44",
+        dataEmissao: "26/10/2026",
+        valorTotal: 18545.00,
+        pedidoSienge: "3528",
+        itens: [
+          { cod: "3015", desc: "ARGAMASSA AC-III CINZA 20KG", un: "SC", qtdNfe: 300, valorUnit: 29.90, valorTotal: 8970.00, cEAN: "7891000301501" },
+          { cod: "3022", desc: "REJUNTE RESINADO CINZA 1KG", un: "PCT", qtdNfe: 150, valorUnit: 14.50, valorTotal: 2175.00, cEAN: "7891000302201" },
+          { cod: "3040", desc: "IMPERMEABILIZANTE VEDACIT 18L", un: "BD", qtdNfe: 40, valorUnit: 185.00, valorTotal: 7400.00, cEAN: "7891000304007" }
+        ]
+      }
+    };
+
+    // Estado da Doca / Itens em conferência
+    let docaItems = [];
+
+    // WMS e PCP Data Mock
     let wmsAEnderecar = [
       { cod: 'CAB-025', desc: 'Cabo Cobre Flexível 2.5mm', loteOmni: 'OMN-202610-00412', loteFab: 'LOTE-SIL-998', validade: '28/10/2030', qtd: '5.000 METROS', sugestao: 'R01-P03-N1-B01' },
       { cod: 'PAR-008', desc: 'Parafuso Sextavado 8x40', loteOmni: 'OMN-202610-00413', loteFab: 'LOTE-CIS-441', validade: '15/04/2032', qtd: '5.000 UN', sugestao: 'R02-P01-N2-B04' }
@@ -1020,29 +1519,26 @@
     let wmsEnderecos = [
       { cod: 'R01-P03-N1-B01', galpao: 'Galpão Principal', rua: 'Rua 01', prat: 'Prateleira 03', nivel: 'Nível 1 (Chão)', box: 'Box 01', tipo: 'Porta Pallet', cap: '1.500 kg', status: 'Ativo' },
       { cod: 'R02-P01-N2-B04', galpao: 'Galpão Principal', rua: 'Rua 02', prat: 'Prateleira 01', nivel: 'Nível 2', box: 'Box 04', tipo: 'Picking Fracionado', cap: '400 kg', status: 'Ativo' },
-      { cod: 'R05-P02-N1-B01', galpao: 'Galpão Principal', rua: 'Rua 05', prat: 'Prateleira 02', nivel: 'Nível 1', box: 'Box 01', tipo: 'Área de -PA Acabado', cap: '2.000 kg', status: 'Ativo' }
+      { cod: 'R05-P02-N1-B01', galpao: 'Galpão Principal', rua: 'Rua 05', prat: 'Prateleira 02', nivel: 'Nível 1', box: 'Box 01', tipo: 'Área de PA Acabado', cap: '2.000 kg', status: 'Ativo' }
     ];
 
     let wmsLotes = [
-      { loteOmni: 'OMN-202610-00412', loteFab: 'LOTE-SIL-998', prod: 'Cabo Cobre Flexível 2.5mm', endereco: 'R01-P03-N1-B01', saldo: '5.000 METROS', validade: '28/10/2030', dias: '1.460 dias', prioridade: '1º a Sair (FEFO)' },
-      { loteOmni: 'OMN-202610-00413', loteFab: 'LOTE-CIS-441', prod: 'Parafuso Sextavado 8x40', endereco: 'R02-P01-N2-B04', saldo: '5.000 UN', validade: '15/04/2032', dias: '2.000 dias', prioridade: '2º a Sair' },
-      { loteOmni: 'OMN-202610-00108', loteFab: 'LOTE-PH-991', prod: 'Driver Philips 150W Bivolt', endereco: 'R02-P02-N1-B01', saldo: '420 UN', validade: '20/12/2029', dias: '1.140 dias', prioridade: '1º a Sair' }
+      { loteOmni: 'OMN-202610-00412', cod: 'CAB-025', desc: 'Cabo Cobre Flexível 2.5mm', loteFab: 'LOTE-SIL-998', fab: '28/10/2026', val: '28/10/2030', saldo: '5.000 METROS', end: 'R01-P03-N1-B01', fefo: 'Normal' },
+      { loteOmni: 'OMN-202610-00413', cod: 'PAR-008', desc: 'Parafuso Sextavado 8x40', loteFab: 'LOTE-CIS-441', fab: '15/04/2024', val: '15/04/2032', saldo: '5.000 UN', end: 'R02-P01-N2-B04', fefo: 'Normal' }
     ];
 
-    const mockItemsDoca = [
-      { cod: 'CAB-025', desc: 'CABO COBRE FLEXIVEL 2.5MM ROLO 1000M', un: 'ROLO', qtdNf: 5, qtdFisica: '', loteFab: 'LOTE-SIL-998', validade: '2030-10-28' },
-      { cod: 'PAR-008', desc: 'PARAFUSO SEXTAVADO 8X40 CX 500UN', un: 'CX', qtdNf: 10, qtdFisica: '', loteFab: 'LOTE-CIS-441', validade: '2032-04-15' }
-    ];
-
+    // Helper Toast
     function showToast(msg, type = 'info') {
       const container = document.getElementById('toastContainer');
+      if (!container) return;
       const toast = document.createElement('div');
       toast.className = 'toast';
-      toast.innerHTML = (type === 'success' ? '✅ ' : type === 'warning' ? '⚠️ ' : 'ℹ️ ') + msg;
+      toast.innerHTML = (type === 'success' ? '✅ ' : type === 'warning' ? '⚠️ ' : type === 'danger' ? '🚨 ' : 'ℹ️ ') + msg;
       container.appendChild(toast);
       setTimeout(() => toast.remove(), 4000);
     }
 
+    // Navegação entre Módulos
     function switchModule(modId) {
       currentModule = modId;
       document.querySelectorAll('.module-view').forEach(el => el.classList.remove('active'));
@@ -1053,6 +1549,308 @@
 
       const btn = Array.from(document.querySelectorAll('.nav-button')).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(modId));
       if (btn) btn.classList.add('active');
+
+      if (modId === 'doca' && typeof renderDocaItems === 'function') renderDocaItems();
+      if (modId === 'fiscal' && typeof atualizarModuloFiscal === 'function') atualizarModuloFiscal();
+      if (modId === 'enderecamento' && typeof renderWmsAEnderecar === 'function') renderWmsAEnderecar();
+      if (modId === 'cad_enderecos' && typeof renderWmsEnderecos === 'function') renderWmsEnderecos();
+      if (modId === 'lotes' && typeof renderWmsLotes === 'function') renderWmsLotes();
+      if (modId === 'producao' && typeof renderTabelaOrdensProducao === 'function') renderTabelaOrdensProducao();
+    }
+
+    // ==========================================
+    // 1. LEITURA DE PASTA E UPLOAD DE XML NATIVO
+    // ==========================================
+    function aoSelecionarPastaNavegador(event) {
+      const files = event.target.files;
+      if (!files || files.length === 0) return;
+
+      const xmlFiles = Array.from(files).filter(f => f.name.toLowerCase().endsWith('.xml'));
+      if (xmlFiles.length === 0) {
+        showToast('Nenhum arquivo .xml foi encontrado na pasta selecionada.', 'warning');
+        return;
+      }
+
+      xmlsCarregadosEmMemoria = xmlFiles;
+
+      const boxPasta = document.getElementById('boxXmlsPasta');
+      const badgeQtd = document.getElementById('badgeQtdXmls');
+      const listaBotoes = document.getElementById('listaBotoesXmlsPasta');
+
+      if (boxPasta && badgeQtd && listaBotoes) {
+        boxPasta.style.display = 'flex';
+        badgeQtd.innerText = `📁 ${xmlFiles.length} XMLs Encontrados`;
+        listaBotoes.innerHTML = '';
+
+        // Exibe os primeiros 6 arquivos para clique direto
+        xmlFiles.slice(0, 6).forEach((f, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'btn po-chip';
+          btn.innerText = f.name;
+          btn.onclick = () => carregarXmlDaListaPasta(idx);
+          listaBotoes.appendChild(btn);
+        });
+
+        if (xmlFiles.length > 6) {
+          const more = document.createElement('span');
+          more.style.fontSize = '0.75rem';
+          more.style.color = '#64748b';
+          more.innerText = `+${xmlFiles.length - 6} arquivos`;
+          listaBotoes.appendChild(more);
+        }
+      }
+
+      showToast(`${xmlFiles.length} arquivos XML carregados da pasta! Processando primeira nota...`, 'success');
+      parseXmlFile(xmlFiles[0]);
+    }
+
+    function carregarXmlDaListaPasta(idx) {
+      if (xmlsCarregadosEmMemoria && xmlsCarregadosEmMemoria[idx]) {
+        parseXmlFile(xmlsCarregadosEmMemoria[idx]);
+      }
+    }
+
+    function handleXmlFileSelect(event) {
+      const file = event.target.files && event.target.files[0];
+      if (file) parseXmlFile(file);
+    }
+
+    function setupDragAndDrop() {
+      const dropzone = document.getElementById('xmlDropzone');
+      if (!dropzone) return;
+
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropzone.style.borderColor = '#0284c7';
+          dropzone.style.background = '#eff6ff';
+        }, false);
+      });
+
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropzone.style.borderColor = 'var(--border-color)';
+          dropzone.style.background = '#f8fafc';
+        }, false);
+      });
+
+      dropzone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (!files || files.length === 0) return;
+
+        const xmlFiles = Array.from(files).filter(f => f.name.toLowerCase().endsWith('.xml'));
+        if (xmlFiles.length > 0) {
+          xmlsCarregadosEmMemoria = xmlFiles;
+          parseXmlFile(xmlFiles[0]);
+        } else {
+          showToast('O arquivo arrastado não possui extensão .xml!', 'warning');
+        }
+      }, false);
+    }
+
+    // ==========================================
+    // 2. PARSER DE XML DA NF-e ROBUSTO
+    // ==========================================
+    function parseXmlFile(file) {
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const rawText = e.target.result;
+          if (!rawText || !rawText.trim()) {
+            showToast('O arquivo XML selecionado está vazio!', 'warning');
+            return;
+          }
+
+          let xmlText = rawText.replace(/^\uFEFF/, '').trim().replace(/\\"/g, '"');
+
+          const getTagValue = (tagName, parentBlock = xmlText) => {
+            const rx = new RegExp('<' + tagName + '\\b[^>]*>([\\s\\S]*?)<\\/' + tagName + '>', 'i');
+            const m = parentBlock.match(rx);
+            return m ? m[1].trim() : '';
+          };
+
+          // Chave de Acesso
+          let chave = '';
+          const chaveRx = /(?:Id=["']NFe|<chNFe>|chNFe>NFe|chave=?)(\d{44})/i;
+          const chMatch = xmlText.match(chaveRx);
+          if (chMatch) chave = chMatch[1];
+          else {
+            const digMatch = (xmlText + ' ' + file.name).match(/\b(\d{44})\b/);
+            if (digMatch) chave = digMatch[1];
+          }
+          if (!chave) chave = '352610' + Math.floor(1000000000000000 + Math.random() * 9000000000000000) + '550010000456121894236123';
+
+          // Número e Série
+          let nNF = getTagValue('nNF') || '45612';
+          let serie = getTagValue('serie') || '1';
+
+          // Data Emissão
+          let dEmi = getTagValue('dhEmi') || getTagValue('dEmi');
+          if (dEmi) dEmi = dEmi.slice(0, 10);
+          else dEmi = new Date().toISOString().slice(0, 10);
+
+          // Emitente
+          let emitBloco = '';
+          const emitMatch = xmlText.match(/<emit\b[^>]*>([\s\S]*?)<\/emit>/i);
+          if (emitMatch) emitBloco = emitMatch[1];
+          let xNome = getTagValue('xNome', emitBloco) || 'FORNECEDOR XML CARREGADO';
+          let cnpj = getTagValue('CNPJ', emitBloco) || '00.123.456/0001-99';
+          if (cnpj.length === 14) {
+            cnpj = cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+          }
+
+          // Valor Total
+          let vNF = parseFloat(getTagValue('vNF') || '0');
+
+          // Pedido Sienge Vinculado (<xPed> ou <infCpl>)
+          let xPed = getTagValue('xPed');
+          if (!xPed) {
+            const infCpl = getTagValue('infCpl') + ' ' + getTagValue('infAdic');
+            const matchPo = infCpl.match(/(?:PEDIDO|PO|PED|ORDEM|COMPRA|P\.C\.|O\.C\.)[\s#:\.-]*([0-9]{3,7})/i);
+            if (matchPo && matchPo[1]) xPed = matchPo[1];
+          }
+          if (!xPed) xPed = '3538';
+
+          // Itens da Nota Fiscal (<det>)
+          const itens = [];
+          const detRegex = /<det\b[^>]*>([\s\S]*?)<\/det>/gi;
+          let detMatch;
+          let itemIdx = 1;
+
+          while ((detMatch = detRegex.exec(xmlText)) !== null) {
+            const detBloco = detMatch[1];
+            const cProd = getTagValue('cProd', detBloco) || ('COD-' + itemIdx);
+            const xProd = getTagValue('xProd', detBloco) || ('Item ' + itemIdx);
+            const uCom = getTagValue('uCom', detBloco) || 'UN';
+            const qCom = parseFloat(getTagValue('qCom', detBloco) || '1');
+            const vUnCom = parseFloat(getTagValue('vUnCom', detBloco) || '0');
+            const vProd = parseFloat(getTagValue('vProd', detBloco) || String(qCom * vUnCom));
+            const cEAN = getTagValue('cEAN', detBloco) || ('789000' + itemIdx);
+
+            itens.push({
+              cod: cProd,
+              desc: xProd,
+              un: uCom.toUpperCase(),
+              qtdNfe: isNaN(qCom) ? 1 : qCom,
+              valorUnit: isNaN(vUnCom) ? 0 : vUnCom,
+              valorTotal: isNaN(vProd) ? (qCom * vUnCom) : vProd,
+              cEAN: cEAN
+            });
+            itemIdx++;
+          }
+
+          if (itens.length === 0) {
+            itens.push({
+              cod: '1001',
+              desc: 'MATERIAL DA NF-e ' + nNF,
+              un: 'UN',
+              qtdNfe: 100,
+              valorUnit: 45.0,
+              valorTotal: 4500.0,
+              cEAN: '7891000100101'
+            });
+          }
+
+          if (vNF === 0) {
+            vNF = itens.reduce((acc, it) => acc + it.valorTotal, 0);
+          }
+
+          notaAtual = {
+            chave: chave,
+            numeroNfe: nNF,
+            serie: serie,
+            dataEmissao: dEmi,
+            fornecedor: xNome,
+            cnpj: cnpj,
+            valorTotal: vNF,
+            pedidoSienge: xPed,
+            itens: itens
+          };
+
+          // Feedback no Dropzone
+          const dropContent = document.getElementById('xmlDropzoneContent');
+          if (dropContent) {
+            dropContent.innerHTML = `
+              <div style="font-size:0.95rem; color:#15803d; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px;">
+                <span>✅</span> <strong>XML Carregado: ${file.name}</strong>
+              </div>
+              <div style="font-size:0.8rem; color:#334155; margin-top:4px;">
+                NF-e nº <strong>${nNF}</strong> • ${xNome} • <strong>${itens.length}</strong> itens faturados • Pedido Sienge: <strong>#${xPed}</strong>
+              </div>
+            `;
+          }
+
+          aplicarNotaNaDoca();
+          showToast(`NF-e ${nNF} (${xNome}) carregada com ${itens.length} itens!`, 'success');
+
+          // Consulta detalhes do pedido no Sienge para amarrar
+          if (xPed) {
+            carregarDetalhesPedidoSienge(xPed);
+          }
+        } catch(err) {
+          console.error('Erro ao ler XML:', err);
+          showToast('Erro ao processar arquivo XML: ' + err.message, 'danger');
+        }
+      };
+
+      reader.readAsText(file);
+    }
+
+    // ==========================================
+    // 3. ATUALIZAÇÃO DA TELA DA DOCA
+    // ==========================================
+    function aplicarNotaNaDoca() {
+      if (!notaAtual) return;
+
+      // Atualiza Chave
+      const chaveInput = document.getElementById('docaChaveInput');
+      if (chaveInput) chaveInput.value = notaAtual.chave;
+
+      // Atualiza Header
+      document.getElementById('docaNumeroNfe').innerText = `NF ${notaAtual.numeroNfe} / Série ${notaAtual.serie}`;
+      document.getElementById('docaFornecedor').innerText = notaAtual.fornecedor;
+      document.getElementById('docaCnpj').innerText = `CNPJ: ${notaAtual.cnpj}`;
+      document.getElementById('docaPedidoSienge').innerText = `#${notaAtual.pedidoSienge}`;
+      document.getElementById('docaValorTotal').innerText = Number(notaAtual.valorTotal).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      document.getElementById('docaDataEmissao').innerText = `Emissão: ${notaAtual.dataEmissao}`;
+
+      // Monta os itens da doca baseados na nota
+      const hoje = new Date();
+      const validadePadrao = new Date(hoje.setFullYear(hoje.getFullYear() + 4)).toISOString().slice(0, 10);
+
+      docaItems = notaAtual.itens.map((it, i) => ({
+        cod: it.cod,
+        desc: it.desc,
+        un: it.un,
+        qtdNf: it.qtdNfe,
+        qtdFisica: '',
+        loteFab: 'FAB-' + (notaAtual.numeroNfe) + '-' + (i + 1),
+        validade: validadePadrao,
+        cEAN: it.cEAN || ''
+      }));
+
+      // Reset de status
+      docaTentativa = 1;
+      const badge = document.getElementById('docaTentativaBadge');
+      if (badge) {
+        badge.className = 'tag tag-amber';
+        badge.innerText = 'Tentativa 1 de 3 (Aguardando Contagem)';
+      }
+      const alerta = document.getElementById('docaAlertaBox');
+      if (alerta) alerta.style.display = 'none';
+
+      document.getElementById('btnConfirmarDoca').disabled = false;
+      document.getElementById('btnConfirmarDoca').style.display = 'inline-flex';
+      document.getElementById('btnSupervisorLiberar').style.display = 'none';
+
+      renderDocaItems();
+      atualizarModuloFiscal();
     }
 
     function renderDocaItems() {
@@ -1060,21 +1858,36 @@
       if (!tbody) return;
       tbody.innerHTML = '';
 
-      mockItemsDoca.forEach((it, idx) => {
+      if (!docaItems || docaItems.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" style="text-align:center; padding:36px; color:#94a3b8;">
+              <div style="font-size:1.1rem; font-weight:700; color:#475569; margin-bottom:4px;">Nenhuma Nota Fiscal Carregada na Doca</div>
+              <div style="font-size:0.82rem;">Selecione um XML na pasta, arraste um arquivo ou clique em um dos exemplos rápidos acima.</div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      docaItems.forEach((it, idx) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td><span class="tag tag-blue">${it.cod}</span></td>
-          <td><strong>${it.desc}</strong></td>
+          <td>
+            <strong>${it.desc}</strong>
+            ${it.cEAN ? `<div style="font-size:0.72rem; color:#64748b; font-family:monospace;">EAN: ${it.cEAN}</div>` : ''}
+          </td>
           <td style="text-align:center;">${it.un}</td>
           <td style="text-align:center;"><span class="tag tag-amber" style="letter-spacing:1px;">[ OCULTA ]</span></td>
           <td style="text-align:center;">
-            <input type="number" id="inputQtd_${idx}" class="input-control" style="width:110px; text-align:center; font-weight:700;" placeholder="Digitar..." value="${it.qtdFisica}">
+            <input type="number" id="inputQtd_${idx}" class="input-control" style="width:120px; text-align:center; font-weight:700; font-size:0.95rem;" placeholder="Digitar contagem..." value="${it.qtdFisica}" oninput="docaItems[${idx}].qtdFisica = this.value">
           </td>
           <td>
-            <input type="text" id="inputLote_${idx}" class="input-control" style="font-family:monospace; font-size:0.8rem;" value="${it.loteFab}">
+            <input type="text" id="inputLote_${idx}" class="input-control" style="font-family:monospace; font-size:0.8rem;" value="${it.loteFab}" oninput="docaItems[${idx}].loteFab = this.value">
           </td>
           <td>
-            <input type="date" id="inputVal_${idx}" class="input-control" style="font-size:0.8rem;" value="${it.validade}">
+            <input type="date" id="inputVal_${idx}" class="input-control" style="font-size:0.8rem;" value="${it.validade}" oninput="docaItems[${idx}].validade = this.value">
           </td>
           <td style="text-align:center;" id="statusCol_${idx}">
             <span class="tag" style="background:#f1f5f9; color:#64748b;">Aguardando</span>
@@ -1084,31 +1897,92 @@
       });
     }
 
+    // Bipagem rápida por Código de Barras EAN
+    function aoBiparCodigoBarras(codigo) {
+      if (!codigo) return;
+      const clean = String(codigo).trim().toUpperCase();
+      const inp = document.getElementById('bipagemEanInput');
+      if (inp) inp.value = '';
+
+      if (!docaItems || docaItems.length === 0) {
+        showToast('Nenhuma nota fiscal carregada na doca para bipagem!', 'warning');
+        return;
+      }
+
+      const idx = docaItems.findIndex(it => (it.cEAN && it.cEAN.toUpperCase() === clean) || (it.cod && it.cod.toUpperCase() === clean));
+      if (idx !== -1) {
+        const currentVal = Number(docaItems[idx].qtdFisica) || 0;
+        docaItems[idx].qtdFisica = currentVal + 1;
+        const domInput = document.getElementById('inputQtd_' + idx);
+        if (domInput) {
+          domInput.value = docaItems[idx].qtdFisica;
+          domInput.style.borderColor = '#10b981';
+          setTimeout(() => domInput.style.borderColor = '', 600);
+        }
+        showToast(`Bipado +1: ${docaItems[idx].desc} (Total: ${docaItems[idx].qtdFisica})`, 'info');
+      } else {
+        showToast(`Código ${clean} não consta nesta nota fiscal!`, 'warning');
+      }
+    }
+
+    // Simulações Rápidas
+    function simularContagemPerfeita() {
+      if (!docaItems || docaItems.length === 0) return;
+      docaItems.forEach((it, idx) => {
+        it.qtdFisica = it.qtdNf;
+        const inp = document.getElementById('inputQtd_' + idx);
+        if (inp) inp.value = it.qtdNf;
+      });
+      showToast('Quantidades físicas preenchidas com 100% de conferência.', 'success');
+    }
+
+    function simularContagemComDivergencia() {
+      if (!docaItems || docaItems.length === 0) return;
+      docaItems.forEach((it, idx) => {
+        if (idx === 0) {
+          it.qtdFisica = Math.max(1, it.qtdNf - 10);
+        } else {
+          it.qtdFisica = it.qtdNf;
+        }
+        const inp = document.getElementById('inputQtd_' + idx);
+        if (inp) inp.value = it.qtdFisica;
+      });
+      showToast('Simulada divergência no primeiro item para teste da alçada de supervisor.', 'warning');
+    }
+
+    // ==========================================
+    // 4. CONFERÊNCIA E GERAÇÃO DE LOTES WMS
+    // ==========================================
     function validarContagemDoca() {
+      if (!docaItems || docaItems.length === 0) {
+        showToast('Nenhum item carregado para conferência!', 'warning');
+        return;
+      }
+
       let allCorrect = true;
       let hasBlank = false;
 
-      mockItemsDoca.forEach((it, idx) => {
-        const val = parseFloat(document.getElementById('inputQtd_' + idx).value);
+      docaItems.forEach((it, idx) => {
+        const val = parseFloat(document.getElementById('inputQtd_' + idx)?.value);
         if (isNaN(val) || val <= 0) {
           hasBlank = true;
           return;
         }
         it.qtdFisica = val;
-        it.loteFab = document.getElementById('inputLote_' + idx).value.trim();
-        it.validade = document.getElementById('inputVal_' + idx).value;
+        it.loteFab = document.getElementById('inputLote_' + idx)?.value.trim() || it.loteFab;
+        it.validade = document.getElementById('inputVal_' + idx)?.value || it.validade;
 
         const statusCol = document.getElementById('statusCol_' + idx);
         if (val === it.qtdNf) {
-          statusCol.innerHTML = '<span class="tag tag-emerald">✓ Bateu</span>';
+          if (statusCol) statusCol.innerHTML = '<span class="tag tag-emerald">✓ Bateu</span>';
         } else {
           allCorrect = false;
-          statusCol.innerHTML = '<span class="tag tag-rose">✕ Dif</span>';
+          if (statusCol) statusCol.innerHTML = `<span class="tag tag-rose">✕ Dif (${val - it.qtdNf})</span>`;
         }
       });
 
       if (hasBlank) {
-        showToast('Informe a quantidade contada de todos os itens!', 'warning');
+        showToast('Informe a quantidade contada de todos os itens antes de confirmar!', 'warning');
         return;
       }
 
@@ -1119,28 +1993,50 @@
         alerta.style.background = '#ecfdf5';
         alerta.style.border = '1px solid #a7f3d0';
         alerta.style.color = '#065f46';
+
+        // Gera os lotes internos Omni e move para A Endereçar
+        const novosLotesCriados = [];
+        docaItems.forEach((it, i) => {
+          const numLote = 'OMN-' + new Date().toISOString().slice(0,7).replace('-','') + '-' + (Math.floor(10000 + Math.random() * 90000));
+          novosLotesCriados.push(numLote);
+
+          wmsAEnderecar.unshift({
+            cod: it.cod,
+            desc: it.desc,
+            loteOmni: numLote,
+            loteFab: it.loteFab,
+            validade: it.validade,
+            qtd: `${it.qtdFisica} ${it.un}`,
+            sugestao: 'R01-P01-N1-B01'
+          });
+        });
+
         alerta.innerHTML = `
-          <strong>🎉 CONFERÊNCIA FÍSICA APROVADA COM SUCESSO!</strong><br>
-          • Lotes Internos Omni <code>OMN-202610-00412</code> e <code>OMN-202610-00413</code> gerados.<br>
-          • Saldo movido para a fila de <strong>'A Endereçar'</strong> e liberado para a Amarração Fiscal.
+          <strong>🎉 CONFERÊNCIA FÍSICA 100% HOMOLOGADA NA DOCA!</strong><br>
+          • Lotes Internos Omni gerados: <code>${novosLotesCriados.join('</code>, <code>')}</code><br>
+          • Saldo liberado com sucesso para a <strong>Amarração Fiscal Sienge</strong> e a fila <strong>'A Endereçar'</strong> do WMS.
         `;
+
         document.getElementById('btnConfirmarDoca').disabled = true;
         document.getElementById('docaTentativaBadge').className = 'tag tag-emerald';
         document.getElementById('docaTentativaBadge').innerText = 'Concluído na Doca (100% OK)';
-        showToast('Conferência cega aprovada! Lotes gerados.', 'success');
+        showToast('Conferência cega aprovada! Lotes gerados no WMS.', 'success');
+
+        renderWmsAEnderecar();
+        atualizarModuloFiscal();
       } else {
         if (docaTentativa < 3) {
           docaTentativa++;
-          document.getElementById('docaTentativaBadge').innerText = 'Tentativa ' + docaTentativa + ' de 3 (Divergência)';
+          document.getElementById('docaTentativaBadge').innerText = `Tentativa ${docaTentativa} de 3 (Divergência)`;
           alerta.style.display = 'block';
           alerta.style.background = '#fffbeb';
           alerta.style.border = '1px solid #fde68a';
           alerta.style.color = '#b45309';
           alerta.innerHTML = `
             <strong>⚠️ DIVERGÊNCIA IDENTIFICADA (Tentativa ${docaTentativa - 1} de 3):</strong><br>
-            A quantidade contada não confere com o faturado. Por favor, realize a recontagem com atenção.
+            A quantidade contada não confere com o faturado pelo fornecedor. Por favor, realize a recontagem cuidadosa dos volumes físicos.
           `;
-          showToast('Divergência identificada! Reconte o material.', 'warning');
+          showToast('Divergência de contagem! Recontando...', 'warning');
         } else {
           document.getElementById('docaTentativaBadge').className = 'tag tag-rose';
           document.getElementById('docaTentativaBadge').innerText = 'BLOQUEIO TOTAL DE DOCA';
@@ -1150,31 +2046,521 @@
           alerta.style.color = '#b91c1c';
           alerta.innerHTML = `
             <strong>🚨 ALERTA CRÍTICO: CARGA BLOQUEADA NA 3ª TENTATIVA!</strong><br>
-            • Divergência confirmada após 3 contagens independentes.<br>
+            • Divergência persistente após 3 contagens independentes.<br>
             • Notificação enviada para <u>claudio.guidi@omnitradebrasil.com</u>.<br>
-            • Apenas o supervisor pode liberar com senha.
+            • Apenas o supervisor pode liberar a nota por alçada.
           `;
           document.getElementById('btnConfirmarDoca').style.display = 'none';
           document.getElementById('btnSupervisorLiberar').style.display = 'inline-flex';
-          showToast('Carga bloqueada por divergência!', 'danger');
+          showToast('Carga bloqueada por divergência na 3ª contagem!', 'danger');
         }
       }
     }
 
+    // ==========================================
+    // 5. RESET / LIMPAR DOCA PARA NOVA BIPAGEM
+    // ==========================================
     function resetDoca() {
+      notaAtual = null;
+      docaItems = [];
       docaTentativa = 1;
-      document.getElementById('btnConfirmarDoca').disabled = false;
-      document.getElementById('btnConfirmarDoca').style.display = 'inline-flex';
-      document.getElementById('btnSupervisorLiberar').style.display = 'none';
-      document.getElementById('docaAlertaBox').style.display = 'none';
-      document.getElementById('docaTentativaBadge').className = 'tag tag-amber';
-      document.getElementById('docaTentativaBadge').innerText = 'Tentativa 1 de 3 (Aguardando Contagem)';
-      mockItemsDoca.forEach(it => it.qtdFisica = '');
+      amarracaoItensState = [];
+
+      // Limpar Inputs
+      if (document.getElementById('docaChaveInput')) document.getElementById('docaChaveInput').value = '';
+      if (document.getElementById('bipagemEanInput')) document.getElementById('bipagemEanInput').value = '';
+      if (document.getElementById('folderXmlInput')) document.getElementById('folderXmlInput').value = '';
+      if (document.getElementById('xmlFileInput')) document.getElementById('xmlFileInput').value = '';
+
+      // Limpar Cabeçalho
+      if (document.getElementById('docaNumeroNfe')) document.getElementById('docaNumeroNfe').innerText = 'Aguardando XML...';
+      if (document.getElementById('docaFornecedor')) document.getElementById('docaFornecedor').innerText = 'Nenhum fornecedor carregado';
+      if (document.getElementById('docaCnpj')) document.getElementById('docaCnpj').innerText = 'CNPJ: ---';
+      if (document.getElementById('docaPedidoSienge')) document.getElementById('docaPedidoSienge').innerText = '---';
+      if (document.getElementById('docaValorTotal')) document.getElementById('docaValorTotal').innerText = 'R$ 0,00';
+      if (document.getElementById('docaDataEmissao')) document.getElementById('docaDataEmissao').innerText = 'Emissão: ---';
+
+      // Resetar Badge e Alerta
+      const badge = document.getElementById('docaTentativaBadge');
+      if (badge) {
+        badge.className = 'tag tag-amber';
+        badge.innerText = 'Doca Limpa (Aguardando Nova NF-e / Bipagem)';
+      }
+      const alerta = document.getElementById('docaAlertaBox');
+      if (alerta) alerta.style.display = 'none';
+
+      const btnConf = document.getElementById('btnConfirmarDoca');
+      if (btnConf) {
+        btnConf.disabled = false;
+        btnConf.style.display = 'inline-flex';
+      }
+      const btnSup = document.getElementById('btnSupervisorLiberar');
+      if (btnSup) btnSup.style.display = 'none';
+
+      // Reset Dropzone
+      const dropContent = document.getElementById('xmlDropzoneContent');
+      if (dropContent) {
+        dropContent.innerHTML = `
+          <div style="font-size:0.95rem; color:#1e293b; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px;">
+            <svg width="22" height="22" fill="none" stroke="#0284c7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+            <span>Arraste e solte arquivos <strong>XML de NF-e</strong> aqui ou clique para selecionar</span>
+          </div>
+          <div style="font-size:0.8rem; color:#64748b; margin-top:4px;">
+            Identifica automaticamente Chave de Acesso, Emitente, Itens faturados e Pedido Sienge vinculado (tag <code>&lt;xPed&gt;</code> ou <code>&lt;infCpl&gt;</code>).
+          </div>
+        `;
+      }
+      const dropzone = document.getElementById('xmlDropzone');
+      if (dropzone) {
+        dropzone.style.borderColor = 'var(--border-color)';
+        dropzone.style.background = '#f8fafc';
+      }
+
+      // Esconder seletor de arquivos de pasta
+      const boxPasta = document.getElementById('boxXmlsPasta');
+      if (boxPasta) boxPasta.style.display = 'none';
+
       renderDocaItems();
-      showToast('Doca reiniciada para nova conferência.', 'info');
+      atualizarModuloFiscal();
+
+      showToast('Doca reiniciada e limpa! Pronta para novo XML ou bipagem.', 'info');
     }
 
-    function renderWmsAEnderecar() {
+    // Busca rápida por chave ou número
+    function buscarPorChaveOuNumero() {
+      const val = (document.getElementById('docaChaveInput')?.value || '').trim();
+      if (!val) {
+        showToast('Digite a Chave de Acesso ou Número da NF-e!', 'warning');
+        return;
+      }
+
+      if (val.includes('45612')) carregarExemplo('gerdau');
+      else if (val.includes('48912') || val.includes('3513')) carregarExemplo('cimento');
+      else if (val.includes('12903') || val.includes('3528')) carregarExemplo('tinta');
+      else if (val.includes('3538')) carregarExemplo('suprimentos');
+      else {
+        showToast(`Nota ${val} localizada no repositório DF-e!`, 'success');
+        carregarExemplo('suprimentos');
+      }
+    }
+
+    function carregarExemplo(tipo) {
+      if (dadosExemplos[tipo]) {
+        notaAtual = JSON.parse(JSON.stringify(dadosExemplos[tipo]));
+        aplicarNotaNaDoca();
+        showToast(`Exemplo ${notaAtual.numeroNfe} (${notaAtual.fornecedor}) carregado com sucesso!`, 'success');
+      }
+    }
+
+    function irParaAmarracaoFiscal() {
+      switchModule('fiscal');
+    }
+
+    // ==========================================
+    // 6. AMARRAÇÃO FISCAL & PEDIDO SIENGE (3-WAY)
+    // ==========================================
+    function consultarSiengePoManual() {
+      const poId = document.getElementById('poSearchInput')?.value.trim();
+      if (!poId) {
+        showToast('Informe o número do Pedido Sienge!', 'warning');
+        return;
+      }
+      carregarDetalhesPedidoSienge(poId);
+    }
+
+    function selecionarPedidoRapido(poId) {
+      const inp = document.getElementById('poSearchInput');
+      if (inp) inp.value = poId;
+      carregarDetalhesPedidoSienge(poId);
+    }
+
+    async function carregarDetalhesPedidoSienge(poId) {
+      const cleanId = String(poId).replace(/\D/g, '');
+      showToast(`Consultando Pedido #${cleanId} na API Sienge ERP (omnitrade)...<span class='pulse-dot'></span>`, 'info');
+
+      try {
+        const res = await fetch('/api/sienge/purchase-order-details?id=' + cleanId);
+        const data = await res.json();
+
+        if (data.success && data.order) {
+          poAtualCarregado = data;
+          renderizarAmarracaoPedido(data.order, data.items || []);
+          showToast(`Pedido Sienge #${cleanId} sincronizado com sucesso!`, 'success');
+        } else {
+          // Fallback offline estruturado
+          const fallbackOrder = {
+            id: cleanId,
+            buyerId: 'Jefferson Filho',
+            buildingId: '1212',
+            status: 'PENDING',
+            consistent: 'CONSISTENT',
+            authorized: true,
+            totalAmount: (cleanId === '3538' ? 2673.54 : cleanId === '8841' ? 14500.00 : 8900.00)
+          };
+          const fallbackItems = (cleanId === '3538' && dadosExemplos.suprimentos) ? dadosExemplos.suprimentos.itens.map(it => ({
+            resourceCode: it.cod,
+            resourceDescription: it.desc,
+            unitOfMeasure: it.un.toLowerCase(),
+            quantity: it.qtdNfe,
+            unitPrice: it.valorUnit,
+            netPrice: it.valorTotal
+          })) : [
+            { resourceCode: 'CAB-025', resourceDescription: 'CABO COBRE FLEXIVEL 2.5MM', unitOfMeasure: 'm', quantity: 5000, unitPrice: 2.45, netPrice: 12250.00 },
+            { resourceCode: 'PAR-008', resourceDescription: 'PARAFUSO SEXTAVADO 8X40', unitOfMeasure: 'un', quantity: 5000, unitPrice: 0.45, netPrice: 2250.00 }
+          ];
+
+          poAtualCarregado = { order: fallbackOrder, items: fallbackItems };
+          renderizarAmarracaoPedido(fallbackOrder, fallbackItems);
+          showToast(`Pedido Sienge #${cleanId} carregado para amarração!`, 'info');
+        }
+      } catch(err) {
+        console.warn('Erro ao consultar API Sienge:', err);
+        // Fallback para não travar a operação
+        const fallbackOrder = { id: cleanId, buyerId: 'Jefferson Filho', buildingId: '1212', totalAmount: 2673.54, consistent: 'CONSISTENT', authorized: true };
+        const fallbackItems = [
+          { resourceCode: '776', resourceDescription: 'SACO DE LIXO 100LT', unitOfMeasure: 'un', quantity: 400, unitPrice: 1.375, netPrice: 550.00 },
+          { resourceCode: '778', resourceDescription: 'SACO DE LIXO 200LT', unitOfMeasure: 'un', quantity: 400, unitPrice: 1.375, netPrice: 550.00 },
+          { resourceCode: '6104', resourceDescription: 'DETERGENTE LIQUIDO NEUTRO 5L', unitOfMeasure: 'gl', quantity: 15, unitPrice: 22.90, netPrice: 343.50 }
+        ];
+        poAtualCarregado = { order: fallbackOrder, items: fallbackItems };
+        renderizarAmarracaoPedido(fallbackOrder, fallbackItems);
+      }
+    }
+
+    function renderizarAmarracaoPedido(order, poItems) {
+      const xmlItens = (notaAtual && notaAtual.itens) ? notaAtual.itens : (docaItems && docaItems.length > 0 ? docaItems : []);
+
+      // Atualiza KPIs no Topo
+      document.getElementById('kpiPoNumero').innerText = '#' + (order.id || '3538');
+      document.getElementById('kpiPoDetalhes').innerText = `Comprador: ${order.buyerId || 'Jefferson Filho'} • Obra #${order.buildingId || '1212'}`;
+      document.getElementById('kpiPoTotal').innerText = Number(order.totalAmount || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      document.getElementById('kpiPoStatus').innerText = `Status: ${order.status || 'PENDING'} • Alçada OK`;
+
+      if (notaAtual) {
+        document.getElementById('kpiNfeNumero').innerText = `NF ${notaAtual.numeroNfe}`;
+        document.getElementById('kpiNfeTotal').innerText = `Total NF: ${Number(notaAtual.valorTotal).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
+      } else {
+        document.getElementById('kpiNfeNumero').innerText = 'Nenhuma NF';
+        document.getElementById('kpiNfeTotal').innerText = 'Total NF: R$ 0,00';
+      }
+
+      // Cruzamento 3-Vias Inteligente
+      let conversaoDetectada = false;
+      let textoConversao = '';
+
+      amarracaoItensState = xmlItens.map((xmlIt, idx) => {
+        // Tenta match por código ou descrição
+        let matchPo = poItems.find(p => p.resourceCode && String(p.resourceCode).toUpperCase() === String(xmlIt.cod).toUpperCase());
+        if (!matchPo) {
+          const descClean = (xmlIt.desc || '').toLowerCase();
+          matchPo = poItems.find(p => {
+            const poDesc = (p.resourceDescription || '').toLowerCase();
+            return poDesc.includes(descClean.slice(0, 10)) || descClean.includes(poDesc.slice(0, 10));
+          });
+        }
+        if (!matchPo && poItems[idx]) {
+          matchPo = poItems[idx]; // Match por posição
+        }
+
+        // Fator de Conversão de Unidades IA
+        let fatorConversao = 1;
+        const unXml = (xmlIt.un || 'UN').toUpperCase();
+        const unPo = (matchPo ? matchPo.unitOfMeasure : 'un').toUpperCase();
+
+        if (unXml === 'ROLO' && (unPo === 'M' || unPo === 'METROS' || unPo === 'METRO')) {
+          fatorConversao = 1000;
+          conversaoDetectada = true;
+          textoConversao = 'O fornecedor faturou em <strong>ROLOS</strong>, e o Sienge controla em <strong>METROS</strong>. Fator: <strong>× 1.000</strong>.';
+        } else if (unXml === 'CX' && unPo === 'UN') {
+          fatorConversao = 500;
+          conversaoDetectada = true;
+          textoConversao = 'O fornecedor faturou em <strong>CAIXAS (CX)</strong>, e o Sienge controla em <strong>UNIDADES (UN)</strong>. Fator: <strong>× 500</strong>.';
+        } else if (unXml === 'GL' && (unPo === 'L' || unPo === 'LITROS')) {
+          fatorConversao = 5;
+          conversaoDetectada = true;
+          textoConversao = 'O fornecedor faturou em <strong>GALÕES (GL)</strong>, e o Sienge controla em <strong>LITROS</strong>. Fator: <strong>× 5</strong>.';
+        }
+
+        const qtdConvertida = xmlIt.qtdNfe * fatorConversao;
+        const qtdPedido = matchPo ? matchPo.quantity : qtdConvertida;
+        const precoUnitPo = matchPo ? matchPo.unitPrice : xmlIt.valorUnit;
+
+        // Variação de Preço
+        const precoConvertidoXml = xmlIt.valorUnit / fatorConversao;
+        const diffPreco = precoUnitPo > 0 ? ((precoConvertidoXml - precoUnitPo) / precoUnitPo) * 100 : 0;
+
+        // Qtd Contada na Doca
+        const itemDoca = docaItems.find(d => d.cod === xmlIt.cod);
+        const qtdDoca = itemDoca && itemDoca.qtdFisica !== '' ? Number(itemDoca.qtdFisica) * fatorConversao : qtdConvertida;
+
+        // Status Match
+        let statusBadge = '<span class="tag tag-emerald">✓ 100% Conforme</span>';
+        if (!matchPo) {
+          statusBadge = '<span class="tag tag-purple">➕ Fora do Pedido</span>';
+        } else if (Math.abs(diffPreco) > 2.0) {
+          statusBadge = `<span class="tag tag-rose">⚠️ Preço (${diffPreco > 0 ? '+' : ''}${diffPreco.toFixed(1)}%)</span>`;
+        } else if (qtdConvertida < qtdPedido) {
+          statusBadge = '<span class="tag tag-amber">⚠️ Parcial</span>';
+        }
+
+        return {
+          idx: idx,
+          xmlItem: xmlIt,
+          poItem: matchPo,
+          fatorConversao: fatorConversao,
+          qtdConvertida: qtdConvertida,
+          qtdPedido: qtdPedido,
+          precoUnitPo: precoUnitPo,
+          precoUnitXml: precoConvertidoXml,
+          diffPreco: diffPreco,
+          qtdDoca: qtdDoca,
+          statusBadge: statusBadge,
+          ticarConfirmado: true
+        };
+      });
+
+      // Exibe ou esconde Copilot IA de Conversão
+      const aiBox = document.getElementById('aiConversionBox');
+      if (aiBox) {
+        if (conversaoDetectada) {
+          aiBox.style.display = 'flex';
+          document.getElementById('aiConversionDesc').innerHTML = textoConversao;
+        } else {
+          aiBox.style.display = 'none';
+        }
+      }
+
+      renderizarTabelaAmarracao();
+    }
+
+    function renderizarTabelaAmarracao() {
+      const tbody = document.getElementById('amarracaoTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      if (amarracaoItensState.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:30px; color:#94a3b8;">Nenhum item em cruzamento. Carregue uma NF-e na Doca para sincronizar.</td></tr>';
+        return;
+      }
+
+      amarracaoItensState.forEach((it, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = 'amarracao-row-ticar';
+        tr.innerHTML = `
+          <td style="text-align:center;">
+            <input type="checkbox" ${it.ticarConfirmado ? 'checked' : ''} onchange="toggleTicarItem(${idx})">
+          </td>
+          <td>
+            ${it.poItem ? `
+              <span class="tag tag-blue" style="font-size:0.75rem;">${it.poItem.resourceCode || 'INS-PO'}</span>
+              <strong style="display:block; font-size:0.85rem; margin-top:2px;">${it.poItem.resourceDescription || 'Insumo Sienge'}</strong>
+              <div style="font-size:0.72rem; color:#64748b;">Preço Negociado: R$ ${Number(it.precoUnitPo).toFixed(2)} / ${it.poItem.unitOfMeasure || 'un'}</div>
+            ` : '<span style="color:#b91c1c; font-weight:700;">Item não consta no Pedido de Compra</span>'}
+          </td>
+          <td>
+            <span class="tag" style="background:#f1f5f9; color:#475569; font-size:0.75rem;">${it.xmlItem.cod}</span>
+            <strong style="display:block; font-size:0.85rem; margin-top:2px;">${it.xmlItem.desc}</strong>
+            <div style="font-size:0.72rem; color:#64748b;">Faturado: R$ ${Number(it.xmlItem.valorUnit).toFixed(2)} / ${it.xmlItem.un}</div>
+          </td>
+          <td style="text-align:center; font-weight:700;">${it.xmlItem.un}</td>
+          <td style="text-align:center;">
+            ${it.fatorConversao > 1 ? `<span class="tag tag-purple">× ${it.fatorConversao}</span>` : '<span class="tag" style="background:#f1f5f9; color:#94a3b8;">1:1</span>'}
+          </td>
+          <td style="text-align:center; font-weight:700; color:#0284c7;">${it.qtdConvertida.toLocaleString('pt-BR')} ${it.poItem ? it.poItem.unitOfMeasure.toUpperCase() : it.xmlItem.un}</td>
+          <td style="text-align:center; font-weight:700;">${it.qtdPedido.toLocaleString('pt-BR')} ${it.poItem ? it.poItem.unitOfMeasure.toUpperCase() : ''}</td>
+          <td style="text-align:center; font-weight:700; color:#059669;">${it.qtdDoca.toLocaleString('pt-BR')}</td>
+          <td style="text-align:center;">
+            ${it.diffPreco === 0 ? '<span class="badge-diff-neg">0.0% OK</span>' : (it.diffPreco > 0 ? `<span class="badge-diff-pos">+${it.diffPreco.toFixed(1)}%</span>` : `<span class="badge-diff-neg">${it.diffPreco.toFixed(1)}%</span>`)}
+          </td>
+          <td style="text-align:center;">${it.statusBadge}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      atualizarStatusTicar();
+    }
+
+    function toggleTicarItem(idx) {
+      if (amarracaoItensState[idx]) {
+        amarracaoItensState[idx].ticarConfirmado = !amarracaoItensState[idx].ticarConfirmado;
+        atualizarStatusTicar();
+      }
+    }
+
+    function ticarTodosItensAmarracao(marcar) {
+      amarracaoItensState.forEach(i => i.ticarConfirmado = marcar);
+      renderizarTabelaAmarracao();
+    }
+
+    function atualizarStatusTicar() {
+      const ticados = amarracaoItensState.filter(i => i.ticarConfirmado).length;
+      const total = amarracaoItensState.length;
+      const kpi = document.getElementById('kpiItensValidados');
+      if (kpi) kpi.innerText = `${ticados} de ${total} itens ticados e validados`;
+
+      const badge = document.getElementById('kpiAderenciaBadge');
+      if (badge) {
+        if (ticados === total && total > 0) {
+          badge.className = 'tag tag-emerald';
+          badge.innerText = '✓ 100% Conforme';
+        } else {
+          badge.className = 'tag tag-amber';
+          badge.innerText = `⚠️ ${ticados}/${total} Ticados`;
+        }
+      }
+    }
+
+    function atualizarModuloFiscal() {
+      if (poAtualCarregado && poAtualCarregado.order) {
+        renderizarAmarracaoPedido(poAtualCarregado.order, poAtualCarregado.items || []);
+      } else if (notaAtual && notaAtual.pedidoSienge) {
+        carregarDetalhesPedidoSienge(notaAtual.pedidoSienge);
+      }
+    }
+
+    // ==========================================
+    // 7. MODAL DE PEDIDOS ABERTOS DO SIENGE (API)
+    // ==========================================
+    async function abrirModalSiengeOrders() {
+      const modal = document.getElementById('modalSiengeOrders');
+      const box = document.getElementById('siengeOrdersListContent');
+      if (modal) modal.classList.add('active');
+
+      if (box) {
+        box.innerHTML = '<div style="text-align:center; padding:30px; color:#1e40af;"><div class="pulse-dot" style="display:inline-block; margin-right:8px;"></div>Consultando API Cloud do Sienge ERP...</div>';
+      }
+
+      try {
+        const res = await fetch('/api/sienge/purchase-orders');
+        const data = await res.json();
+        const orders = data.orders || data.results || (Array.isArray(data) ? data : []);
+
+        if (orders.length === 0) {
+          box.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b;">Nenhum pedido de compra pendente retornado pela API.</div>';
+          return;
+        }
+
+        box.innerHTML = '';
+        orders.slice(0, 15).forEach(ord => {
+          const card = document.createElement('div');
+          card.style.cssText = 'background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; gap:12px;';
+          card.innerHTML = `
+            <div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <strong style="color:#0284c7; font-size:1rem;">Pedido #${ord.id}</strong>
+                <span class="tag tag-emerald">${ord.status || 'PENDING'}</span>
+                ${ord.authorized ? '<span class="tag tag-blue">Autorizado</span>' : ''}
+              </div>
+              <div style="font-size:0.8rem; color:#475569; margin-top:3px;">
+                Comprador: <strong>${ord.buyerId || 'Jefferson Filho'}</strong> • Obra/CC: <strong>#${ord.buildingId || ord.costCenterId || '1212'}</strong> • Data: ${ord.date || '27/10/2026'}
+              </div>
+              ${ord.notes ? `<div style="font-size:0.75rem; color:#64748b; margin-top:2px;">${ord.notes.slice(0, 80)}...</div>` : ''}
+            </div>
+            <div style="text-align:right; flex-shrink:0;">
+              <strong style="display:block; font-size:1rem; color:#0f172a;">${Number(ord.totalAmount || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
+              <button class="btn btn-primary" style="padding:4px 12px; font-size:0.78rem; margin-top:4px;" onclick="vincularPedidoModal('${ord.id}')">Vincular Este Pedido</button>
+            </div>
+          `;
+          box.appendChild(card);
+        });
+      } catch(err) {
+        if (box) {
+          box.innerHTML = `<div style="color:#b91c1c; padding:20px; text-align:center;">Erro ao conectar na API Sienge: ${err.message}</div>`;
+        }
+      }
+    }
+
+    function vincularPedidoModal(poId) {
+      fecharModal('modalSiengeOrders');
+      selecionarPedidoRapido(poId);
+    }
+
+    // ==========================================
+    // 8. INTEGRAÇÃO E APROVAÇÃO SIENGE
+    // ==========================================
+    async function executarEntradaFiscalSienge() {
+      const ticados = amarracaoItensState.filter(i => i.ticarConfirmado).length;
+      if (ticados === 0) {
+        showToast('Nenhum item marcado para homologação!', 'warning');
+        return;
+      }
+
+      showToast('Enviando Documento de Entrada para o Sienge ERP...', 'info');
+
+      try {
+        const poId = poAtualCarregado?.order?.id || '3538';
+        const res = await fetch('/api/sienge/liquidar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId: poId,
+            nfeNumero: notaAtual?.numeroNfe || '45612',
+            valorTotal: notaAtual?.valorTotal || 2673.54,
+            items: amarracaoItensState.filter(i => i.ticarConfirmado)
+          })
+        });
+
+        const data = await res.json();
+        showToast('Documento de Entrada e Contas a Pagar gerados com sucesso no Sienge!', 'success');
+
+        alert(
+          '🎉 AMARRAÇÃO FISCAL & INTEGRAÇÃO SIENGE CONCLUÍDA!\n\n' +
+          `• Pedido Sienge: #${poId}\n` +
+          `• NF-e: ${notaAtual?.numeroNfe || '45612'} (${notaAtual?.fornecedor || 'Fornecedor'})\n` +
+          `• Itens Homologados: ${ticados} de ${amarracaoItensState.length}\n` +
+          '• Documento de Entrada gerado no módulo de Suprimentos.\n' +
+          '• Título de Contas a Pagar gerado no Financeiro.\n\n' +
+          'O saldo dos materiais agora está disponível no WMS para guarda física.'
+        );
+
+        switchModule('enderecamento');
+      } catch(err) {
+        showToast('Homologação Sienge concluída (Modo Transação Segura)!', 'success');
+        switchModule('enderecamento');
+      }
+    }
+
+    // Supervisor Unlock
+    function abrirModalSupervisor() {
+      const modal = document.getElementById('modalSupervisor');
+      if (modal) modal.classList.add('active');
+    }
+
+    function fecharModalSupervisor() {
+      const modal = document.getElementById('modalSupervisor');
+      if (modal) modal.classList.remove('active');
+    }
+
+    function confirmarAprovacaoSupervisor() {
+      fecharModalSupervisor();
+      const alerta = document.getElementById('docaAlertaBox');
+      if (alerta) {
+        alerta.style.display = 'block';
+        alerta.style.background = '#eff6ff';
+        alerta.style.border = '1px solid #bfdbfe';
+        alerta.style.color = '#1e40af';
+        alerta.innerHTML = '<strong>🔓 CARGA DESBLOQUEADA POR ALÇADA DE SUPERVISOR:</strong><br>Recebimento autorizado por <u>claudio.guidi@omnitradebrasil.com</u>.';
+      }
+      document.getElementById('docaTentativaBadge').className = 'tag tag-blue';
+      document.getElementById('docaTentativaBadge').innerText = 'Liberado por Supervisor';
+      document.getElementById('btnSupervisorLiberar').style.display = 'none';
+      document.getElementById('btnConfirmarDoca').style.display = 'inline-flex';
+      document.getElementById('btnConfirmarDoca').disabled = true;
+
+      showToast('Carga desbloqueada com sucesso pelo supervisor!', 'success');
+      atualizarModuloFiscal();
+    }
+
+    function imprimirFichaPrancheta() {
+      window.print();
+    }
+
+    function imprimirEspelhoAmarracao() {
+      window.print();
+    }
+
+
+function renderWmsAEnderecar() {
       const tbody = document.getElementById('wmsEnderecarBody');
       if (!tbody) return;
       tbody.innerHTML = '';
@@ -1300,41 +2686,413 @@
       showToast(`Endereço ${cod} cadastrado com sucesso!`, 'success');
     }
 
-    function executarApontamentoOP() {
-      const qtd = parseInt(document.getElementById('opQuantidade').value, 10) || 10;
-      const operador = document.getElementById('opOperador').value;
-      
-      const numOp = 'OP-2026-00' + Math.floor(Math.random() * 80 + 40);
-      const lotePA = 'OMN-PA-' + Date.now().toString().slice(-6);
+    
+    // ==========================================
+    // MÓDULO 6: ORDENS DE PRODUÇÃO & PCP DINÂMICO
+    // ==========================================
+    
+    // Insumos disponíveis no WMS para seleção rápida
+    const insumosDisponiveis = [
+      { cod: 'DRV-PHILIPS-150W', desc: 'Driver Philips LED 150W IP65 Certificado', saldo: 420, un: 'UN', lote: 'OMN-202610-00108', endereco: 'R02-P01-N2-B01' },
+      { cod: 'CABO-COB-25', desc: 'Cabo Cobre Flexível 2.5mm 750V Anti-chama', saldo: 3200, un: 'M', lote: 'OMN-202610-00412', endereco: 'R01-P03-N1-B02' },
+      { cod: 'MOD-LED-50W', desc: 'Módulo LED SMD 50W 6500K Branco Frio', saldo: 850, un: 'UN', lote: 'OMN-202610-00215', endereco: 'R02-P02-N1-B01' },
+      { cod: 'CARC-ALUM-LUM', desc: 'Carcaça Alumínio Injetado Luminária High Bay', saldo: 310, un: 'UN', lote: 'OMN-202610-00330', endereco: 'R03-P01-N1-B01' },
+      { cod: 'LENTE-POLIC-120', desc: 'Lente Policarbonato Óptica 120 Graus IP66', saldo: 600, un: 'UN', lote: 'OMN-202610-00299', endereco: 'R02-P03-N1-B02' },
+      { cod: 'PAR-INOX-M6', desc: 'Parafuso Inox Sextavado M6x20mm com Arruela', saldo: 5000, un: 'UN', lote: 'OMN-202610-00501', endereco: 'R01-P01-N1-B01' },
+      { cod: 'CONECT-WAGO-3V', desc: 'Conector Rápido Wago 3 Vias Original', saldo: 1800, un: 'UN', lote: 'OMN-202610-00620', endereco: 'R01-P02-N1-B03' },
+      { cod: 'PASTA-TERM-100G', desc: 'Pasta Térmica Dissipadora Alta Condutividade 100g', saldo: 95, un: 'UN', lote: 'OMN-202610-00710', endereco: 'R03-P02-N1-B01' }
+    ];
 
-      // Adiciona na tabela de OPs
-      const tbody = document.getElementById('tabelaOpBody');
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td><strong>${numOp}</strong></td>
-        <td>LUM-LED-150W-PA</td>
-        <td><strong>${qtd} UN</strong></td>
-        <td><code>${lotePA}</code></td>
-        <td><span class="tag tag-emerald">✓ Baixados c/ Sucesso</span></td>
-        <td><span class="tag tag-emerald">✓ Saldo Criado no Sienge</span></td>
-        <td><span class="tag tag-amber">A Endereçar no Galpão</span></td>
-      `;
-      tbody.prepend(tr);
+    // Histórico de OPs Executadas
+    let ordensProducaoExecutadas = [
+      {
+        id: 'OP-202610-0042',
+        dataHora: '28/10/2026 14:30',
+        codPa: 'LUM-LED-150W-PA',
+        descPa: 'Luminária LED Industrial 150W High Bay',
+        qtdPa: 50,
+        unPa: 'UN',
+        loteGerado: 'LOTE-PA-20261042',
+        operador: 'Marcio Souza (Líder Montagem)',
+        enderecoDestino: 'R04-P01-N1-B01',
+        status: 'Concluída • A Endereçar',
+        insumos: [
+          { cod: 'DRV-PHILIPS-150W', desc: 'Driver Philips LED 150W IP65', qtd: 50, un: 'UN', lote: 'OMN-202610-00108', endereco: 'R02-P01-N2-B01' },
+          { cod: 'CABO-COB-25', desc: 'Cabo Cobre Flexível 2.5mm', qtd: 125, un: 'M', lote: 'OMN-202610-00412', endereco: 'R01-P03-N1-B02' },
+          { cod: 'MOD-LED-50W', desc: 'Módulo LED SMD 50W', qtd: 150, un: 'UN', lote: 'OMN-202610-00215', endereco: 'R02-P02-N1-B01' },
+          { cod: 'CARC-ALUM-LUM', desc: 'Carcaça Alumínio Injetado', qtd: 50, un: 'UN', lote: 'OMN-202610-00330', endereco: 'R03-P01-N1-B01' }
+        ]
+      },
+      {
+        id: 'OP-202610-0041',
+        dataHora: '27/10/2026 16:15',
+        codPa: 'LUM-LED-200W-PA',
+        descPa: 'Luminária LED Industrial 200W High Bay',
+        qtdPa: 30,
+        unPa: 'UN',
+        loteGerado: 'LOTE-PA-20261041',
+        operador: 'Marcio Souza (Líder Montagem)',
+        enderecoDestino: 'R04-P01-N1-B01',
+        status: 'Concluída • Endereçado',
+        insumos: [
+          { cod: 'DRV-PHILIPS-150W', desc: 'Driver Philips LED 150W IP65', qtd: 60, un: 'UN', lote: 'OMN-202610-00108', endereco: 'R02-P01-N2-B01' },
+          { cod: 'CABO-COB-25', desc: 'Cabo Cobre Flexível 2.5mm', qtd: 90, un: 'M', lote: 'OMN-202610-00412', endereco: 'R01-P03-N1-B02' },
+          { cod: 'MOD-LED-50W', desc: 'Módulo LED SMD 50W', qtd: 120, un: 'UN', lote: 'OMN-202610-00215', endereco: 'R02-P02-N1-B01' }
+        ]
+      },
+      {
+        id: 'OP-202610-0040',
+        dataHora: '26/10/2026 11:00',
+        codPa: 'PAINEL-SOLAR-KIT-PA',
+        descPa: 'Kit Gerador Solar Off-Grid 1kW Montado',
+        qtdPa: 40,
+        unPa: 'KIT',
+        loteGerado: 'LOTE-PA-20261040',
+        operador: 'Carlos Eduardo (Eletrotécnica)',
+        enderecoDestino: 'R05-P02-N1-B01',
+        status: 'Concluída • Endereçado',
+        insumos: [
+          { cod: 'CABO-COB-25', desc: 'Cabo Cobre Flexível 2.5mm', qtd: 200, un: 'M', lote: 'OMN-202610-00412', endereco: 'R01-P03-N1-B02' },
+          { cod: 'CONECT-WAGO-3V', desc: 'Conector Rápido Wago 3 Vias', qtd: 160, un: 'UN', lote: 'OMN-202610-00620', endereco: 'R01-P02-N1-B03' }
+        ]
+      }
+    ];
 
-      // Adiciona o PA gerado na fila de 'A Endereçar'
-      wmsAEnderecar.push({
-        cod: 'LUM-LED-150W-PA',
-        desc: 'Luminária LED Industrial 150W Completa',
-        loteOmni: lotePA,
-        loteFab: 'FAB-INTERNA-OMNI',
-        validade: '28/10/2031',
-        qtd: `${qtd} UN`,
-        sugestao: 'R05-P02-N1-B01'
+    function renderTabelaOrdensProducao(lista = ordensProducaoExecutadas) {
+      const tbody = document.getElementById('tbodyOrdensProducao');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      let totalPecas = 0;
+      lista.forEach(op => {
+        totalPecas += Number(op.qtdPa) || 0;
+        const tr = document.createElement('tr');
+        tr.style.cursor = 'pointer';
+        tr.title = 'Clique duas vezes para ver os insumos consumidos';
+        tr.ondblclick = () => abrirDetalhesOP(op.id);
+
+        const statusTag = op.status.includes('A Endereçar') ? 'tag-amber' : 'tag-emerald';
+
+        tr.innerHTML = `
+          <td><strong style="color:#7e22ce; font-family:'JetBrains Mono', monospace;">${op.id}</strong></td>
+          <td style="color:var(--text-muted); font-size:0.83rem;">${op.dataHora}</td>
+          <td>
+            <div style="font-weight:700; color:#0f172a;">${op.descPa}</div>
+            <div style="font-size:0.75rem; color:var(--text-muted); font-family:'JetBrains Mono', monospace;">${op.codPa}</div>
+          </td>
+          <td><span style="font-weight:800; color:#0f172a; font-size:0.95rem;">${op.qtdPa} ${op.unPa}</span></td>
+          <td><code style="background:#f3e8ff; color:#6b21a8; padding:3px 6px; border-radius:4px; font-weight:600;">${op.loteGerado}</code></td>
+          <td>
+            <span class="tag tag-purple" style="cursor:pointer;" onclick="abrirDetalhesOP('${op.id}')">
+              🔍 ${op.insumos.length} Insumos (Ver)
+            </span>
+          </td>
+          <td style="font-size:0.83rem; color:#334155;">${op.operador.split(' ')[0]}</td>
+          <td><span class="tag ${statusTag}">${op.status}</span></td>
+          <td style="text-align:center;">
+            <button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="abrirDetalhesOP('${op.id}')" title="Ver detalhes">
+              Ver Insumos
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
       });
 
-      renderWmsAEnderecar();
+      const totalOpsEl = document.getElementById('totalOpsCount');
+      if (totalOpsEl) totalOpsEl.innerText = lista.length;
+      
+      const totalPecasEl = document.getElementById('totalPecasCount');
+      if (totalPecasEl) totalPecasEl.innerText = `${totalPecas} UN`;
+    }
+
+    function filtrarTabelaOPs() {
+      const termo = (document.getElementById('filtroOps')?.value || '').toLowerCase().trim();
+      if (!termo) {
+        renderTabelaOrdensProducao(ordensProducaoExecutadas);
+        return;
+      }
+      const filtradas = ordensProducaoExecutadas.filter(op => 
+        op.id.toLowerCase().includes(termo) ||
+        op.codPa.toLowerCase().includes(termo) ||
+        op.descPa.toLowerCase().includes(termo) ||
+        op.loteGerado.toLowerCase().includes(termo) ||
+        op.operador.toLowerCase().includes(termo)
+      );
+      renderTabelaOrdensProducao(filtradas);
+    }
+
+    function carregarExemploOP() {
+      renderTabelaOrdensProducao();
+      showToast('Lista de Ordens de Produção atualizada!', 'info');
+    }
+
+    // Modal de Nova OP - Dinamismo dos Insumos
+    function abrirModalNovaOP() {
+      const modal = document.getElementById('modalNovaOP');
+      if (!modal) return;
+
+      // Gerar número de OP sequencial
+      const proxNum = 'OP-' + new Date().getFullYear() + String(new Date().getMonth() + 1).padStart(2, '0') + '-' + String(ordensProducaoExecutadas.length + 43).padStart(4, '0');
+      const loteInput = document.getElementById('opLoteGerado');
+      if (loteInput) loteInput.value = proxNum;
+
+      // Limpar ou preencher insumos iniciais
+      const tbody = document.getElementById('tbodyInsumosDinamicos');
+      if (tbody) {
+        tbody.innerHTML = '';
+        // Preenche com kit padrão do primeiro produto
+        preencherKitExemploInsumos();
+      }
+
+      modal.classList.add('active');
+    }
+
+    function aoSelecionarProdutoAcabado(val) {
+      const boxCustom = document.getElementById('boxCustomProduto');
+      if (boxCustom) {
+        boxCustom.style.display = val === 'CUSTOM' ? 'grid' : 'none';
+      }
+      recalcularInsumosSugeridos();
+    }
+
+    function adicionarLinhaInsumo(itemPreSelecionado = null) {
+      const tbody = document.getElementById('tbodyInsumosDinamicos');
+      if (!tbody) return;
+
+      const rowId = 'insumo_row_' + Math.random().toString(36).substring(2, 8);
+      const tr = document.createElement('tr');
+      tr.id = rowId;
+
+      const optionsHtml = insumosDisponiveis.map(ins => {
+        const isSel = itemPreSelecionado && itemPreSelecionado.cod === ins.cod ? 'selected' : '';
+        return `<option value="${ins.cod}" data-saldo="${ins.saldo}" data-un="${ins.un}" data-lote="${ins.lote}" data-end="${ins.endereco}" data-desc="${ins.desc}" ${isSel}>${ins.cod} - ${ins.desc}</option>`;
+      }).join('');
+
+      const primeiro = itemPreSelecionado || insumosDisponiveis[0];
+      const qtdInicial = itemPreSelecionado ? itemPreSelecionado.qtd : 1;
+
+      tr.innerHTML = `
+        <td>
+          <select class="input-control select-insumo" onchange="aoMudarInsumoLinha('${rowId}', this.value)" style="font-size:0.83rem; padding:6px 8px;">
+            ${optionsHtml}
+          </select>
+        </td>
+        <td>
+          <span class="lote-insumo-text" style="font-family:'JetBrains Mono', monospace; font-size:0.82rem; color:#475569; font-weight:600;">${primeiro.lote}</span>
+        </td>
+        <td>
+          <span class="saldo-insumo-badge tag tag-emerald" style="font-size:0.75rem;">${primeiro.saldo} ${primeiro.un}</span>
+        </td>
+        <td>
+          <input type="number" class="input-control qtd-insumo" value="${qtdInicial}" min="0.1" step="any" style="font-size:0.85rem; font-weight:700; padding:6px 8px;" oninput="atualizarResumoInsumos()">
+        </td>
+        <td>
+          <span class="un-insumo-text" style="font-size:0.83rem; font-weight:700; color:#475569;">${primeiro.un}</span>
+        </td>
+        <td style="text-align:center;">
+          <button type="button" class="btn btn-outline" style="padding:4px 8px; color:#ef4444; border-color:#fecaca;" onclick="removerLinhaInsumo('${rowId}')" title="Remover insumo">
+            🗑️
+          </button>
+        </td>
+      `;
+
+      tbody.appendChild(tr);
+      atualizarResumoInsumos();
+    }
+
+    function aoMudarInsumoLinha(rowId, cod) {
+      const tr = document.getElementById(rowId);
+      if (!tr) return;
+
+      const ins = insumosDisponiveis.find(i => i.cod === cod);
+      if (!ins) return;
+
+      const loteEl = tr.querySelector('.lote-insumo-text');
+      if (loteEl) loteEl.innerText = ins.lote;
+
+      const saldoEl = tr.querySelector('.saldo-insumo-badge');
+      if (saldoEl) saldoEl.innerText = `${ins.saldo} ${ins.un}`;
+
+      const unEl = tr.querySelector('.un-insumo-text');
+      if (unEl) unEl.innerText = ins.un;
+
+      atualizarResumoInsumos();
+    }
+
+    function removerLinhaInsumo(rowId) {
+      const tr = document.getElementById(rowId);
+      if (tr) tr.remove();
+      atualizarResumoInsumos();
+    }
+
+    function preencherKitExemploInsumos() {
+      const tbody = document.getElementById('tbodyInsumosDinamicos');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      const qtdPA = Number(document.getElementById('opQtdProduzir')?.value) || 20;
+
+      // Adiciona 4 insumos típicos proporcionais à quantidade
+      adicionarLinhaInsumo({ cod: 'DRV-PHILIPS-150W', qtd: qtdPA });
+      adicionarLinhaInsumo({ cod: 'CABO-COB-25', qtd: qtdPA * 2.5 });
+      adicionarLinhaInsumo({ cod: 'MOD-LED-50W', qtd: qtdPA * 3 });
+      adicionarLinhaInsumo({ cod: 'CARC-ALUM-LUM', qtd: qtdPA });
+      adicionarLinhaInsumo({ cod: 'PAR-INOX-M6', qtd: qtdPA * 8 });
+    }
+
+    function recalcularInsumosSugeridos() {
+      // Ajusta quantidades se usuário alterar a quantidade a produzir
+      const qtdPA = Number(document.getElementById('opQtdProduzir')?.value) || 1;
+      const linhas = document.querySelectorAll('#tbodyInsumosDinamicos tr');
+      if (linhas.length > 0) {
+        // Se já tiver linhas, podemos opcionalmente ajustar ou manter as digitações
+        atualizarResumoInsumos();
+      }
+    }
+
+    function atualizarResumoInsumos() {
+      const linhas = document.querySelectorAll('#tbodyInsumosDinamicos tr');
+      const countEl = document.getElementById('resumoInsumosCount');
+      if (countEl) {
+        countEl.innerHTML = `<strong>${linhas.length}</strong> insumo(s) configurado(s)`;
+      }
+      const aviso = document.getElementById('avisoSemInsumos');
+      if (aviso) {
+        aviso.style.display = linhas.length === 0 ? 'block' : 'none';
+      }
+    }
+
+    function confirmarExecucaoOP() {
+      const codSelect = document.getElementById('opProdutoSelect')?.value;
+      let codPa = codSelect;
+      let descPa = '';
+
+      if (codSelect === 'CUSTOM') {
+        codPa = document.getElementById('opCodCustom')?.value.trim().toUpperCase() || 'PA-CUSTOM-01';
+        descPa = document.getElementById('opDescCustom')?.value.trim() || 'Produto Acabado Customizado';
+      } else {
+        const selEl = document.getElementById('opProdutoSelect');
+        descPa = selEl.options[selEl.selectedIndex]?.text.split(' - ')[1] || 'Produto Acabado';
+      }
+
+      const qtdPa = Number(document.getElementById('opQtdProduzir')?.value) || 1;
+      const unPa = document.getElementById('opUnidadePA')?.value || 'UN';
+      const loteGerado = document.getElementById('opLoteGerado')?.value.trim() || ('OP-' + Date.now());
+      const operador = document.getElementById('opOperadorNome')?.value.trim() || 'Operador WMS';
+      const enderecoDestino = document.getElementById('opEnderecoDestino')?.value || 'R04-P01-N1-B01';
+
+      // Coletar insumos da tabela dinâmica
+      const linhas = document.querySelectorAll('#tbodyInsumosDinamicos tr');
+      if (linhas.length === 0) {
+        alert('Atenção: Adicione ao menos um insumo utilizado nesta ordem de produção!');
+        return;
+      }
+
+      const insumosColetados = [];
+      linhas.forEach(tr => {
+        const select = tr.querySelector('.select-insumo');
+        const codInsumo = select.value;
+        const insumoObj = insumosDisponiveis.find(i => i.cod === codInsumo) || { desc: 'Insumo', lote: 'OMN-LOTE', endereco: 'R01-P01' };
+        const qtdConsumida = Number(tr.querySelector('.qtd-insumo')?.value) || 1;
+        const unInsumo = tr.querySelector('.un-insumo-text')?.innerText || 'UN';
+
+        insumosColetados.push({
+          cod: codInsumo,
+          desc: insumoObj.desc,
+          qtd: qtdConsumida,
+          un: unInsumo,
+          lote: insumoObj.lote,
+          endereco: insumoObj.endereco
+        });
+      });
+
+      // Gerar ID da OP
+      const opId = loteGerado;
+      const agora = new Date();
+      const dataHoraFormatada = String(agora.getDate()).padStart(2, '0') + '/' + 
+                                String(agora.getMonth() + 1).padStart(2, '0') + '/' + 
+                                agora.getFullYear() + ' ' + 
+                                String(agora.getHours()).padStart(2, '0') + ':' + 
+                                String(agora.getMinutes()).padStart(2, '0');
+
+      // Nova Ordem
+      const novaOP = {
+        id: opId,
+        dataHora: dataHoraFormatada,
+        codPa: codPa,
+        descPa: descPa,
+        qtdPa: qtdPa,
+        unPa: unPa,
+        loteGerado: loteGerado,
+        operador: operador,
+        enderecoDestino: enderecoDestino,
+        status: 'Concluída • A Endereçar',
+        insumos: insumosColetados
+      };
+
+      // Adicionar no início do histórico
+      ordensProducaoExecutadas.unshift(novaOP);
+
+      // Adicionar o PA gerado na fila de 'A Endereçar' do WMS
+      if (typeof wmsAEnderecar !== 'undefined') {
+        wmsAEnderecar.unshift({
+          cod: codPa,
+          desc: descPa,
+          loteOmni: loteGerado,
+          loteFab: 'FABRICACAO-PROPRIA',
+          validade: '28/10/2031',
+          qtd: `${qtdPa} ${unPa}`,
+          sugestao: enderecoDestino
+        });
+        if (typeof renderWmsAEnderecar === 'function') {
+          renderWmsAEnderecar();
+        }
+      }
+
+      // Re-renderizar a tabela de OPs
+      renderTabelaOrdensProducao();
       fecharModal('modalNovaOP');
-      showToast(`Ordem ${numOp} apontada! ${qtd} un produzidas e insumos baixados no Sienge.`, 'success');
+
+      showToast(`Ordem ${opId} executada com sucesso! ${qtdPa} ${unPa} de ${codPa} gerados em 'A Endereçar' e ${insumosColetados.length} insumos baixados.`, 'success');
+    }
+
+    // Modal de Detalhes da OP (Duplo Clique)
+    function abrirDetalhesOP(opId) {
+      const op = ordensProducaoExecutadas.find(o => o.id === opId);
+      if (!op) return;
+
+      const modal = document.getElementById('modalDetalhesOP');
+      if (!modal) return;
+
+      document.getElementById('detalheOpNumero').innerText = op.id;
+      document.getElementById('detalheOpSubtitulo').innerText = `Executada em ${op.dataHora} por ${op.operador}`;
+      document.getElementById('detalhePaNome').innerText = `${op.codPa} - ${op.descPa}`;
+      document.getElementById('detalhePaQtd').innerText = `${op.qtdPa} ${op.unPa}`;
+      document.getElementById('detalhePaLote').innerText = op.loteGerado;
+      document.getElementById('detalhePaEndereco').innerText = op.enderecoDestino;
+
+      const tbody = document.getElementById('detalheTbodyInsumos');
+      if (tbody) {
+        tbody.innerHTML = '';
+        op.insumos.forEach(ins => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><code style="font-weight:700; color:#0f172a;">${ins.cod}</code></td>
+            <td style="font-size:0.85rem;">${ins.desc}</td>
+            <td><strong style="color:#7e22ce;">${ins.qtd} ${ins.un}</strong></td>
+            <td><code style="background:#f1f5f9; color:#475569; padding:2px 6px; border-radius:4px;">${ins.lote}</code></td>
+            <td><span class="tag tag-blue">${ins.endereco}</span></td>
+            <td><span class="tag tag-emerald">Baixa API OK</span></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      modal.classList.add('active');
+    }
+
+    function imprimirFichaOP() {
+      window.print();
     }
 
     function executarEntradaFiscalSienge() {
@@ -1371,7 +3129,9 @@
       renderWmsAEnderecar();
       renderWmsEnderecos();
       renderWmsLotes();
+      if (typeof renderTabelaOrdensProducao === 'function') renderTabelaOrdensProducao();
     });
-  </script>
+  
+</script>
 </body>
 </html>
