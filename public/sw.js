@@ -1,5 +1,5 @@
-// Service Worker para PWA do OmniFiscal AI
-const CACHE_NAME = 'omnifiscal-recebimento-v1';
+// Service Worker para PWA do OmniFiscal AI v4.2
+const CACHE_NAME = 'omnifiscal-recebimento-v4.2';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -40,6 +40,6 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   if (event.request.url.includes('/api/')) return;
   event.respondWith(
-    fetch(event.request).catch(() => caches.match(event.request))
+    fetch(event.request, { cache: 'no-store' }).catch(() => caches.match(event.request))
   );
 });

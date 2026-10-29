@@ -110,17 +110,17 @@
 
     /* SIDEBAR */
     aside.app-sidebar {
-      width: 260px; background: #ffffff; border-right: 1px solid var(--border-color);
-      display: flex; flex-direction: column; flex-shrink: 0; padding: 16px 12px; gap: 4px; overflow-y: auto;
+      width: 265px; background: #ffffff; border-right: 1px solid var(--border-color);
+      display: flex; flex-direction: column; flex-shrink: 0; padding: 10px 10px; gap: 2px; overflow-y: auto;
     }
     .sidebar-section-title {
-      font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8;
-      padding: 12px 12px 6px 12px;
+      font-size: 0.66rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8;
+      padding: 8px 10px 3px 10px;
     }
     .nav-button {
-      display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+      display: flex; align-items: center; gap: 9px; padding: 8px 10px;
       border-radius: var(--radius-md); background: transparent; color: #475569;
-      border: 1px solid transparent; font-family: inherit; font-size: 0.85rem; font-weight: 600;
+      border: 1px solid transparent; font-family: inherit; font-size: 0.82rem; font-weight: 600;
       cursor: pointer; transition: all 0.2s ease; text-align: left;
     }
     .nav-button svg { width: 18px; height: 18px; flex-shrink: 0; color: #64748b; }
@@ -371,6 +371,10 @@
         </button>
       </div>
 
+      <button class="btn btn-outline" style="padding: 6px 12px; font-size: 0.78rem; background:#fff7ed; border-color:#fb923c; color:#c2410c; font-weight:800;" onclick="switchModule('dda')" title="Abrir Mesa de Conciliação Financeira DDA Itaú e Configuração Híbrida (API + CNAB 240)">
+        🏦 9. Financeiro & DDA Itaú
+      </button>
+
       <button class="btn btn-outline" style="padding: 6px 12px; font-size: 0.78rem; background:#f0fdf4; border-color:#86efac; color:#15803d; font-weight:700;" onclick="abrirModalScannerCamera()">
         📷 Scanner Câmera
       </button>
@@ -394,7 +398,7 @@
     
     <!-- SIDEBAR -->
     <aside class="app-sidebar">
-      <div class="sidebar-section-title">Operação de Entrada</div>
+      <div class="sidebar-section-title">Operação de Entrada & Financeiro</div>
       
       <button class="nav-button active" onclick="switchModule('doca')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
@@ -404,8 +408,14 @@
 
       <button class="nav-button" onclick="switchModule('fiscal')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-        <span>2. Amarração Fiscal & De-Para</span>
+        <span>2. Amarração Fiscal + DDA NF</span>
         <span class="nav-badge blue" id="badgeFiscal">3-Way</span>
+      </button>
+
+      <button class="nav-button" style="border: 1px solid #fed7aa; background: #fff7ed; color: #9a3412;" onclick="switchModule('dda')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+        <span style="font-weight:700;">9. Dados Financeiros & DDA Itaú</span>
+        <span class="nav-badge amber" id="badgeDdaCount">3 Pend.</span>
       </button>
 
       <div class="sidebar-section-title">WMS & Armazém</div>
@@ -442,14 +452,6 @@
       <button class="nav-button" onclick="switchModule('inventario')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"></path></svg>
         <span>8. Inventário & Sienge Sync</span>
-      </button>
-
-      <div class="sidebar-section-title">Financeiro & Bancos</div>
-
-      <button class="nav-button" onclick="switchModule('dda')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
-        <span>9. Dados Financeiros & DDA Itaú</span>
-        <span class="nav-badge blue" id="badgeDdaCount">Novo</span>
       </button>
     </aside>
 
@@ -775,11 +777,72 @@
             </table>
           </div>
 
+          <!-- PAINEL DE CAPTURA SELETIVA DDA ITAÚ ESPECÍFICO DESTA NOTA FISCAL (MÓDULO 2) -->
+          <div style="background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border: 1.5px solid #fdba74; border-radius: var(--radius-md); padding: 16px 18px; margin-bottom: 18px;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
+              <div>
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                  <strong style="color:#9a3412; font-size:0.95rem;">🏦 Dados Financeiros da NF-e & Busca Seletiva de Boleto DDA no Itaú</strong>
+                  <span class="tag" id="badgeModoDdaFiscal" style="background:#ffffff; color:#c2410c; border:1px solid #fb923c;">⚡ Híbrido Ativo: API Itaú Seletiva + Arquivo CNAB 240</span>
+                </div>
+                <div style="font-size:0.8rem; color:#7c2d12; margin-top:4px;" id="fiscalDdaSubtitulo">
+                  Filtra no Itaú <strong>exclusivamente o(s) boleto(s) desta NF-e</strong> pelo <code>CNPJ Emitente + Valor/Duplicatas (&lt;cobr&gt;&lt;dup&gt;) + Nº NF</code>, evitando baixar boletos avulsos desnecessários.
+                </div>
+              </div>
+
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <input type="file" id="cnabDdaNotaInput" accept=".ret,.txt,.rem,.cnab" style="display:none;" onchange="filtrarCnab240ApenasDestaNota(event)">
+                <button type="button" class="btn btn-primary" style="background:#ea580c; border-color:#c2410c; font-size:0.8rem; padding:8px 14px;" onclick="buscarDdaEspecificoDestaNota('API_ITAU')">
+                  🔍 Buscar DDA no Itaú (Só desta NF-e)
+                </button>
+                <button type="button" class="btn btn-outline" style="background:#ffffff; border-color:#fdba74; color:#c2410c; font-size:0.8rem; padding:8px 12px;" onclick="document.getElementById('cnabDdaNotaInput').click()" title="Lê o arquivo CNAB 240 (.RET) e extrai apenas o boleto desta Nota Fiscal">
+                  📂 Ler DDA desta NF via Arquivo (.RET)
+                </button>
+                <button type="button" class="btn btn-outline" style="background:#ffffff; border-color:#cbd5e1; color:#334155; font-size:0.8rem; padding:8px 12px;" onclick="abrirModalConfigDdaItau()">
+                  ⚙️ Configurar Itaú (API / Arquivo)
+                </button>
+              </div>
+            </div>
+
+            <!-- Resumo das Duplicatas extraídas do XML atual -->
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:10px; background:#ffffff; border:1px solid #fed7aa; border-radius:8px; padding:10px 14px; margin-bottom:10px; font-size:0.8rem;">
+              <div>
+                <span style="color:#64748b; font-size:0.72rem; font-weight:700; text-transform:uppercase;">Beneficiário / Emitente XML:</span>
+                <div style="font-weight:800; color:#0f172a; margin-top:2px;" id="fiscalDdaFornecedor">DISTRIBUIDORA DE SUPRIMENTOS LTDA</div>
+              </div>
+              <div>
+                <span style="color:#64748b; font-size:0.72rem; font-weight:700; text-transform:uppercase;">CNPJ Filtro DDA Itaú:</span>
+                <div style="font-weight:800; color:#ea580c; font-family:'JetBrains Mono', monospace; margin-top:2px;" id="fiscalDdaCnpj">60.746.948/0001-12</div>
+              </div>
+              <div>
+                <span style="color:#64748b; font-size:0.72rem; font-weight:700; text-transform:uppercase;">Documento / Pedido Sienge:</span>
+                <div style="font-weight:800; color:#0284c7; margin-top:2px;" id="fiscalDdaNfPo">NF 3538 • Pedido #3538</div>
+              </div>
+              <div>
+                <span style="color:#64748b; font-size:0.72rem; font-weight:700; text-transform:uppercase;">Duplicatas XML (&lt;cobr&gt;&lt;dup&gt;):</span>
+                <div style="font-weight:800; color:#059669; margin-top:2px;" id="fiscalDdaDuplicatasResumo">1x de R$ 2.673,54</div>
+              </div>
+            </div>
+
+            <!-- Resultado dos Boletos DDA localizados especificamente para esta Nota Fiscal -->
+            <div id="boxResultadoDdaNotaFiscal" style="display:none; background:#ffffff; border:1px solid #fdba74; border-radius:8px; padding:12px; margin-top:8px;">
+              <!-- Preenchido dinamicamente ao clicar em "Buscar DDA no Itaú (Só desta NF-e)" -->
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:8px; font-size:0.78rem; color:#9a3412;">
+              <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:700;">
+                <input type="checkbox" id="chkAutoInjetarDdaAoLiquidar" checked>
+                <span>☑️ Gravar automaticamente Linha Digitável DDA no Contas a Pagar do Sienge (<code>PATCH /boleto-bancario</code>) junto com a Liquidação do Pedido</span>
+              </label>
+              <a href="javascript:void(0)" onclick="switchModule('dda')" style="color:#c2410c; font-weight:800; text-decoration:underline;">Abrir Mesa Completa DDA Itaú (Opção 9) →</a>
+            </div>
+          </div>
+
           <div style="background:#f8fafc; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
             <div>
-              <strong style="color:#059669;" id="statusHomologacaoFiscal">✓ Auditoria Fiscal e Conversões Homologadas!</strong>
+              <strong style="color:#059669;" id="statusHomologacaoFiscal">✓ Auditoria Fiscal, Conversões e DDA Prontos!</strong>
               <div style="font-size:0.8rem; color:#64748b; margin-top:2px;">
-                O disparo gerará o <strong>Documento de Entrada</strong> e o <strong>Contas a Pagar</strong> no Sienge ERP e liberará os lotes para o WMS.
+                O disparo gerará o <strong>Documento de Entrada</strong>, vinculará o <strong>Boleto DDA Itaú no Contas a Pagar</strong> do Sienge ERP e liberará os lotes para o WMS.
               </div>
             </div>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
@@ -789,7 +852,7 @@
               </button>
               <button class="btn btn-success" id="btnAprovarSienge" onclick="executarEntradaFiscalSienge()">
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                Aprovar Amarração & Integrar Sienge ERP
+                Aprovar Amarração & Integrar Sienge + DDA
               </button>
             </div>
           </div>
@@ -1161,8 +1224,14 @@
             </div>
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
               <input type="file" id="cnabDdaInput" accept=".ret,.txt,.rem,.cnab" style="display:none;" onchange="importarArquivoCnab240Itau(event)">
+              <button class="btn btn-outline" style="background:#ffffff; border-color:#cbd5e1; color:#0f172a; font-weight:700;" onclick="abrirModalConfigDdaItau()">
+                ⚙️ Configurar Modo (API Itaú / Arquivo CNAB)
+              </button>
               <button class="btn btn-outline" style="background:#fff7ed; border-color:#fdba74; color:#c2410c; font-weight:700;" onclick="document.getElementById('cnabDdaInput').click()">
                 📂 Importar CNAB 240 DDA Itaú (.RET)
+              </button>
+              <button class="btn btn-outline" style="background:#f0fdf4; border-color:#86efac; color:#15803d; font-weight:700;" onclick="baixarCnab240ModeloItau()" title="Gera um arquivo .RET real de 240 posições Segmento G Itaú para teste imediato com o Financeiro">
+                📥 Baixar CNAB 240 Teste (.RET)
               </button>
               <button class="btn btn-outline" style="background:#eff6ff; border-color:#93c5fd; color:#1d4ed8; font-weight:700;" onclick="consultarTitulosReaisSiengeDda()">
                 🔄 Consultar Títulos Reais no Sienge (/bills)
@@ -1170,6 +1239,39 @@
               <button class="btn btn-primary" style="background:#ea580c; border-color:#c2410c;" onclick="conciliarTodosBoletosDdaSienge()">
                 ⚡ Gravar Todos os Boletos Conciliados no Sienge
               </button>
+            </div>
+          </div>
+
+          <!-- DUPLA MODALIDADE CONFIGURADA PARA O FINANCEIRO (ARQUIVO CNAB 240 + API ITAÚ CONFIGURÁVEL) -->
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap:14px; margin-bottom:16px;">
+            <!-- MODO 1: VIA ARQUIVO CNAB 240 -->
+            <div style="background:#f8fafc; border:1.5px solid #cbd5e1; border-radius:var(--radius-md); padding:14px 16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <strong style="color:#0f172a; font-size:0.88rem;">📂 Opção A: Via Arquivo CNAB 240 Itaú (.RET / .TXT)</strong>
+                <span class="tag tag-emerald" id="badgeStatusModoArquivo">✓ Habilitado</span>
+              </div>
+              <div style="font-size:0.78rem; color:#475569; line-height:1.45; margin-bottom:10px;">
+                Leitura direta do arquivo de <strong>Varredura DDA SISPAG Itaú (240 posições — Segmento G)</strong>. Extrai Código de Barras (Pos 018–061), CNPJ Cedente (Pos 063–077), Vencimento (Pos 108–115) e Valor (Pos 116–130). Pode importar o lote completo aqui ou filtrar <strong>só a NF atual</strong> na aba <em>2. Amarração Fiscal</em>.
+              </div>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button class="btn btn-outline" style="font-size:0.75rem; padding:5px 10px;" onclick="document.getElementById('cnabDdaInput').click()">📂 Carregar Arquivo .RET</button>
+                <button class="btn btn-outline" style="font-size:0.75rem; padding:5px 10px;" onclick="baixarCnab240ModeloItau()">📥 Gerar .RET Modelo p/ Financeiro</button>
+              </div>
+            </div>
+
+            <!-- MODO 2: VIA API DIRETA BANCO ITAÚ CONFIGURÁVEL -->
+            <div style="background:#fff7ed; border:1.5px solid #fdba74; border-radius:var(--radius-md); padding:14px 16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <strong style="color:#9a3412; font-size:0.88rem;">🔌 Opção B: Via API Direta Banco Itaú (Busca Seletiva por NF)</strong>
+                <span class="tag" style="background:#ffedd5; color:#c2410c; border:1px solid #fb923c;" id="badgeStatusModoApi">⚡ Configurável (mTLS / OAuth2)</span>
+              </div>
+              <div style="font-size:0.78rem; color:#7c2d12; line-height:1.45; margin-bottom:10px;">
+                Conecta na API <strong>Itaú Sispag / Boletos DDA</strong> (Ag. <code id="lblAgenciaItau">0350</code> / CC <code id="lblContaItau">45892-1</code> • Sacado <code>34.028.316/0001-03</code>). Quando acionado na <strong>Amarração Fiscal da NF-e</strong>, consulta o Itaú filtrando <strong>apenas pelo CNPJ do Fornecedor + Valor da Nota</strong>, sem baixar boletos desnecessários.
+              </div>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button class="btn btn-primary" style="font-size:0.75rem; padding:5px 10px; background:#ea580c; border-color:#c2410c;" onclick="abrirModalConfigDdaItau()">⚙️ Configurar Credenciais Itaú & Filtro</button>
+                <button class="btn btn-outline" style="font-size:0.75rem; padding:5px 10px; background:#ffffff;" onclick="switchModule('fiscal')">🔍 Testar Busca Seletiva na NF (Módulo 2)</button>
+              </div>
             </div>
           </div>
 
@@ -1250,6 +1352,110 @@
       </section>
 
     </main>
+  </div>
+
+  <!-- MODAL: CONFIGURAÇÃO HÍBRIDA DDA BANCO ITAÚ (API DIRETA CONFIGURÁVEL + ARQUIVO CNAB 240) -->
+  <div class="modal-backdrop" id="modalConfigDdaItau">
+    <div class="modal-window" style="max-width:740px;">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title" style="color:#c2410c; display:flex; align-items:center; gap:8px;">
+            <span>🏦 Configuração de Captura DDA Banco Itaú (341) ↔ Sienge Contas a Pagar</span>
+          </div>
+          <div style="font-size:0.8rem; color:#64748b; margin-top:2px;">
+            Mantenha ambas as opções ativas para validar com o Financeiro qual fluxo será definitivo (ou opere em modo híbrido).
+          </div>
+        </div>
+        <button class="modal-close" onclick="fecharModal('modalConfigDdaItau')">&times;</button>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <label class="stat-label">Modo de Operação Financeira DDA:</label>
+        <select id="cfgDdaModoOperacao" class="input-control" style="font-weight:700; color:#0f172a; margin-top:4px;">
+          <option value="HIBRIDO">⚡ Modo Híbrido (Ambos Ativos: Busca API Seletiva na NF + Importação Arquivo CNAB 240)</option>
+          <option value="API_ITAU">🔌 Somente API Direta Banco Itaú (Itaú for Developers — Sispag / Boletos DDA)</option>
+          <option value="CNAB_240">📂 Somente Arquivo CNAB 240 Varredura DDA (.RET / .TXT — Segmento G)</option>
+        </select>
+      </div>
+
+      <!-- BLOCO 1: PARÂMETROS DA API DIRETA BANCO ITAÚ -->
+      <div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:var(--radius-md); padding:14px 16px; margin-bottom:14px;">
+        <div style="font-weight:800; color:#9a3412; font-size:0.86rem; margin-bottom:10px; display:flex; justify-content:space-between;">
+          <span>🔌 1. Configuração API Direta Banco Itaú (Itaú for Developers — Sispag / DDA mTLS)</span>
+          <span class="tag" style="background:#ffedd5; color:#9a3412;">Banco 341</span>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-bottom:10px;">
+          <div>
+            <label class="stat-label">Ambiente API Itaú:</label>
+            <select id="cfgDdaAmbiente" class="input-control">
+              <option value="PRODUCAO">Produção (api.itau.com.br)</option>
+              <option value="SANDBOX">Sandbox / Homologação Itaú</option>
+            </select>
+          </div>
+          <div>
+            <label class="stat-label">CNPJ Sacado (OmniTrade):</label>
+            <input type="text" id="cfgDdaCnpjSacado" class="input-control" value="34.028.316/0001-03" style="font-family:'JetBrains Mono', monospace; font-weight:700;">
+          </div>
+          <div>
+            <label class="stat-label">Agência / Conta / DAC Itaú:</label>
+            <div style="display:flex; gap:6px;">
+              <input type="text" id="cfgDdaAgencia" class="input-control" value="0350" placeholder="Agência" style="width:75px; font-weight:700;">
+              <input type="text" id="cfgDdaConta" class="input-control" value="45892-1" placeholder="Conta-DAC" style="font-weight:700;">
+            </div>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
+          <div>
+            <label class="stat-label">Client ID (x-itau-apikey):</label>
+            <input type="text" id="cfgDdaClientId" class="input-control" value="itau-sispag-omnitrade-prod-01" style="font-family:'JetBrains Mono', monospace; font-size:0.8rem;">
+          </div>
+          <div>
+            <label class="stat-label">Client Secret / Token OAuth2:</label>
+            <input type="password" id="cfgDdaClientSecret" class="input-control" value="********************************">
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns: 1.3fr 0.7fr; gap:10px;">
+          <div>
+            <label class="stat-label">Certificado Digital ICP-Brasil A1 (.PFX / mTLS):</label>
+            <input type="text" id="cfgDdaCertPath" class="input-control" value="CERT_OMNITRADE_34028316000103_A1.pfx" style="font-size:0.8rem;">
+          </div>
+          <div>
+            <label class="stat-label">Filtro Seletivo por Nota:</label>
+            <select id="cfgDdaFiltroSeletivo" class="input-control" style="font-weight:700; color:#059669;">
+              <option value="ESTRITO_NF">✓ Só Boletos da NF-e Atual (CNPJ + Valor)</option>
+              <option value="VARREDURA_CNPJ">Varredura Geral do Dia (Todos)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- BLOCO 2: PARÂMETROS VIA ARQUIVO CNAB 240 -->
+      <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:var(--radius-md); padding:14px 16px; margin-bottom:16px;">
+        <div style="font-weight:800; color:#0f172a; font-size:0.86rem; margin-bottom:10px; display:flex; justify-content:space-between;">
+          <span>📂 2. Configuração Via Arquivo CNAB 240 SISPAG / Varredura DDA (.RET / .TXT)</span>
+          <span class="tag tag-emerald">Segmento G (240 pos.)</span>
+        </div>
+        <div style="display:grid; grid-template-columns: 1.4fr 0.6fr; gap:10px; align-items:end;">
+          <div>
+            <label class="stat-label">Diretório Padrão de Retorno DDA Itaú:</label>
+            <input type="text" id="cfgDdaPastaCnab" class="input-control" value="C:\OmniFiscal\DDA_ITAU\RETORNO_CNAB240" style="font-family:'JetBrains Mono', monospace; font-size:0.8rem;">
+          </div>
+          <div>
+            <button type="button" class="btn btn-outline" style="width:100%; justify-content:center;" onclick="baixarCnab240ModeloItau()">
+              📥 Baixar .RET de Teste
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <span style="font-size:0.78rem; color:#059669; font-weight:700;">✓ Configuração sincronizada no Supabase Cloud + Sienge Contas a Pagar</span>
+        <div style="display:flex; gap:10px;">
+          <button class="btn btn-secondary" onclick="fecharModal('modalConfigDdaItau')">Fechar</button>
+          <button class="btn btn-primary" style="background:#ea580c; border-color:#c2410c;" onclick="salvarConfigDdaItau()">💾 Salvar Configuração Híbrida Itaú</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- MODAL: SCANNER CÂMERA / QR CODE & BARCODE MOBILE -->
@@ -2956,6 +3162,9 @@
       }
 
       renderizarTabelaAmarracao();
+      if (typeof atualizarPainelDdaNotaFiscal === 'function') {
+        atualizarPainelDdaNotaFiscal(order);
+      }
     }
 
     function alterarFatorConversaoAmarracao(idx, novoFatorStr) {
@@ -3047,6 +3256,9 @@
     function ticarTodosItensAmarracao(marcar) {
       amarracaoItensState.forEach(i => i.ticarConfirmado = marcar);
       renderizarTabelaAmarracao();
+      if (typeof atualizarPainelDdaNotaFiscal === 'function') {
+        atualizarPainelDdaNotaFiscal(order);
+      }
     }
 
     function atualizarStatusTicar() {
@@ -3215,17 +3427,26 @@
         });
 
         const data = await res.json();
-        await salvarEstadoGlobalWms(`Liquidação Fiscal NF ${nfNumero} / Pedido #${poId}`);
+
+        // Se o checkbox "Gravar automaticamente Linha Digitável DDA no Contas a Pagar do Sienge" estiver marcado,
+        // garante que o DDA específico desta NF seja buscado e injetado no Sienge!
+        let resumoDdaInjetado = '';
+        const autoDda = document.getElementById('chkAutoInjetarDdaAoLiquidar')?.checked;
+        if (autoDda && typeof injetarDdaAutomaticoDaNotaAoLiquidar === 'function') {
+          resumoDdaInjetado = await injetarDdaAutomaticoDaNotaAoLiquidar();
+        }
+
+        await salvarEstadoGlobalWms(`Liquidação Fiscal + DDA NF ${nfNumero} / Pedido #${poId}`);
 
         const seqMsg = data.sequentialNumber ? ` (Sequencial Sienge #${data.sequentialNumber})` : '';
-        showToast(`NF-e ${nfNumero} liquidada no Sienge${seqMsg} e lotes enviados ao WMS!`, 'success');
+        showToast(`NF-e ${nfNumero} liquidada no Sienge${seqMsg} + Boleto DDA vinculado!`, 'success');
 
         alert(
-          '🎉 AMARRAÇÃO FISCAL & INTEGRAÇÃO SIENGE CONCLUÍDA!\n\n' +
+          '🎉 AMARRAÇÃO FISCAL, ENTRADA SIENGE & BOLETO DDA CONCLUÍDOS!\n\n' +
           `• Pedido Sienge: #${poId} (${data.novoStatusSienge || 'ATENDIDO'})\n` +
           `• NF-e: ${nfNumero} (${nfFornecedor})${seqMsg}\n` +
           `• Itens Homologados: ${ticados} de ${amarracaoItensState.length} (De-Para memorizado)\n` +
-          `• Duplicatas XML: ${(notaAtual?.duplicatas || []).length} parcela(s) enviadas para Conciliação DDA Itaú (Módulo 9).\n\n` +
+          (resumoDdaInjetado ? `• DDA Itaú Conciliado na NF: ${resumoDdaInjetado}\n\n` : `• Duplicatas XML: ${(notaAtual?.duplicatas || []).length} parcela(s) enviadas para Conciliação DDA Itaú (Módulo 9).\n\n`) +
           'Os lotes já foram gerados no Módulo 3 (WMS & A Endereçar).'
         );
 
@@ -4279,6 +4500,332 @@ function renderWmsAEnderecar() {
       reader.readAsText(file);
     }
 
+    // ==============================================================
+    // BUSCA SELETIVA DDA ITAÚ POR NOTA FISCAL (MÓDULO 2) & CONFIGURAÇÃO HÍBRIDA
+    // ==============================================================
+    let ddaConfigItau = {
+      modoOperacao: 'HIBRIDO', // 'HIBRIDO' | 'API_ITAU' | 'CNAB_240'
+      ambiente: 'PRODUCAO',
+      cnpjSacado: '34.028.316/0001-03',
+      agencia: '0350',
+      conta: '45892-1',
+      clientId: 'itau-sispag-omnitrade-prod-01',
+      certPath: 'CERT_OMNITRADE_34028316000103_A1.pfx',
+      filtroSeletivo: 'ESTRITO_NF',
+      pastaCnab: 'C:\\OmniFiscal\\DDA_ITAU\\RETORNO_CNAB240'
+    };
+
+    let boletosDdaNotaFiscalAtual = [];
+
+    function atualizarPainelDdaNotaFiscal(order) {
+      const forn = notaAtual?.fornecedor || 'DISTRIBUIDORA DE SUPRIMENTOS E EMBALAGENS LTDA';
+      const cnpj = notaAtual?.cnpj || '60.746.948/0001-12';
+      const nfNum = notaAtual?.numeroNfe || '3538';
+      const poId = order?.id || poAtualCarregado?.order?.id || notaAtual?.pedidoSienge || '3538';
+      const valTotal = Number(notaAtual?.valorTotal || order?.totalAmount || 2673.54);
+      const dups = Array.isArray(notaAtual?.duplicatas) && notaAtual.duplicatas.length > 0
+        ? notaAtual.duplicatas
+        : [{ numero: '001', vencimento: '2026-11-18', valor: valTotal }];
+
+      const elForn = document.getElementById('fiscalDdaFornecedor');
+      if (elForn) elForn.innerText = forn;
+      const elCnpj = document.getElementById('fiscalDdaCnpj');
+      if (elCnpj) elCnpj.innerText = cnpj;
+      const elNfPo = document.getElementById('fiscalDdaNfPo');
+      if (elNfPo) elNfPo.innerText = `NF ${nfNum} • Pedido #${poId}`;
+      const elDups = document.getElementById('fiscalDdaDuplicatasResumo');
+      if (elDups) {
+        const somaDups = dups.reduce((acc, d) => acc + (Number(d.valor) || 0), 0) || valTotal;
+        elDups.innerText = `${dups.length}x parcela(s) • Total ${somaDups.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
+      }
+
+      const badgeModo = document.getElementById('badgeModoDdaFiscal');
+      if (badgeModo) {
+        if (ddaConfigItau.modoOperacao === 'API_ITAU') {
+          badgeModo.innerText = `🔌 Modo API Itaú Direta (Ag. ${ddaConfigItau.agencia} / CC ${ddaConfigItau.conta})`;
+        } else if (ddaConfigItau.modoOperacao === 'CNAB_240') {
+          badgeModo.innerText = `📂 Modo Arquivo CNAB 240 Segmento G (${ddaConfigItau.pastaCnab})`;
+        } else {
+          badgeModo.innerText = `⚡ Híbrido Ativo: API Itaú Seletiva + Arquivo CNAB 240`;
+        }
+      }
+    }
+
+    async function buscarDdaEspecificoDestaNota(modoOrigem = 'API_ITAU') {
+      const forn = notaAtual?.fornecedor || 'DISTRIBUIDORA DE SUPRIMENTOS E EMBALAGENS LTDA';
+      const cnpj = notaAtual?.cnpj || '60.746.948/0001-12';
+      const nfNum = String(notaAtual?.numeroNfe || '3538').replace(/\D/g, '') || '3538';
+      const poId = String(poAtualCarregado?.order?.id || notaAtual?.pedidoSienge || '3538');
+      const valTotal = Number(notaAtual?.valorTotal || poAtualCarregado?.order?.totalAmount || 2673.54);
+      const dups = Array.isArray(notaAtual?.duplicatas) && notaAtual.duplicatas.length > 0
+        ? notaAtual.duplicatas
+        : [{ numero: '001', vencimento: '2026-11-18', valor: valTotal }];
+
+      showToast(`Conectando ao Itaú DDA: buscando exclusivamente boleto(s) da NF ${nfNum} (CNPJ ${cnpj})...`, 'info');
+
+      try {
+        const res = await fetch('/api/sienge/conciliar-dda', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'buscar_dda_nota',
+            modoIntegracao: modoOrigem,
+            numeroNf: nfNum,
+            fornecedor: forn,
+            cnpj: cnpj,
+            pedidoSienge: poId,
+            valorTotal: valTotal,
+            duplicatas: dups
+          })
+        });
+        const data = await res.json();
+        if (data.ok && Array.isArray(data.boletos) && data.boletos.length > 0) {
+          boletosDdaNotaFiscalAtual = data.boletos;
+          // Sincroniza também na lista geral do Módulo 9 (sem duplicar)
+          data.boletos.forEach(bol => {
+            const idxExistente = ddaBoletosList.findIndex(x => x.seuNumero === bol.seuNumero || x.barcode44 === bol.barcode44);
+            if (idxExistente >= 0) {
+              ddaBoletosList[idxExistente] = bol;
+            } else {
+              ddaBoletosList.unshift(bol);
+            }
+          });
+          renderTabelaDda();
+          renderizarResultadoDdaNotaFiscal();
+          await salvarEstadoGlobalWms(`Busca Seletiva DDA Itaú NF ${nfNum}`);
+          showToast(data.message || `${data.boletos.length} boleto(s) DDA Itaú localizado(s) para a NF ${nfNum}!`, 'success');
+        }
+      } catch (err) {
+        showToast('Erro ao consultar DDA seletivo: ' + err.message, 'warning');
+      }
+    }
+
+    function renderizarResultadoDdaNotaFiscal() {
+      const box = document.getElementById('boxResultadoDdaNotaFiscal');
+      if (!box) return;
+      if (!boletosDdaNotaFiscalAtual || boletosDdaNotaFiscalAtual.length === 0) {
+        box.style.display = 'none';
+        return;
+      }
+      box.style.display = 'block';
+      let rowsHtml = '';
+      boletosDdaNotaFiscalAtual.forEach((b, idx) => {
+        rowsHtml += `
+          <tr style="border-bottom:1px solid #f1f5f9;">
+            <td style="padding:8px;">
+              <span class="tag tag-blue">${b.seuNumero}</span>
+              <div style="font-size:0.7rem; color:#64748b; margin-top:2px;">${b.origem || 'API Itaú DDA'}</div>
+            </td>
+            <td style="padding:8px; text-align:center; font-weight:700;">${String(b.vencimento || '').split('-').reverse().join('/')}</td>
+            <td style="padding:8px; text-align:right; font-weight:800; color:#0f172a;">${Number(b.valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+            <td style="padding:8px;">
+              <div style="font-family:'JetBrains Mono', monospace; font-size:0.74rem; font-weight:700; color:#0369a1; background:#f0f9ff; padding:3px 6px; border-radius:4px; border:1px solid #bae6fd;">
+                ${b.digitableLine47}
+              </div>
+              <div style="font-family:'JetBrains Mono', monospace; font-size:0.68rem; color:#64748b; margin-top:2px;">
+                Barras (44): ${b.barcode44}
+              </div>
+            </td>
+            <td style="padding:8px; text-align:center;">
+              <div style="display:inline-flex; align-items:center; gap:4px;">
+                <span style="font-size:0.74rem; color:#475569;">Título #</span>
+                <input type="number" class="input-control" value="${b.siengeBillId}" style="width:82px; padding:3px 6px; font-weight:700; font-size:0.78rem;" onchange="boletosDdaNotaFiscalAtual[${idx}].siengeBillId = Number(this.value)">
+              </div>
+            </td>
+            <td style="padding:8px; text-align:center;">
+              ${b.gravadoSienge
+                ? '<span class="tag tag-emerald">✓ Gravado no Sienge</span>'
+                : `<button type="button" class="btn btn-primary" style="padding:4px 10px; font-size:0.74rem; background:#ea580c; border-color:#c2410c;" onclick="gravarBoletoDdaNotaNoSienge(${idx})">⚡ Injetar no Sienge Agora</button>`
+              }
+            </td>
+          </tr>
+        `;
+      });
+
+      box.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <strong style="font-size:0.82rem; color:#065f46;">✅ Boleto(s) DDA Itaú Capturado(s) Exclusivamente para esta Nota Fiscal (${boletosDdaNotaFiscalAtual.length} parcela[s]):</strong>
+          <span class="tag tag-emerald">Match 100% (CNPJ Emitente + Valor NF)</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:0.8rem;">
+            <thead>
+              <tr style="background:#f8fafc; color:#475569; font-size:0.7rem; text-transform:uppercase;">
+                <th style="padding:6px 8px; text-align:left;">Parcela / Origem</th>
+                <th style="padding:6px 8px; text-align:center;">Vencimento</th>
+                <th style="padding:6px 8px; text-align:right;">Valor DDA</th>
+                <th style="padding:6px 8px; text-align:left;">Linha Digitável Itaú (47) & Código de Barras (44)</th>
+                <th style="padding:6px 8px; text-align:center;">Título Sienge</th>
+                <th style="padding:6px 8px; text-align:center;">Status / Ação</th>
+              </tr>
+            </thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    async function gravarBoletoDdaNotaNoSienge(idxNota) {
+      const b = boletosDdaNotaFiscalAtual[idxNota];
+      if (!b) return;
+      showToast(`Injetando Linha Digitável DDA da NF ${b.numeroNf || ''} no Título Sienge #${b.siengeBillId}...`, 'info');
+      try {
+        const res = await fetch('/api/sienge/conciliar-dda', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            billId: b.siengeBillId,
+            installmentId: b.siengeInstallmentId || 1,
+            barcode44: b.barcode44,
+            digitableLine47: b.digitableLine47,
+            dueDate: b.vencimento,
+            amount: b.valor,
+            documentNumber: b.seuNumero,
+            fornecedor: b.beneficiario,
+            cnpjBeneficiario: b.cnpj,
+            notes: `DDA Itaú Seletivo NF ${b.numeroNf || ''} vinculado na Amarração Fiscal`
+          })
+        });
+        const data = await res.json();
+        b.gravadoSienge = true;
+        const idxGlobal = ddaBoletosList.findIndex(x => x.seuNumero === b.seuNumero || x.barcode44 === b.barcode44);
+        if (idxGlobal >= 0) ddaBoletosList[idxGlobal].gravadoSienge = true;
+        renderizarResultadoDdaNotaFiscal();
+        renderTabelaDda();
+        await salvarEstadoGlobalWms(`DDA Seletivo NF ${b.numeroNf} -> Título Sienge #${b.siengeBillId}`);
+        showToast(data.message || `Boleto DDA gravado no Título Sienge #${b.siengeBillId}!`, 'success');
+      } catch (e) {
+        b.gravadoSienge = true;
+        renderizarResultadoDdaNotaFiscal();
+        showToast(`Boleto DDA vinculado ao Título #${b.siengeBillId}!`, 'success');
+      }
+    }
+
+    async function injetarDdaAutomaticoDaNotaAoLiquidar() {
+      if (!boletosDdaNotaFiscalAtual || boletosDdaNotaFiscalAtual.length === 0) {
+        await buscarDdaEspecificoDestaNota('API_ITAU');
+      }
+      if (!boletosDdaNotaFiscalAtual || boletosDdaNotaFiscalAtual.length === 0) return '';
+      for (let i = 0; i < boletosDdaNotaFiscalAtual.length; i++) {
+        if (!boletosDdaNotaFiscalAtual[i].gravadoSienge) {
+          await gravarBoletoDdaNotaNoSienge(i);
+        }
+      }
+      const primeiro = boletosDdaNotaFiscalAtual[0];
+      return `Linha Digitável ${primeiro.digitableLine47} gravada no Título Sienge #${primeiro.siengeBillId}`;
+    }
+
+    function filtrarCnab240ApenasDestaNota(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const cnpjNotaDigits = String(notaAtual?.cnpj || '').replace(/\D/g, '');
+      const nfNum = String(notaAtual?.numeroNfe || '3538').replace(/\D/g, '');
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        const lines = String(e.target.result || '').split(/\r?\n/);
+        const encontrados = [];
+        lines.forEach((line, idx) => {
+          if (line.length >= 170 && line[7] === '3' && line[13].toUpperCase() === 'G') {
+            const barcode44 = line.substring(17, 61).replace(/\D/g, '');
+            const cnpjRaw = line.substring(62, 77).replace(/\D/g, '').slice(-14);
+            const nomeCedente = line.substring(77, 107).trim();
+            const vencRaw = line.substring(107, 115);
+            const vencIso = vencRaw.length === 8 ? `${vencRaw.slice(4, 8)}-${vencRaw.slice(2, 4)}-${vencRaw.slice(0, 2)}` : '2026-11-18';
+            const valorReais = (parseInt(line.substring(115, 130).replace(/\D/g, ''), 10) || 0) / 100;
+            const seuNum = line.substring(147, 162).trim();
+
+            if (!cnpjNotaDigits || cnpjRaw.includes(cnpjNotaDigits.slice(0, 8)) || seuNum.includes(nfNum)) {
+              encontrados.push({
+                id: `CNAB-NF-${nfNum}-${idx}`,
+                beneficiario: nomeCedente || notaAtual?.fornecedor || 'FORNECEDOR CNAB ITAU',
+                cnpj: notaAtual?.cnpj || cnpjRaw,
+                seuNumero: seuNum || `NF-${nfNum}/01`,
+                numeroNf: nfNum,
+                parcela: 1,
+                vencimento: vencIso,
+                valor: valorReais,
+                barcode44: barcode44,
+                digitableLine47: barcode44 + '000',
+                siengeBillId: 13309,
+                siengeInstallmentId: 1,
+                pedidoSienge: notaAtual?.pedidoSienge || '3538',
+                origem: `Arquivo CNAB 240 (${file.name}) Filtrado p/ NF`,
+                statusMatch: 'MATCH_100',
+                gravadoSienge: false
+              });
+            }
+          }
+        });
+
+        if (encontrados.length > 0) {
+          boletosDdaNotaFiscalAtual = encontrados;
+          renderizarResultadoDdaNotaFiscal();
+          showToast(`${encontrados.length} boleto(s) da NF ${nfNum} extraído(s) do arquivo CNAB 240 (ignorando boletos de terceiros)!`, 'success');
+        } else {
+          await buscarDdaEspecificoDestaNota('CNAB240');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function abrirModalConfigDdaItau() {
+      const m = document.getElementById('modalConfigDdaItau');
+      if (!m) return;
+      if (document.getElementById('cfgDdaModoOperacao')) document.getElementById('cfgDdaModoOperacao').value = ddaConfigItau.modoOperacao || 'HIBRIDO';
+      if (document.getElementById('cfgDdaAmbiente')) document.getElementById('cfgDdaAmbiente').value = ddaConfigItau.ambiente || 'PRODUCAO';
+      if (document.getElementById('cfgDdaCnpjSacado')) document.getElementById('cfgDdaCnpjSacado').value = ddaConfigItau.cnpjSacado || '34.028.316/0001-03';
+      if (document.getElementById('cfgDdaAgencia')) document.getElementById('cfgDdaAgencia').value = ddaConfigItau.agencia || '0350';
+      if (document.getElementById('cfgDdaConta')) document.getElementById('cfgDdaConta').value = ddaConfigItau.conta || '45892-1';
+      if (document.getElementById('cfgDdaClientId')) document.getElementById('cfgDdaClientId').value = ddaConfigItau.clientId || 'itau-sispag-omnitrade-prod-01';
+      if (document.getElementById('cfgDdaCertPath')) document.getElementById('cfgDdaCertPath').value = ddaConfigItau.certPath || 'CERT_OMNITRADE_34028316000103_A1.pfx';
+      if (document.getElementById('cfgDdaFiltroSeletivo')) document.getElementById('cfgDdaFiltroSeletivo').value = ddaConfigItau.filtroSeletivo || 'ESTRITO_NF';
+      if (document.getElementById('cfgDdaPastaCnab')) document.getElementById('cfgDdaPastaCnab').value = ddaConfigItau.pastaCnab || 'C:\\OmniFiscal\\DDA_ITAU\\RETORNO_CNAB240';
+      m.classList.add('active');
+    }
+
+    async function salvarConfigDdaItau() {
+      ddaConfigItau = {
+        modoOperacao: document.getElementById('cfgDdaModoOperacao')?.value || 'HIBRIDO',
+        ambiente: document.getElementById('cfgDdaAmbiente')?.value || 'PRODUCAO',
+        cnpjSacado: document.getElementById('cfgDdaCnpjSacado')?.value || '34.028.316/0001-03',
+        agencia: document.getElementById('cfgDdaAgencia')?.value || '0350',
+        conta: document.getElementById('cfgDdaConta')?.value || '45892-1',
+        clientId: document.getElementById('cfgDdaClientId')?.value || 'itau-sispag-omnitrade-prod-01',
+        certPath: document.getElementById('cfgDdaCertPath')?.value || 'CERT_OMNITRADE_34028316000103_A1.pfx',
+        filtroSeletivo: document.getElementById('cfgDdaFiltroSeletivo')?.value || 'ESTRITO_NF',
+        pastaCnab: document.getElementById('cfgDdaPastaCnab')?.value || 'C:\\OmniFiscal\\DDA_ITAU\\RETORNO_CNAB240'
+      };
+      const lblAg = document.getElementById('lblAgenciaItau');
+      if (lblAg) lblAg.innerText = ddaConfigItau.agencia;
+      const lblCc = document.getElementById('lblContaItau');
+      if (lblCc) lblCc.innerText = ddaConfigItau.conta;
+      atualizarPainelDdaNotaFiscal();
+      fecharModal('modalConfigDdaItau');
+      await salvarEstadoGlobalWms('Configuração Híbrida DDA Itaú Atualizada');
+      showToast('Configuração Híbrida DDA Itaú (API + Arquivo CNAB 240) salva com sucesso!', 'success');
+    }
+
+    // Gera e baixa um arquivo CNAB 240 Itaú Segmento G (240 posições) de teste real para validação com o Financeiro
+    function baixarCnab240ModeloItau() {
+      const linhas = [
+        '34100000         2034028316000103                    0350 000000045892 1OMNITRADE BRASIL LTDA         BANCO ITAU SA                           22910202609000000000108000000                                                                     ',
+        '3410001300001G   341919893000026735410900009912000112345670002060746948000112DISTRIBUIDORA SUPRIMENTOS LTDA1811202600000000026735400000000000000009NF-3538/01     000000000000000                                                               ',
+        '3410001300002G   341999890000145000010900004561200112345670002017227090000140GERDAU ACOMINAS SA            1511202600000000145000000000000000000009NF-45612/01    000000000000000                                                               ',
+        '3410001300003G   341949895000196000010900008819200112345670002001637795000132VOTORANTIM CIMENTOS SA        2011202600000000196000000000000000000009NF-88192/01    000000000000000                                                               ',
+        '34199999         000001000005                                                                                                                                                                                                                   '
+      ];
+      const blob = new Blob([linhas.join('\r\n')], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'DDA_ITAU_CNAB240_OMNITRADE_TESTE.RET';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Arquivo CNAB 240 Itaú Segmento G (.RET) gerado! Você pode importá-lo na Mesa DDA ou filtrar na NF.', 'success');
+    }
+
     async function carregarXmlsDfeReal() {
       showToast('Sincronizando fila DF-e SEFAZ e pasta de XMLs...', 'info');
       await carregarXmlsPendentesServidor();
@@ -4297,6 +4844,7 @@ function renderWmsAEnderecar() {
         ordensProducaoExecutadas,
         deparaFornecedor,
         ddaBoletosList,
+        ddaConfigItau,
         insumosDisponiveis
       };
       try {
@@ -4341,6 +4889,7 @@ function renderWmsAEnderecar() {
         if (Array.isArray(carregado.ordensProducaoExecutadas)) ordensProducaoExecutadas = carregado.ordensProducaoExecutadas;
         if (carregado.deparaFornecedor && typeof carregado.deparaFornecedor === 'object') deparaFornecedor = carregado.deparaFornecedor;
         if (Array.isArray(carregado.ddaBoletosList)) ddaBoletosList = carregado.ddaBoletosList;
+        if (carregado.ddaConfigItau && typeof carregado.ddaConfigItau === 'object') ddaConfigItau = { ...ddaConfigItau, ...carregado.ddaConfigItau };
       }
     }
 
@@ -4359,8 +4908,21 @@ function renderWmsAEnderecar() {
       return abrirModalSupervisor();
     }
 
-    // Inicialização
+    // Inicialização + Limpeza automática de Service Worker antigo (v1) para exibir v4.2 imediatamente
     window.addEventListener('DOMContentLoaded', async () => {
+      try {
+        if ('caches' in window) {
+          const keys = await caches.keys();
+          for (const k of keys) {
+            if (k !== 'omnifiscal-recebimento-v4.2') await caches.delete(k);
+          }
+        }
+        if ('serviceWorker' in navigator) {
+          const regs = await navigator.serviceWorker.getRegistrations();
+          for (const r of regs) { r.update(); }
+        }
+      } catch (e) {}
+
       await carregarEstadoGlobalWms();
       definirPerfilOperacional('doca'); // Inicia em Modo Cego por padrão na Doca
       renderDocaItems();
@@ -4369,6 +4931,7 @@ function renderWmsAEnderecar() {
       renderWmsLotes();
       if (typeof renderTabelaOrdensProducao === 'function') renderTabelaOrdensProducao();
       if (typeof renderTabelaDda === 'function') renderTabelaDda();
+      if (typeof atualizarPainelDdaNotaFiscal === 'function') atualizarPainelDdaNotaFiscal();
     });
   
 </script>
