@@ -359,6 +359,62 @@ const handler = async (req, res) => {
     return;
   }
 
+  // 7.0.1 Conciliação DDA Itaú -> Contas a Pagar Sienge (/bills/{id}/installments/{inst}/payment-information/boleto-bancario)
+  if (pathname === '/api/sienge/conciliar-dda') {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', async () => {
+      try {
+        req.query = Object.fromEntries(reqUrl.searchParams);
+        req.body = body ? JSON.parse(body) : {};
+        const fakeRes = {
+          setHeader: (k, v) => res.setHeader(k, v),
+          status: (code) => ({
+            json: (data) => {
+              res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8' });
+              res.end(JSON.stringify(data));
+            },
+            end: () => res.end()
+          })
+        };
+        const ddaHandler = require('./api/sienge/conciliar-dda.js');
+        await ddaHandler(req, fakeRes);
+      } catch (err) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+    return;
+  }
+
+  // 7.0.2 Sincronização de Estado Persistente WMS / PCP / De-Para / DDA no Supabase
+  if (pathname === '/api/wms-state') {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', async () => {
+      try {
+        req.query = Object.fromEntries(reqUrl.searchParams);
+        req.body = body ? JSON.parse(body) : {};
+        const fakeRes = {
+          setHeader: (k, v) => res.setHeader(k, v),
+          status: (code) => ({
+            json: (data) => {
+              res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8' });
+              res.end(JSON.stringify(data));
+            },
+            end: () => res.end()
+          })
+        };
+        const stateHandler = require('./api/wms-state.js');
+        await stateHandler(req, fakeRes);
+      } catch (err) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+    return;
+  }
+
   // 7. Aprovação do Supervisor & Ajuste Sienge
   if (pathname === '/api/sienge/aprovar' && req.method === 'POST') {
     let body = '';

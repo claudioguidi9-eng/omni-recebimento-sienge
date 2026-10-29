@@ -63,7 +63,17 @@ module.exports = async (req, res) => {
   }
   body = body || {};
 
-  const { purchaseOrderId, numeroNf, serieNf, chaveNfe, conferente, dataEmissao, fornecedor } = body;
+  const purchaseOrderId = body.purchaseOrderId || body.orderId;
+  const numeroNf = body.numeroNf || body.nfeNumero;
+  const serieNf = body.serieNf || body.serie || '1';
+  const chaveNfe = body.chaveNfe || body.accessKeyNumber || '';
+  const conferente = body.conferente || 'Conferente Omni Trade';
+  const dataEmissao = body.dataEmissao || '';
+  const fornecedor = body.fornecedor || '';
+  const itensRecebidos = Array.isArray(body.itensRecebidos) ? body.itensRecebidos : (Array.isArray(body.items) ? body.items : []);
+  const duplicatas = Array.isArray(body.duplicatas) ? body.duplicatas : [];
+  const impostos = body.impostos || {};
+  const valorTotal = parseFloat(body.valorTotal || impostos.vNF || 0) || 0;
 
   const poDigits = String(purchaseOrderId || '').replace(/\D/g, '');
   if (!poDigits) {
@@ -97,23 +107,37 @@ module.exports = async (req, res) => {
       return;
     }
 
-    // 2. Criar a Nota Fiscal de Compra (purchase-invoices)
-    const issueDateStr = (dataEmissao && dataEmissao.length === 10) 
-      ? dataEmissao 
-      : new Date().toISOString().split('T')[0];
+    // 2. Criar a Nota Fiscal de Compra (purchase-invoices) com Impostos e Duplicatas
+    const todayIso = new Date().toISOString().split('T')[0];
+    const issueDateStr = (dataEmissao && dataEmissao.length === 10)
+      ? dataEmissao
+      : todayIso;
 
     const cleanNfNum = String(numeroNf || '').replace(/\D/g, '') || String(poId);
     const cleanSerie = String(serieNf || '1').trim() || '1';
+    const dupResumo = duplicatas.length > 0
+      ? ' | Duplicatas XML: ' + duplicatas.map(d => `${d.nDup}:${d.dVenc}(R$${d.vDup})`).join(', ')
+      : '';
 
     const invoicePayload = {
-      notes: chaveNfe ? ('Chave NF-e: ' + chaveNfe + ' | Recebimento OmniFiscal AI') : 'Recebimento OmniFiscal AI',
+      notes: ((chaveNfe ? ('Chave NF-e: ' + chaveNfe) : 'Recebimento OmniFiscal AI') + dupResumo + ' | Conf: ' + conferente).substring(0, 500),
       supplierId: poData.supplierId,
       number: cleanNfNum,
       series: cleanSerie,
       companyId: poData.companyId || 1,
       documentId: 'NFE',
       issueDate: issueDateStr,
-      movementDate: new Date().toISOString().split('T')[0]
+      movementDate: todayIso,
+      accountingDate: todayIso,
+      ...(valorTotal > 0 ? {
+        itemsTotalAmount: valorTotal,
+        productsAmount: parseFloat(impostos.vProd || valorTotal) || valorTotal,
+        eletronicInvoiceAmount: valorTotal
+      } : {}),
+      ...(parseFloat(impostos.vFrete) > 0 ? { freightAmount: parseFloat(impostos.vFrete) } : {}),
+      ...(parseFloat(impostos.vDesc) > 0 ? { discount: parseFloat(impostos.vDesc) } : {}),
+      ...(parseFloat(impostos.vIPI) > 0 ? { ipiTax: parseFloat(impostos.vIPI) } : {}),
+      ...(parseFloat(impostos.vST) > 0 ? { icmsStTax: parseFloat(impostos.vST) } : {})
     };
 
     // Verificar se já existe nota com esse número e fornecedor no Sienge para evitar rascunhos duplicados
@@ -157,14 +181,16 @@ module.exports = async (req, res) => {
     for (const item of poItems) {
       let targetQty = item.quantity || 1.0;
 
-      // Se itensRecebidos foi passado, busca quantidade faturada nesta NF-e
-      if (Array.isArray(body.itensRecebidos) && body.itensRecebidos.length > 0) {
-        const found = body.itensRecebidos.find(r => 
-          (r.cod && String(r.cod).trim() === String(item.resourceCode).trim()) ||
-          (r.itemNumber && r.itemNumber === item.itemNumber)
+      // Se itensRecebidos foi passado, busca quantidade faturada/convertida nesta NF-e
+      if (Array.isArray(itensRecebidos) && itensRecebidos.length > 0) {
+        const found = itensRecebidos.find(r =>
+          (r.cod && String(r.cod).trim() === String(item.resourceCode || item.resourceId).trim()) ||
+          (r.resourceId && String(r.resourceId).trim() === String(item.resourceId).trim()) ||
+          (r.itemNumber && Number(r.itemNumber) === Number(item.itemNumber))
         );
-        if (found && (found.qtdNfe || found.qtd)) {
-          targetQty = parseFloat(found.qtdNfe || found.qtd);
+        if (found) {
+          const parsedQty = parseFloat(found.qtdSiengeConvertida || found.qtdNfe || found.quantity || found.qtd);
+          if (parsedQty > 0) targetQty = parsedQty;
         }
       }
 

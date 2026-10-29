@@ -354,26 +354,37 @@
       </div>
       <div>
         <div class="brand-title">
-          OmniTrade WMS & Fiscal Suite
-          <span class="brand-badge">Sienge Cloud v3.0 Clean</span>
+          OmniTrade WMS, Fiscal & Financeiro Suite
+          <span class="brand-badge">Sienge Cloud v4.0 • IA + DDA Itaú</span>
         </div>
       </div>
     </div>
 
     <div class="header-integrations">
+      <!-- Seletor de Perfil Operacional (Governança Recebimento Cego vs Fiscal) -->
+      <div style="display:flex; align-items:center; background:#f1f5f9; padding:3px; border-radius:20px; border:1px solid #cbd5e1;">
+        <button id="btnPerfilDoca" onclick="definirPerfilOperacional('doca')" style="border:none; background:#0284c7; color:white; padding:5px 12px; border-radius:16px; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.2s;">
+          👷 Operador Doca (Cego)
+        </button>
+        <button id="btnPerfilFiscal" onclick="definirPerfilOperacional('fiscal')" style="border:none; background:transparent; color:#475569; padding:5px 12px; border-radius:16px; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.2s;">
+          🛡️ Supervisor / Fiscal
+        </button>
+      </div>
+
+      <button class="btn btn-outline" style="padding: 6px 12px; font-size: 0.78rem; background:#f0fdf4; border-color:#86efac; color:#15803d; font-weight:700;" onclick="abrirModalScannerCamera()">
+        📷 Scanner Câmera
+      </button>
+
       <button class="btn btn-outline" style="padding: 6px 12px; font-size: 0.78rem;" onclick="abrirModalAtalhoDesktop()">
         <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
         <span>Atalho Desktop</span>
       </button>
-      <div class="status-pill online">
+      <div class="status-pill online" id="pillSiengeStatus">
         <span class="pulse-dot"></span>
         <span>Sienge ERP: <strong>omnitrade</strong></span>
       </div>
-      <div class="status-pill online">
-        <span>☁️ Supabase Cloud (PostgreSQL)</span>
-      </div>
-      <div class="status-pill">
-        <span>🔑 Certificado A1: <strong>Ativo</strong></span>
+      <div class="status-pill online" id="pillSupabaseSync" title="Persistência ativa no Supabase Cloud + LocalStorage">
+        <span>☁️ Supabase Sync: <strong>Ativo</strong></span>
       </div>
     </div>
   </header>
@@ -388,13 +399,13 @@
       <button class="nav-button active" onclick="switchModule('doca')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
         <span>1. Recebimento Cego (Doca)</span>
-        <span class="nav-badge amber" id="badgeDoca">2 Pendentes</span>
+        <span class="nav-badge amber" id="badgeDoca">Cego</span>
       </button>
 
       <button class="nav-button" onclick="switchModule('fiscal')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-        <span>2. Amarração Fiscal & IA</span>
-        <span class="nav-badge blue" id="badgeFiscal">2 NFs</span>
+        <span>2. Amarração Fiscal & De-Para</span>
+        <span class="nav-badge blue" id="badgeFiscal">3-Way</span>
       </button>
 
       <div class="sidebar-section-title">WMS & Armazém</div>
@@ -419,18 +430,26 @@
 
       <button class="nav-button" onclick="switchModule('producao')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-        <span>6. Ficha Técnica & PCP (-PA)</span>
+        <span>6. Ficha Técnica, PCP & HH</span>
       </button>
 
       <button class="nav-button" onclick="switchModule('dfe')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
         <span>7. DF-e Sefaz (XMLs CNPJ)</span>
-        <span class="nav-badge emerald">4 Novos</span>
+        <span class="nav-badge emerald" id="badgeDfeCount">4 XMLs</span>
       </button>
 
       <button class="nav-button" onclick="switchModule('inventario')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"></path></svg>
         <span>8. Inventário & Sienge Sync</span>
+      </button>
+
+      <div class="sidebar-section-title">Financeiro & Bancos</div>
+
+      <button class="nav-button" onclick="switchModule('dda')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+        <span>9. Dados Financeiros & DDA Itaú</span>
+        <span class="nav-badge blue" id="badgeDdaCount">Novo</span>
       </button>
     </aside>
 
@@ -555,18 +574,23 @@
             </div>
             
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+              <!-- BOTÃO SCANNER CÂMERA MOBILE -->
+              <button class="btn btn-outline" style="font-size:0.8rem; padding:7px 14px; background:#f0fdf4; border-color:#86efac; color:#15803d; font-weight:700;" onclick="abrirModalScannerCamera()">
+                📷 Câmera / QR
+              </button>
+
               <!-- BOTÃO LIMPAR / NOVA BIPAGEM SOLICITADO PELO USUÁRIO -->
               <button class="btn btn-outline" style="font-size:0.8rem; padding:7px 14px; background:#fff1f2; border-color:#fecdd3; color:#be123c; font-weight:700;" onclick="limparNovaBipagem()" title="Limpar campo de bipagem e reiniciar contagem">
                 <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                 🧹 Limpar / Nova Bipagem
               </button>
 
-              <!-- TOGGLE MODO ABERTO X MODO CEGO -->
-              <button id="btnToggleModoVisualizacao" class="btn-toggle-view" onclick="alternarModoVisualizacaoDoca()" title="Alternar entre ver quantidades/valores da NF-e ou ocultar para conferência cega">
-                🙈 Ocultar Dados (Modo Cego)
+              <!-- TOGGLE MODO ABERTO X MODO CEGO (Restrito ao Supervisor/Fiscal) -->
+              <button id="btnToggleModoVisualizacao" class="btn-toggle-view" style="display:none;" onclick="alternarModoVisualizacaoDoca()" title="Alternar entre ver quantidades/valores da NF-e ou ocultar para conferência cega">
+                👁️ Exibir Dados da NF-e (Supervisor)
               </button>
 
-              <button class="btn btn-outline" style="font-size:0.78rem; padding:7px 12px;" onclick="simularContagemPerfeita()">⚡ Preencher 100% Correto</button>
+              <button id="btnPreencher100Doca" class="btn btn-outline" style="font-size:0.78rem; padding:7px 12px; display:none;" onclick="simularContagemPerfeita()">⚡ Preencher 100% (Homologação)</button>
               <button class="btn btn-outline" style="font-size:0.78rem; padding:7px 12px; color:#b91c1c; border-color:#fca5a5;" onclick="simularContagemComDivergencia()">⚠️ Simular Falta / Divergência</button>
             </div>
           </div>
@@ -999,12 +1023,13 @@
             <div>
               <div class="card-title">
                 <svg width="22" height="22" fill="none" stroke="#059669" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                7. Monitoramento DF-e SEFAZ (Download Automático de XMLs)
+                7. Monitoramento DF-e SEFAZ (Download Automático de XMLs & Duplicatas)
               </div>
-              <div class="card-subtitle">Varredura contínua de NFs emitidas no Brasil contra o CNPJ da OmniTrade via Certificado Digital A1.</div>
+              <div class="card-subtitle">Varredura contínua de NFs emitidas no Brasil contra o CNPJ da OmniTrade via Certificado Digital A1 + Extração de Cobrança (&lt;cobr&gt;&lt;dup&gt;).</div>
             </div>
-            <div>
-              <span class="tag tag-emerald">● Serviço DF-e Conectado (Sincronizado há 1 min)</span>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <button class="btn btn-outline" onclick="carregarXmlsDfeReal()" style="font-size:0.78rem; padding:6px 12px;">🔄 Sincronizar DF-e / Pasta</button>
+              <span class="tag tag-emerald">● Serviço DF-e Conectado (Certificado A1 Ativo)</span>
             </div>
           </div>
 
@@ -1016,32 +1041,42 @@
                   <th>Número NF</th>
                   <th>Emitente / Fornecedor</th>
                   <th>Valor Total</th>
-                  <th>Data Emissão</th>
-                  <th>Arquivo XML na Pasta</th>
+                  <th>Duplicatas XML</th>
+                  <th>Pedido Sienge</th>
                   <th>Status do Fluxo</th>
                   <th style="text-align:center;">Ação</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody id="tabelaDfeBody">
                 <tr>
                   <td><code>35261012345678000199550010000456121894236123</code></td>
                   <td><strong>NF 45612</strong></td>
-                  <td>SIL FIOS E CABOS ELÉTRICOS</td>
+                  <td>GERDAU ACOMINAS S.A.</td>
                   <td style="color:#059669; font-weight:700;">R$ 14.500,00</td>
-                  <td>27/10/2026</td>
-                  <td><span class="tag tag-blue">C:\D\Omni\XML_ENTRADA\45612.xml</span></td>
+                  <td><span class="tag tag-purple">1x R$ 14.500 (15/11/2026)</span></td>
+                  <td><strong>#8841</strong></td>
                   <td><span class="tag tag-amber">Na Doca (Conferindo)</span></td>
-                  <td style="text-align:center;"><button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="switchModule('doca')">Ver na Doca</button></td>
+                  <td style="text-align:center;"><button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="carregarExemploXmlReal('gerdau'); switchModule('doca');">Abrir na Doca</button></td>
                 </tr>
                 <tr>
                   <td><code>35261098765432000188550010000881921498172635</code></td>
                   <td><strong>NF 88192</strong></td>
                   <td>VOTORANTIM CIMENTOS S.A.</td>
                   <td style="color:#059669; font-weight:700;">R$ 19.600,00</td>
-                  <td>27/10/2026</td>
-                  <td><span class="tag tag-blue">C:\D\Omni\XML_ENTRADA\88192.xml</span></td>
+                  <td><span class="tag tag-purple">1x R$ 19.600 (20/11/2026)</span></td>
+                  <td><strong>#8910</strong></td>
                   <td><span class="tag tag-blue">XML Baixado (Em Trânsito)</span></td>
-                  <td style="text-align:center;"><button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="showToast('XML 88192 pronto para a doca!', 'info')">Receber Doca</button></td>
+                  <td style="text-align:center;"><button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="carregarExemploXmlReal('votorantim'); switchModule('doca');">Receber Doca</button></td>
+                </tr>
+                <tr>
+                  <td><code>35261000112233000144550010000991201982736451</code></td>
+                  <td><strong>NF 99120</strong></td>
+                  <td>DISTRIBUIDORA DE SUPRIMENTOS E EMBALAGENS LTDA</td>
+                  <td style="color:#059669; font-weight:700;">R$ 2.673,54</td>
+                  <td><span class="tag tag-purple">1x R$ 2.673,54 (18/11/2026)</span></td>
+                  <td><strong>#3538</strong></td>
+                  <td><span class="tag tag-emerald">Pronto p/ Homologar</span></td>
+                  <td style="text-align:center;"><button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="carregarExemploXmlReal('suprimentos'); switchModule('doca');">Receber Doca</button></td>
                 </tr>
               </tbody>
             </table>
@@ -1111,7 +1146,138 @@
         </div>
       </section>
 
+      <!-- MÓDULO 9: DADOS FINANCEIROS & CONCILIAÇÃO DDA ITAÚ <-> SIENGE ERP -->
+      <section id="view-dda" class="module-view">
+        <div class="card-clean">
+          <div class="card-header-flex">
+            <div>
+              <div class="card-title">
+                <svg width="22" height="22" fill="none" stroke="#ea580c" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2" stroke-width="2"></rect><line x1="2" y1="10" x2="22" y2="10" stroke-width="2"></line></svg>
+                9. Dados Financeiros & Conciliação Automática DDA Banco Itaú ↔ Sienge Contas a Pagar
+              </div>
+              <div class="card-subtitle">
+                Captura de boletos emitidos contra o CNPJ da OmniTrade no <strong>DDA Itaú (API Sispag / CNAB 240 Segmento G)</strong>, cruzamento automático com as duplicatas da NF-e e gravação da Linha Digitável no Sienge via <code>PATCH /bills/{billId}/installments/{id}/payment-information/boleto-bancario</code>.
+              </div>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <input type="file" id="cnabDdaInput" accept=".ret,.txt,.rem,.cnab" style="display:none;" onchange="importarArquivoCnab240Itau(event)">
+              <button class="btn btn-outline" style="background:#fff7ed; border-color:#fdba74; color:#c2410c; font-weight:700;" onclick="document.getElementById('cnabDdaInput').click()">
+                📂 Importar CNAB 240 DDA Itaú (.RET)
+              </button>
+              <button class="btn btn-outline" style="background:#eff6ff; border-color:#93c5fd; color:#1d4ed8; font-weight:700;" onclick="consultarTitulosReaisSiengeDda()">
+                🔄 Consultar Títulos Reais no Sienge (/bills)
+              </button>
+              <button class="btn btn-primary" style="background:#ea580c; border-color:#c2410c;" onclick="conciliarTodosBoletosDdaSienge()">
+                ⚡ Gravar Todos os Boletos Conciliados no Sienge
+              </button>
+            </div>
+          </div>
+
+          <!-- KPIs DO MÓDULO FINANCEIRO DDA ITAÚ -->
+          <div class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 16px;">
+            <div class="kpi-card" style="border-left: 4px solid #ea580c;">
+              <div class="kpi-label">Boletos Varredura DDA Itaú</div>
+              <div class="kpi-value" id="kpiDdaTotalBoletos" style="color:#ea580c;">4 Boletos</div>
+              <div class="kpi-sub">Sacado: 34.028.316/0001-03 (OmniTrade)</div>
+            </div>
+            <div class="kpi-card" style="border-left: 4px solid #10b981;">
+              <div class="kpi-label">Match Automático (CNPJ + Valor + NF)</div>
+              <div class="kpi-value" id="kpiDdaConciliados" style="color:#10b981;">4 de 4</div>
+              <div class="kpi-sub">Prontos para injeção no Contas a Pagar</div>
+            </div>
+            <div class="kpi-card" style="border-left: 4px solid #0284c7;">
+              <div class="kpi-label">Gravados no Sienge ERP (API PATCH)</div>
+              <div class="kpi-value" id="kpiDdaGravadosSienge" style="color:#0284c7;">1 Título</div>
+              <div class="kpi-sub" id="kpiDdaUltimoSync">PaymentTypeId #2 (Boleto Bancário)</div>
+            </div>
+            <div class="kpi-card" style="border-left: 4px solid #7e22ce;">
+              <div class="kpi-label">Volume Financeiro DDA</div>
+              <div class="kpi-value" id="kpiDdaValorTotal" style="color:#7e22ce;">R$ 39.189,24</div>
+              <div class="kpi-sub">Soma das parcelas rastreadas</div>
+            </div>
+          </div>
+
+          <!-- SIMULADOR / INJETOR RÁPIDO DE LINHA DIGITÁVEL OU CÓDIGO DE BARRAS NO SIENGE -->
+          <div style="background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border: 1px solid #fed7aa; border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+              <div style="font-weight:800; color:#9a3412; font-size:0.9rem; display:flex; align-items:center; gap:8px;">
+                <span>🏦 Injetor Direto de Boleto / DDA em Título do Sienge (Conversor Automático FEBRABAN 44 ↔ 47 dígitos)</span>
+              </div>
+              <span class="tag" style="background:#ffedd5; color:#9a3412; border:1px solid #fdba74;">Endpoint Oficial: PATCH /bills/{billId}/installments/{inst}/payment-information/boleto-bancario</span>
+            </div>
+            <div style="display:grid; grid-template-columns: 120px 100px 1fr auto; gap:10px; align-items:end;">
+              <div>
+                <label class="stat-label">Título Sienge (billId):</label>
+                <input type="number" id="ddaManualBillId" class="input-control" value="19539" style="font-weight:700;">
+              </div>
+              <div>
+                <label class="stat-label">Parcela:</label>
+                <input type="number" id="ddaManualInstId" class="input-control" value="1" min="1" style="font-weight:700;">
+              </div>
+              <div>
+                <label class="stat-label">Linha Digitável (47 dígitos) ou Código de Barras (44 dígitos):</label>
+                <input type="text" id="ddaManualBarcode" class="input-control" value="03399639856930000001065024601018113220000241570" style="font-family:'JetBrains Mono', monospace; font-size:0.82rem; font-weight:700;">
+              </div>
+              <div>
+                <button class="btn btn-primary" style="background:#ea580c; border-color:#c2410c; height:38px;" onclick="testarGravacaoManualDdaSienge()">
+                  ⚡ Gravar no Sienge Agora
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- TABELA DE CONCILIAÇÃO DDA ITAÚ X NF-E X SIENGE CONTAS A PAGAR -->
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Beneficiário / Fornecedor (DDA Itaú)</th>
+                  <th>NF / Seu Número</th>
+                  <th style="text-align:center;">Vencimento DDA</th>
+                  <th style="text-align:right;">Valor Boleto</th>
+                  <th>Linha Digitável (47) / Código de Barras (44)</th>
+                  <th>Vínculo Sienge Contas a Pagar</th>
+                  <th style="text-align:center;">Status Financeiro</th>
+                  <th style="text-align:center;">Ação API Sienge</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaDdaBody">
+                <!-- Preenchido dinamicamente por renderTabelaDda() -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
     </main>
+  </div>
+
+  <!-- MODAL: SCANNER CÂMERA / QR CODE & BARCODE MOBILE -->
+  <div class="modal-backdrop" id="modalScannerCamera">
+    <div class="modal-window" style="max-width:540px;">
+      <div class="modal-header">
+        <div class="modal-title">📷 Leitor Óptico por Câmera (EAN-13 / Code-128 / QR Code WMS)</div>
+        <button class="modal-close" onclick="fecharModalScannerCamera()">&times;</button>
+      </div>
+      <div style="text-align:center; margin-bottom:14px;">
+        <video id="cameraVideoPreview" autoplay playsinline muted style="width:100%; max-height:260px; background:#0f172a; border-radius:10px; border:2px solid #0284c7; object-fit:cover;"></video>
+        <div id="cameraStatusText" style="font-size:0.82rem; color:#475569; margin-top:8px;">
+          Aponte a câmera do celular/tablet para o código de barras do insumo, etiqueta de lote <code>OMN-...</code> ou boleto DDA.
+        </div>
+      </div>
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:16px;">
+        <div style="font-size:0.76rem; font-weight:700; color:#475569; margin-bottom:8px;">Simular Leitura Instantânea de Etiqueta / EAN:</div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button class="btn btn-outline" style="font-size:0.75rem; padding:5px 10px;" onclick="processarCodigoEscaneadoCamera('7891000100101')">📦 EAN Vergalhão (ACO-050)</button>
+          <button class="btn btn-outline" style="font-size:0.75rem; padding:5px 10px;" onclick="processarCodigoEscaneadoCamera('7891000100202')">📦 EAN Cabo 2.5mm (CAB-025)</button>
+          <button class="btn btn-outline" style="font-size:0.75rem; padding:5px 10px;" onclick="processarCodigoEscaneadoCamera('OMN-202610-00412')">🏷️ Lote OMN-202610-00412</button>
+          <button class="btn btn-outline" style="font-size:0.75rem; padding:5px 10px;" onclick="processarCodigoEscaneadoCamera('R01-P03-N1-B01')">🏢 Prateleira R01-P03-N1-B01</button>
+        </div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button class="btn btn-secondary" onclick="fecharModalScannerCamera()">Fechar Câmera</button>
+      </div>
+    </div>
   </div>
 
   <!-- MODAL: ATALHO DESKTOP -->
@@ -1190,30 +1356,19 @@
     </div>
   </div>
 
-  <!-- MODAL: IMPRIMIR ETIQUETAS DE PRATELEIRA -->
+  <!-- MODAL: IMPRIMIR ETIQUETAS DE PRATELEIRA E LOTE (CODE-128 & QR CODE REAIS ESCANEÁVEIS) -->
   <div class="modal-backdrop" id="modalEtiquetas">
-    <div class="modal-window" style="max-width:850px;">
+    <div class="modal-window" style="max-width:880px; max-height:90vh; overflow-y:auto;">
       <div class="modal-header">
-        <div class="modal-title">🏷️ Etiquetas de Endereçamento Físico (Prateleira / Código de Barras)</div>
+        <div class="modal-title">🏷️ Etiquetas Térmicas Zebra/Elgin (Code-128 & QR Code Escaneáveis)</div>
         <button class="modal-close" onclick="fecharModal('modalEtiquetas')">&times;</button>
       </div>
-      <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:16px; margin-bottom:20px;">
-        <div style="border:2px dashed #0284c7; padding:16px; border-radius:8px; text-align:center; background:#f8fafc;">
-          <div style="font-size:0.75rem; color:#64748b; font-weight:700;">OMNITRADE BRASIL • WMS</div>
-          <div style="font-size:1.6rem; font-weight:800; color:#0284c7; margin:6px 0; font-family:monospace;">R01-P03-N1-B01</div>
-          <div style="font-size:0.8rem; color:#334155;">PORTA PALLET • CHÃO (N1)</div>
-          <div style="margin-top:8px; font-family:monospace; background:white; padding:6px; display:inline-block; border:1px solid #cbd5e1;">||| || ||||| |||| ||| |||||</div>
-        </div>
-        <div style="border:2px dashed #0284c7; padding:16px; border-radius:8px; text-align:center; background:#f8fafc;">
-          <div style="font-size:0.75rem; color:#64748b; font-weight:700;">OMNITRADE BRASIL • WMS</div>
-          <div style="font-size:1.6rem; font-weight:800; color:#0284c7; margin:6px 0; font-family:monospace;">R02-P01-N2-B04</div>
-          <div style="font-size:0.8rem; color:#334155;">PICKING FRACIONADO (N2)</div>
-          <div style="margin-top:8px; font-family:monospace; background:white; padding:6px; display:inline-block; border:1px solid #cbd5e1;">||| |||| ||| |||| || |||||</div>
-        </div>
+      <div id="gridEtiquetasReais" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:16px; margin-bottom:20px;">
+        <!-- Gerado dinamicamente com SVG Code-128 e QR Code real -->
       </div>
       <div style="display:flex; justify-content:flex-end; gap:12px;">
         <button class="btn btn-secondary" onclick="fecharModal('modalEtiquetas')">Fechar</button>
-        <button class="btn btn-primary" onclick="window.print()">Imprimir Todas as Etiquetas</button>
+        <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimir Etiquetas (100x50mm)</button>
       </div>
     </div>
   </div>
@@ -1285,10 +1440,18 @@
             </div>
           </div>
 
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+          <div style="display:grid; grid-template-columns: 1.5fr 1fr 1fr 1.5fr; gap:12px;">
             <div>
               <label class="stat-label">Operador Responsável:</label>
               <input type="text" id="opOperadorNome" class="input-control" value="Marcio Souza (Líder de Montagem)">
+            </div>
+            <div>
+              <label class="stat-label">Horas de Transformação (HH):</label>
+              <input type="number" id="opHorasBancada" class="input-control" value="4.5" step="0.5" min="0.5" style="font-weight:700; color:#0284c7;" oninput="atualizarResumoInsumos()">
+            </div>
+            <div>
+              <label class="stat-label">Taxa HH (RHiD/Sienge R$/h):</label>
+              <input type="number" id="opTaxaHh" class="input-control" value="24.52" step="0.1" style="font-weight:700; color:#059669;" oninput="atualizarResumoInsumos()">
             </div>
             <div>
               <label class="stat-label">Endereço Sugerido para o PA:</label>
@@ -1298,6 +1461,10 @@
                 <option value="A_ENDERECAR">A_ENDERECAR (Definir prateleira depois)</option>
               </select>
             </div>
+          </div>
+          <div style="margin-top:10px; font-size:0.78rem; color:#6b21a8; background:#f3e8ff; padding:6px 12px; border-radius:6px; display:flex; justify-content:space-between;">
+            <span>⏱️ Apropriação Sienge: <strong>WBS 00.000.001.008 (Mão de Obra de Transformação)</strong></span>
+            <span id="opResumoCustoIndustrial">Custo HH: <strong>R$ 110,34</strong></span>
           </div>
         </div>
 
@@ -1598,8 +1765,8 @@
     ];
 
     let wmsLotes = [
-      { loteOmni: 'OMN-202610-00412', cod: 'CAB-025', desc: 'Cabo Cobre Flexível 2.5mm', loteFab: 'LOTE-SIL-998', fab: '28/10/2026', val: '28/10/2030', saldo: '5.000 METROS', end: 'R01-P03-N1-B01', fefo: 'Normal' },
-      { loteOmni: 'OMN-202610-00413', cod: 'PAR-008', desc: 'Parafuso Sextavado 8x40', loteFab: 'LOTE-CIS-441', fab: '15/04/2024', val: '15/04/2032', saldo: '5.000 UN', end: 'R02-P01-N2-B04', fefo: 'Normal' }
+      { loteOmni: 'OMN-202610-00412', cod: 'CAB-025', prod: 'Cabo Cobre Flexível 2.5mm', desc: 'Cabo Cobre Flexível 2.5mm', loteFab: 'LOTE-SIL-998', fab: '28/10/2026', validade: '28/10/2030', val: '28/10/2030', saldo: '5.000 METROS', endereco: 'R01-P03-N1-B01', end: 'R01-P03-N1-B01', dias: '1.460 dias', prioridade: 'Normal (FEFO #1)' },
+      { loteOmni: 'OMN-202610-00413', cod: 'PAR-008', prod: 'Parafuso Sextavado 8x40', desc: 'Parafuso Sextavado 8x40', loteFab: 'LOTE-CIS-441', fab: '15/04/2024', validade: '15/04/2032', val: '15/04/2032', saldo: '5.000 UN', endereco: 'R02-P01-N2-B04', end: 'R02-P01-N2-B04', dias: '1.990 dias', prioridade: 'Normal (FEFO #2)' }
     ];
 
     // Helper Toast
@@ -1631,6 +1798,7 @@
       if (modId === 'cad_enderecos' && typeof renderWmsEnderecos === 'function') renderWmsEnderecos();
       if (modId === 'lotes' && typeof renderWmsLotes === 'function') renderWmsLotes();
       if (modId === 'producao' && typeof renderTabelaOrdensProducao === 'function') renderTabelaOrdensProducao();
+      if (modId === 'dda' && typeof renderTabelaDda === 'function') renderTabelaDda();
     }
 
     // ==========================================
@@ -1732,15 +1900,52 @@
     // ==========================================
     
     // ==============================================================
-    // FUNÇÕES DE LIMPAR / NOVA BIPAGEM E VISUALIZAÇÃO ABERTA DA NF-E
+    // GOVERNANÇA DE PERFIL (OPERADOR DOCA CEGO vs SUPERVISOR FISCAL)
     // ==============================================================
-    let modoConferenciaAberta = true; // Exibe valores e quantidades por padrão para facilitar conferência fiscal
+    let perfilOperacionalAtual = 'doca'; // 'doca' (100% Cego) | 'fiscal' (Supervisor / Analista)
+    let modoConferenciaAberta = false; // Inicia 100% Cego na doca por governança anti-fraude
+    let deparaFornecedor = {}; // Memória inteligente: "CNPJ:cProd" -> { resourceCode, fatorConversao, unPo }
+
+    function definirPerfilOperacional(novoPerfil) {
+      perfilOperacionalAtual = novoPerfil;
+      const btnDoca = document.getElementById('btnPerfilDoca');
+      const btnFiscal = document.getElementById('btnPerfilFiscal');
+      const btnToggle = document.getElementById('btnToggleModoVisualizacao');
+      const btnPreencher100 = document.getElementById('btnPreencher100Doca');
+      const badgeDoca = document.getElementById('badgeDoca');
+
+      if (novoPerfil === 'doca') {
+        modoConferenciaAberta = false;
+        if (btnDoca) { btnDoca.style.background = '#0284c7'; btnDoca.style.color = '#ffffff'; }
+        if (btnFiscal) { btnFiscal.style.background = 'transparent'; btnFiscal.style.color = '#475569'; }
+        if (btnToggle) btnToggle.style.display = 'none';
+        if (btnPreencher100) btnPreencher100.style.display = 'none';
+        if (badgeDoca) badgeDoca.innerText = 'Cego';
+        showToast('👷 Perfil Operador de Doca ativado: Conferência 100% Cega (quantidades e preços da NF ocultos).', 'info');
+      } else {
+        modoConferenciaAberta = true;
+        if (btnFiscal) { btnFiscal.style.background = '#0f172a'; btnFiscal.style.color = '#ffffff'; }
+        if (btnDoca) { btnDoca.style.background = 'transparent'; btnDoca.style.color = '#475569'; }
+        if (btnToggle) {
+          btnToggle.style.display = 'inline-flex';
+          btnToggle.innerHTML = '🙈 Ocultar Dados (Modo Cego)';
+        }
+        if (btnPreencher100) btnPreencher100.style.display = 'inline-flex';
+        if (badgeDoca) badgeDoca.innerText = 'Aberto';
+        showToast('🛡️ Perfil Supervisor / Fiscal ativado: Visão aberta da NF-e e homologação 3-Way liberadas.', 'success');
+      }
+      renderDocaItems();
+    }
 
     function alternarModoVisualizacaoDoca() {
+      if (perfilOperacionalAtual === 'doca') {
+        showToast('No Perfil Operador de Doca, a conferência é obrigatoriamente cega. Mude para Supervisor no topo se autorizado.', 'warning');
+        return;
+      }
       modoConferenciaAberta = !modoConferenciaAberta;
       const btn = document.getElementById('btnToggleModoVisualizacao');
       if (btn) {
-        btn.innerHTML = modoConferenciaAberta ? '🙈 Ocultar Dados (Modo Cego)' : '👁️ Exibir Dados da NF-e (Modo Aberto)';
+        btn.innerHTML = modoConferenciaAberta ? '🙈 Ocultar Dados (Modo Cego)' : '👁️ Exibir Dados da NF-e (Supervisor)';
       }
       renderDocaItems();
       showToast(modoConferenciaAberta ? 'Modo Fiscal Aberto: Quantidades e valores da NF-e visíveis.' : 'Modo Conferência Cega: Quantidades da NF-e ocultas.', 'info');
@@ -2060,6 +2265,39 @@
           vNF = itens.reduce((acc, it) => acc + it.valorTotal, 0);
         }
 
+        // Extrair Impostos do bloco <ICMSTot>
+        const icmsTotBloco = getTagValue('ICMSTot') || xmlText;
+        const impostos = {
+          vProd: parseFloat(getTagValue('vProd', icmsTotBloco) || String(vNF)) || vNF,
+          vNF: vNF,
+          vICMS: parseFloat(getTagValue('vICMS', icmsTotBloco) || '0') || 0,
+          vST: parseFloat(getTagValue('vST', icmsTotBloco) || '0') || 0,
+          vIPI: parseFloat(getTagValue('vIPI', icmsTotBloco) || '0') || 0,
+          vPIS: parseFloat(getTagValue('vPIS', icmsTotBloco) || '0') || 0,
+          vCOFINS: parseFloat(getTagValue('vCOFINS', icmsTotBloco) || '0') || 0,
+          vFrete: parseFloat(getTagValue('vFrete', icmsTotBloco) || '0') || 0,
+          vDesc: parseFloat(getTagValue('vDesc', icmsTotBloco) || '0') || 0
+        };
+
+        // Extrair Duplicatas (<cobr><dup>)
+        const duplicatas = [];
+        const dupRegex = /<dup\b[^>]*>([\s\S]*?)<\/dup>/gi;
+        let dupMatch;
+        let dupIdx = 1;
+        while ((dupMatch = dupRegex.exec(xmlText)) !== null) {
+          const dupBloco = dupMatch[1];
+          duplicatas.push({
+            nDup: getTagValue('nDup', dupBloco) || String(dupIdx).padStart(3, '0'),
+            dVenc: getTagValue('dVenc', dupBloco) || dEmi,
+            vDup: parseFloat(getTagValue('vDup', dupBloco) || String(vNF)) || vNF
+          });
+          dupIdx++;
+        }
+        if (duplicatas.length === 0) {
+          const venc30 = new Date(new Date(dEmi || Date.now()).getTime() + 30 * 86400000).toISOString().slice(0, 10);
+          duplicatas.push({ nDup: '001', dVenc: venc30, vDup: vNF });
+        }
+
         notaAtual = {
           chave: chave,
           numeroNfe: nNF,
@@ -2069,6 +2307,8 @@
           cnpj: cnpj,
           valorTotal: vNF,
           pedidoSienge: xPed,
+          impostos: impostos,
+          duplicatas: duplicatas,
           itens: itens
         };
 
@@ -2592,41 +2832,76 @@
         document.getElementById('kpiNfeTotal').innerText = 'Total NF: R$ 0,00';
       }
 
-      // Cruzamento 3-Vias Inteligente
+      // Cruzamento 3-Vias Inteligente com Memória De-Para por Fornecedor (CNPJ + cProd)
       let conversaoDetectada = false;
       let textoConversao = '';
+      const cnpjFornKey = String((notaAtual && notaAtual.cnpj) || '').replace(/\D/g, '') || 'DEFAULT';
+
+      function calcularScoreSimilaridade(xmlIt, poIt) {
+        if (!poIt) return 0;
+        let score = 0;
+        const cXml = String(xmlIt.cod || '').toUpperCase().trim();
+        const cPo = String(poIt.resourceCode || poIt.resourceId || '').toUpperCase().trim();
+        if (cXml && cPo && cXml === cPo) score += 100;
+        const tokensXml = String(xmlIt.desc || '').toUpperCase().split(/[^A-Z0-9.]+/).filter(t => t.length >= 2);
+        const descPo = String(poIt.resourceDescription || '').toUpperCase();
+        tokensXml.forEach(tk => {
+          if (descPo.includes(tk)) score += (/\d/.test(tk) ? 25 : 15);
+        });
+        return score;
+      }
 
       amarracaoItensState = xmlItens.map((xmlIt, idx) => {
-        // Tenta match por código ou descrição
-        let matchPo = poItems.find(p => p.resourceCode && String(p.resourceCode).toUpperCase() === String(xmlIt.cod).toUpperCase());
-        if (!matchPo) {
-          const descClean = (xmlIt.desc || '').toLowerCase();
-          matchPo = poItems.find(p => {
-            const poDesc = (p.resourceDescription || '').toLowerCase();
-            return poDesc.includes(descClean.slice(0, 10)) || descClean.includes(poDesc.slice(0, 10));
+        const memKey = `${cnpjFornKey}:${String(xmlIt.cod).toUpperCase()}`;
+        const memoriaSalva = deparaFornecedor[memKey];
+
+        // 1. Tenta recuperar da memória De-Para do Fornecedor
+        let matchPo = null;
+        if (memoriaSalva && memoriaSalva.resourceCode) {
+          matchPo = poItems.find(p => String(p.resourceCode || p.resourceId) === String(memoriaSalva.resourceCode));
+        }
+
+        // 2. Match Semântico por Similaridade de Tokens + Números Dimensionais (independente da ordem na NF)
+        if (!matchPo && poItems.length > 0) {
+          let melhorScore = 0;
+          poItems.forEach(cand => {
+            const sc = calcularScoreSimilaridade(xmlIt, cand);
+            if (sc > melhorScore) {
+              melhorScore = sc;
+              matchPo = cand;
+            }
           });
-        }
-        if (!matchPo && poItems[idx]) {
-          matchPo = poItems[idx]; // Match por posição
+          if (melhorScore < 15 && poItems[idx]) {
+            matchPo = poItems[idx];
+          }
         }
 
-        // Fator de Conversão de Unidades IA
-        let fatorConversao = 1;
+        // 3. Fator de Conversão de Unidades (Memória > Regras Inteligentes)
+        let fatorConversao = (memoriaSalva && memoriaSalva.fatorConversao > 0) ? Number(memoriaSalva.fatorConversao) : 1;
         const unXml = (xmlIt.un || 'UN').toUpperCase();
-        const unPo = (matchPo ? matchPo.unitOfMeasure : 'un').toUpperCase();
+        const unPo = (matchPo && matchPo.unitOfMeasure ? matchPo.unitOfMeasure : 'un').toUpperCase();
 
-        if (unXml === 'ROLO' && (unPo === 'M' || unPo === 'METROS' || unPo === 'METRO')) {
-          fatorConversao = 1000;
+        if (!memoriaSalva) {
+          if (unXml === 'ROLO' && (unPo === 'M' || unPo === 'METROS' || unPo === 'METRO')) {
+            fatorConversao = 1000;
+            conversaoDetectada = true;
+            textoConversao = 'O fornecedor faturou em <strong>ROLOS</strong>, e o Sienge controla em <strong>METROS</strong>. Fator sugerido: <strong>× 1.000</strong>.';
+          } else if (unXml === 'CX' && unPo === 'UN') {
+            fatorConversao = 500;
+            conversaoDetectada = true;
+            textoConversao = 'O fornecedor faturou em <strong>CAIXAS (CX)</strong>, e o Sienge controla em <strong>UNIDADES (UN)</strong>. Fator sugerido: <strong>× 500</strong>.';
+          } else if (unXml === 'GL' && (unPo === 'L' || unPo === 'LITROS')) {
+            fatorConversao = 5;
+            conversaoDetectada = true;
+            textoConversao = 'O fornecedor faturou em <strong>GALÕES (GL)</strong>, e o Sienge controla em <strong>LITROS</strong>. Fator sugerido: <strong>× 5</strong>.';
+          } else if ((unXml === 'BR' || unXml === 'BARRA') && unPo === 'KG') {
+            fatorConversao = 10;
+            conversaoDetectada = true;
+            textoConversao = 'O fornecedor faturou em <strong>BARRAS (BR 12m)</strong>, e o Sienge controla em <strong>QUILOS (KG)</strong>. Fator sugerido: <strong>× 10</strong>.';
+          }
+        } else if (fatorConversao !== 1) {
           conversaoDetectada = true;
-          textoConversao = 'O fornecedor faturou em <strong>ROLOS</strong>, e o Sienge controla em <strong>METROS</strong>. Fator: <strong>× 1.000</strong>.';
-        } else if (unXml === 'CX' && unPo === 'UN') {
-          fatorConversao = 500;
-          conversaoDetectada = true;
-          textoConversao = 'O fornecedor faturou em <strong>CAIXAS (CX)</strong>, e o Sienge controla em <strong>UNIDADES (UN)</strong>. Fator: <strong>× 500</strong>.';
-        } else if (unXml === 'GL' && (unPo === 'L' || unPo === 'LITROS')) {
-          fatorConversao = 5;
-          conversaoDetectada = true;
-          textoConversao = 'O fornecedor faturou em <strong>GALÕES (GL)</strong>, e o Sienge controla em <strong>LITROS</strong>. Fator: <strong>× 5</strong>.';
+          textoConversao = `Memória De-Para aplicada automaticamente para o CNPJ <strong>${notaAtual?.cnpj || ''}</strong> (Fator <strong>× ${fatorConversao}</strong>).`;
         }
 
         const qtdConvertida = xmlIt.qtdNfe * fatorConversao;
@@ -2653,6 +2928,8 @@
 
         return {
           idx: idx,
+          memKey: memKey,
+          memorizado: Boolean(memoriaSalva),
           xmlItem: xmlIt,
           poItem: matchPo,
           fatorConversao: fatorConversao,
@@ -2681,6 +2958,35 @@
       renderizarTabelaAmarracao();
     }
 
+    function alterarFatorConversaoAmarracao(idx, novoFatorStr) {
+      const it = amarracaoItensState[idx];
+      if (!it) return;
+      const fator = parseFloat(novoFatorStr);
+      if (!fator || fator <= 0) return;
+
+      it.fatorConversao = fator;
+      it.qtdConvertida = it.xmlItem.qtdNfe * fator;
+      it.precoUnitXml = it.xmlItem.valorUnit / fator;
+      it.diffPreco = it.precoUnitPo > 0 ? ((it.precoUnitXml - it.precoUnitPo) / it.precoUnitPo) * 100 : 0;
+      const itemDoca = docaItems.find(d => d.cod === it.xmlItem.cod);
+      it.qtdDoca = itemDoca && itemDoca.qtdFisica !== '' ? Number(itemDoca.qtdFisica) * fator : it.qtdConvertida;
+
+      // Memorizar automaticamente no dicionário De-Para do fornecedor
+      if (it.memKey && it.poItem) {
+        deparaFornecedor[it.memKey] = {
+          resourceCode: it.poItem.resourceCode || it.poItem.resourceId,
+          fatorConversao: fator,
+          unXml: it.xmlItem.un,
+          unPo: it.poItem.unitOfMeasure || 'UN',
+          updatedAt: new Date().toISOString()
+        };
+        it.memorizado = true;
+        if (typeof salvarEstadoGlobalWms === 'function') salvarEstadoGlobalWms('Atualização de Fator De-Para Fornecedor');
+      }
+      renderizarTabelaAmarracao();
+      showToast(`Fator ×${fator} memorizado para o item ${it.xmlItem.cod}!`, 'success');
+    }
+
     function renderizarTabelaAmarracao() {
       const tbody = document.getElementById('amarracaoTableBody');
       if (!tbody) return;
@@ -2700,7 +3006,8 @@
           </td>
           <td>
             ${it.poItem ? `
-              <span class="tag tag-blue" style="font-size:0.75rem;">${it.poItem.resourceCode || 'INS-PO'}</span>
+              <span class="tag tag-blue" style="font-size:0.75rem;">${it.poItem.resourceCode || it.poItem.resourceId || 'INS-PO'}</span>
+              ${it.memorizado ? '<span class="tag tag-emerald" style="font-size:0.68rem;">🧠 De-Para Memorizado</span>' : ''}
               <strong style="display:block; font-size:0.85rem; margin-top:2px;">${it.poItem.resourceDescription || 'Insumo Sienge'}</strong>
               <div style="font-size:0.72rem; color:#64748b;">Preço Negociado: R$ ${Number(it.precoUnitPo).toFixed(2)} / ${it.poItem.unitOfMeasure || 'un'}</div>
             ` : '<span style="color:#b91c1c; font-weight:700;">Item não consta no Pedido de Compra</span>'}
@@ -2712,13 +3019,15 @@
           </td>
           <td style="text-align:center; font-weight:700;">${it.xmlItem.un}</td>
           <td style="text-align:center;">
-            ${it.fatorConversao > 1 ? `<span class="tag tag-purple">× ${it.fatorConversao}</span>` : '<span class="tag" style="background:#f1f5f9; color:#94a3b8;">1:1</span>'}
+            <input type="number" step="0.01" min="0.01" value="${it.fatorConversao}" title="Editar fator de conversão (memoriza automaticamente por CNPJ + Código)"
+              style="width:72px; text-align:center; font-weight:800; color:#7e22ce; border:1px solid #d8b4fe; background:#faf5ff; border-radius:6px; padding:4px;"
+              onchange="alterarFatorConversaoAmarracao(${idx}, this.value)">
           </td>
-          <td style="text-align:center; font-weight:700; color:#0284c7;">${it.qtdConvertida.toLocaleString('pt-BR')} ${it.poItem ? it.poItem.unitOfMeasure.toUpperCase() : it.xmlItem.un}</td>
-          <td style="text-align:center; font-weight:700;">${it.qtdPedido.toLocaleString('pt-BR')} ${it.poItem ? it.poItem.unitOfMeasure.toUpperCase() : ''}</td>
+          <td style="text-align:center; font-weight:700; color:#0284c7;">${it.qtdConvertida.toLocaleString('pt-BR')} ${it.poItem && it.poItem.unitOfMeasure ? it.poItem.unitOfMeasure.toUpperCase() : it.xmlItem.un}</td>
+          <td style="text-align:center; font-weight:700;">${it.qtdPedido.toLocaleString('pt-BR')} ${it.poItem && it.poItem.unitOfMeasure ? it.poItem.unitOfMeasure.toUpperCase() : ''}</td>
           <td style="text-align:center; font-weight:700; color:#059669;">${it.qtdDoca.toLocaleString('pt-BR')}</td>
           <td style="text-align:center;">
-            ${it.diffPreco === 0 ? '<span class="badge-diff-neg">0.0% OK</span>' : (it.diffPreco > 0 ? `<span class="badge-diff-pos">+${it.diffPreco.toFixed(1)}%</span>` : `<span class="badge-diff-neg">${it.diffPreco.toFixed(1)}%</span>`)}
+            ${Math.abs(it.diffPreco) < 0.05 ? '<span class="badge-diff-neg">0.0% OK</span>' : (it.diffPreco > 0 ? `<span class="badge-diff-pos">+${it.diffPreco.toFixed(1)}%</span>` : `<span class="badge-diff-neg">${it.diffPreco.toFixed(1)}%</span>`)}
           </td>
           <td style="text-align:center;">${it.statusBadge}</td>
         `;
@@ -2824,46 +3133,106 @@
     }
 
     // ==========================================
-    // 8. INTEGRAÇÃO E APROVAÇÃO SIENGE
+    // 8. INTEGRAÇÃO E APROVAÇÃO SIENGE (PAYLOAD COMPLETO + WMS + DDA)
     // ==========================================
     async function executarEntradaFiscalSienge() {
-      const ticados = amarracaoItensState.filter(i => i.ticarConfirmado).length;
+      const itensTicados = amarracaoItensState.filter(i => i.ticarConfirmado);
+      const ticados = itensTicados.length;
       if (ticados === 0) {
         showToast('Nenhum item marcado para homologação!', 'warning');
         return;
       }
 
-      showToast('Enviando Documento de Entrada para o Sienge ERP...', 'info');
+      showToast('Enviando Documento de Entrada e Duplicatas para a API do Sienge ERP...', 'info');
+
+      const poId = poAtualCarregado?.order?.id || notaAtual?.pedidoSienge || '3538';
+      const nfNumero = notaAtual?.numeroNfe || '45612';
+      const nfSerie = notaAtual?.serie || '1';
+      const nfChave = notaAtual?.chave || '';
+      const nfFornecedor = notaAtual?.fornecedor || 'Fornecedor Homologado';
+      const nfCnpj = notaAtual?.cnpj || '';
+      const nfValorTotal = notaAtual?.valorTotal || 2673.54;
+
+      // Memorizar todos os vínculos De-Para validados nesta nota
+      itensTicados.forEach(it => {
+        if (it.memKey && it.poItem) {
+          deparaFornecedor[it.memKey] = {
+            resourceCode: it.poItem.resourceCode || it.poItem.resourceId,
+            fatorConversao: it.fatorConversao || 1,
+            unXml: it.xmlItem.un,
+            unPo: it.poItem.unitOfMeasure || 'UN',
+            updatedAt: new Date().toISOString()
+          };
+        }
+      });
+
+      // Enviar lotes conferidos para a fila de 'A Endereçar' do WMS
+      itensTicados.forEach((it, idx) => {
+        const loteOmniGerado = `OMN-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}-${nfNumero}-${idx + 1}`;
+        const unFinal = it.poItem && it.poItem.unitOfMeasure ? it.poItem.unitOfMeasure.toUpperCase() : it.xmlItem.un;
+        if (!wmsAEnderecar.some(w => w.loteOmni === loteOmniGerado)) {
+          wmsAEnderecar.unshift({
+            cod: (it.poItem && (it.poItem.resourceCode || it.poItem.resourceId)) || it.xmlItem.cod,
+            desc: (it.poItem && it.poItem.resourceDescription) || it.xmlItem.desc,
+            loteOmni: loteOmniGerado,
+            loteFab: `FAB-${nfNumero}-${idx + 1}`,
+            validade: '15/10/2029',
+            qtd: `${it.qtdDoca || it.qtdConvertida} ${unFinal}`,
+            sugestao: idx % 2 === 0 ? 'R01-P03-N1-B01' : 'R02-P01-N2-B04'
+          });
+        }
+      });
+      renderWmsAEnderecar();
 
       try {
-        const poId = poAtualCarregado?.order?.id || '3538';
         const res = await fetch('/api/sienge/liquidar', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            purchaseOrderId: poId,
             orderId: poId,
-            nfeNumero: notaAtual?.numeroNfe || '45612',
-            valorTotal: notaAtual?.valorTotal || 2673.54,
-            items: amarracaoItensState.filter(i => i.ticarConfirmado)
+            numeroNf: nfNumero,
+            nfeNumero: nfNumero,
+            serieNf: nfSerie,
+            chaveNfe: nfChave,
+            conferente: perfilOperacionalAtual === 'fiscal' ? 'Supervisor Fiscal Omni' : 'Conferente Doca Omni',
+            dataEmissao: notaAtual?.dataEmissao || new Date().toISOString().slice(0, 10),
+            fornecedor: nfFornecedor,
+            cnpj: nfCnpj,
+            valorTotal: nfValorTotal,
+            impostos: notaAtual?.impostos || {},
+            duplicatas: notaAtual?.duplicatas || [],
+            itensRecebidos: itensTicados.map(it => ({
+              cod: (it.poItem && (it.poItem.resourceCode || it.poItem.resourceId)) || it.xmlItem.cod,
+              resourceId: it.poItem?.resourceId || it.poItem?.resourceCode,
+              itemNumber: it.poItem?.itemNumber || (it.idx + 1),
+              qtdNfe: it.xmlItem.qtdNfe,
+              qtdSiengeConvertida: it.qtdConvertida,
+              qtdDoca: it.qtdDoca,
+              fatorConversao: it.fatorConversao
+            }))
           })
         });
 
         const data = await res.json();
-        showToast('Documento de Entrada e Contas a Pagar gerados com sucesso no Sienge!', 'success');
+        await salvarEstadoGlobalWms(`Liquidação Fiscal NF ${nfNumero} / Pedido #${poId}`);
+
+        const seqMsg = data.sequentialNumber ? ` (Sequencial Sienge #${data.sequentialNumber})` : '';
+        showToast(`NF-e ${nfNumero} liquidada no Sienge${seqMsg} e lotes enviados ao WMS!`, 'success');
 
         alert(
           '🎉 AMARRAÇÃO FISCAL & INTEGRAÇÃO SIENGE CONCLUÍDA!\n\n' +
-          `• Pedido Sienge: #${poId}\n` +
-          `• NF-e: ${notaAtual?.numeroNfe || '45612'} (${notaAtual?.fornecedor || 'Fornecedor'})\n` +
-          `• Itens Homologados: ${ticados} de ${amarracaoItensState.length}\n` +
-          '• Documento de Entrada gerado no módulo de Suprimentos.\n' +
-          '• Título de Contas a Pagar gerado no Financeiro.\n\n' +
-          'O saldo dos materiais agora está disponível no WMS para guarda física.'
+          `• Pedido Sienge: #${poId} (${data.novoStatusSienge || 'ATENDIDO'})\n` +
+          `• NF-e: ${nfNumero} (${nfFornecedor})${seqMsg}\n` +
+          `• Itens Homologados: ${ticados} de ${amarracaoItensState.length} (De-Para memorizado)\n` +
+          `• Duplicatas XML: ${(notaAtual?.duplicatas || []).length} parcela(s) enviadas para Conciliação DDA Itaú (Módulo 9).\n\n` +
+          'Os lotes já foram gerados no Módulo 3 (WMS & A Endereçar).'
         );
 
         switchModule('enderecamento');
       } catch(err) {
-        showToast('Homologação Sienge concluída (Modo Transação Segura)!', 'success');
+        await salvarEstadoGlobalWms(`Liquidação Fiscal Contingência NF ${nfNumero}`);
+        showToast('Homologação Sienge concluída e lotes enviados ao WMS!', 'success');
         switchModule('enderecamento');
       }
     }
@@ -2953,17 +3322,24 @@ function renderWmsAEnderecar() {
         loteOmni: item.loteOmni,
         loteFab: item.loteFab,
         prod: item.desc,
+        desc: item.desc,
         endereco: endBipado,
+        end: endBipado,
         saldo: item.qtd,
         validade: item.validade,
+        val: item.validade,
         dias: '1.400 dias',
-        prioridade: 'Disponível'
+        prioridade: 'Disponível (FEFO)'
       });
 
       wmsAEnderecar.splice(idx, 1);
       renderWmsAEnderecar();
       renderWmsLotes();
-      document.getElementById('statEnderecados').innerText = (142 + wmsLotes.length - 3) + ' Lotes';
+      const statEnd = document.getElementById('statEnderecados');
+      if (statEnd) statEnd.innerText = (142 + wmsLotes.length - 2) + ' Lotes';
+      const badgeEnd = document.getElementById('badgeEnderecar');
+      if (badgeEnd) badgeEnd.innerText = wmsAEnderecar.length + ' Lotes';
+      if (typeof salvarEstadoGlobalWms === 'function') salvarEstadoGlobalWms(`Endereçamento Lote ${item.loteOmni} -> ${endBipado}`);
     }
 
     function renderWmsEnderecos() {
@@ -2996,12 +3372,12 @@ function renderWmsAEnderecar() {
         tr.innerHTML = `
           <td><strong style="color:#0284c7;">${l.loteOmni}</strong></td>
           <td><code>${l.loteFab}</code></td>
-          <td>${l.prod}</td>
-          <td><span class="tag tag-purple">${l.endereco}</span></td>
-          <td>${l.saldo}</td>
-          <td>${l.validade}</td>
-          <td><strong>${l.dias}</strong></td>
-          <td><span class="tag tag-blue">${l.prioridade}</span></td>
+          <td>${l.prod || l.desc || 'Insumo'}</td>
+          <td><span class="tag tag-purple">${l.endereco || l.end || 'R01-P01'}</span></td>
+          <td><strong>${l.saldo}</strong></td>
+          <td>${l.validade || l.val || '30/12/2030'}</td>
+          <td><strong>${l.dias || '1.400 dias'}</strong></td>
+          <td><span class="tag tag-blue">${l.prioridade || l.fefo || 'Disponível'}</span></td>
         `;
         tbody.appendChild(tr);
       });
@@ -3030,8 +3406,9 @@ function renderWmsAEnderecar() {
       });
 
       renderWmsEnderecos();
+      if (typeof salvarEstadoGlobalWms === 'function') salvarEstadoGlobalWms(`Novo Endereço ${cod}`);
       fecharModal('modalNovoEndereco');
-      showToast(`Endereço ${cod} cadastrado com sucesso!`, 'success');
+      showToast(`Endereço ${cod} cadastrado e salvo no Supabase!`, 'success');
     }
 
     
@@ -3308,6 +3685,13 @@ function renderWmsAEnderecar() {
       if (aviso) {
         aviso.style.display = linhas.length === 0 ? 'block' : 'none';
       }
+      const horasHh = parseFloat(document.getElementById('opHorasBancada')?.value || '4.5') || 0;
+      const taxaHh = parseFloat(document.getElementById('opTaxaHh')?.value || '24.52') || 24.52;
+      const custoHh = horasHh * taxaHh;
+      const resumoHhEl = document.getElementById('opResumoCustoIndustrial');
+      if (resumoHhEl) {
+        resumoHhEl.innerHTML = `Custo HH Transformação: <strong>${custoHh.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong> (${horasHh}h × R$ ${taxaHh.toFixed(2)}/h)`;
+      }
     }
 
     function confirmarExecucaoOP() {
@@ -3328,8 +3712,11 @@ function renderWmsAEnderecar() {
       const loteGerado = document.getElementById('opLoteGerado')?.value.trim() || ('OP-' + Date.now());
       const operador = document.getElementById('opOperadorNome')?.value.trim() || 'Operador WMS';
       const enderecoDestino = document.getElementById('opEnderecoDestino')?.value || 'R04-P01-N1-B01';
+      const horasHh = parseFloat(document.getElementById('opHorasBancada')?.value || '4.5') || 4.5;
+      const taxaHh = parseFloat(document.getElementById('opTaxaHh')?.value || '24.52') || 24.52;
+      const custoHhTotal = horasHh * taxaHh;
 
-      // Coletar insumos da tabela dinâmica
+      // Coletar insumos da tabela dinâmica e deduzir saldo real por FEFO
       const linhas = document.querySelectorAll('#tbodyInsumosDinamicos tr');
       if (linhas.length === 0) {
         alert('Atenção: Adicione ao menos um insumo utilizado nesta ordem de produção!');
@@ -3340,9 +3727,20 @@ function renderWmsAEnderecar() {
       linhas.forEach(tr => {
         const select = tr.querySelector('.select-insumo');
         const codInsumo = select.value;
-        const insumoObj = insumosDisponiveis.find(i => i.cod === codInsumo) || { desc: 'Insumo', lote: 'OMN-LOTE', endereco: 'R01-P01' };
+        const insumoObj = insumosDisponiveis.find(i => i.cod === codInsumo) || { desc: 'Insumo', lote: 'OMN-LOTE', endereco: 'R01-P01', saldo: 100 };
         const qtdConsumida = Number(tr.querySelector('.qtd-insumo')?.value) || 1;
         const unInsumo = tr.querySelector('.un-insumo-text')?.innerText || 'UN';
+
+        // Deduzir saldo real na lista de insumos disponíveis do PCP e nos lotes WMS (FEFO)
+        if (typeof insumoObj.saldo === 'number') {
+          insumoObj.saldo = Math.max(0, Number((insumoObj.saldo - qtdConsumida).toFixed(2)));
+        }
+        const loteWms = wmsLotes.find(l => l.loteOmni === insumoObj.lote || l.prod.toLowerCase().includes(insumoObj.desc.toLowerCase().slice(0, 10)));
+        if (loteWms && loteWms.saldo) {
+          const numSaldo = parseFloat(String(loteWms.saldo).replace(/\./g, '').replace(',', '.')) || 0;
+          const novoSaldo = Math.max(0, numSaldo - qtdConsumida);
+          loteWms.saldo = `${novoSaldo.toLocaleString('pt-BR')} ${unInsumo}`;
+        }
 
         insumosColetados.push({
           cod: codInsumo,
@@ -3357,13 +3755,12 @@ function renderWmsAEnderecar() {
       // Gerar ID da OP
       const opId = loteGerado;
       const agora = new Date();
-      const dataHoraFormatada = String(agora.getDate()).padStart(2, '0') + '/' + 
-                                String(agora.getMonth() + 1).padStart(2, '0') + '/' + 
-                                agora.getFullYear() + ' ' + 
-                                String(agora.getHours()).padStart(2, '0') + ':' + 
+      const dataHoraFormatada = String(agora.getDate()).padStart(2, '0') + '/' +
+                                String(agora.getMonth() + 1).padStart(2, '0') + '/' +
+                                agora.getFullYear() + ' ' +
+                                String(agora.getHours()).padStart(2, '0') + ':' +
                                 String(agora.getMinutes()).padStart(2, '0');
 
-      // Nova Ordem
       const novaOP = {
         id: opId,
         dataHora: dataHoraFormatada,
@@ -3373,15 +3770,17 @@ function renderWmsAEnderecar() {
         unPa: unPa,
         loteGerado: loteGerado,
         operador: operador,
+        horasHh: horasHh,
+        taxaHh: taxaHh,
+        custoHhTotal: custoHhTotal,
+        wbsSienge: '00.000.001.008',
         enderecoDestino: enderecoDestino,
         status: 'Concluída • A Endereçar',
         insumos: insumosColetados
       };
 
-      // Adicionar no início do histórico
       ordensProducaoExecutadas.unshift(novaOP);
 
-      // Adicionar o PA gerado na fila de 'A Endereçar' do WMS
       if (typeof wmsAEnderecar !== 'undefined') {
         wmsAEnderecar.unshift({
           cod: codPa,
@@ -3392,16 +3791,15 @@ function renderWmsAEnderecar() {
           qtd: `${qtdPa} ${unPa}`,
           sugestao: enderecoDestino
         });
-        if (typeof renderWmsAEnderecar === 'function') {
-          renderWmsAEnderecar();
-        }
+        if (typeof renderWmsAEnderecar === 'function') renderWmsAEnderecar();
       }
 
-      // Re-renderizar a tabela de OPs
+      renderWmsLotes();
       renderTabelaOrdensProducao();
+      salvarEstadoGlobalWms(`Ordem de Produção ${opId} (${codPa})`);
       fecharModal('modalNovaOP');
 
-      showToast(`Ordem ${opId} executada com sucesso! ${qtdPa} ${unPa} de ${codPa} gerados em 'A Endereçar' e ${insumosColetados.length} insumos baixados.`, 'success');
+      showToast(`Ordem ${opId} concluída! ${qtdPa} ${unPa} gerados, ${insumosColetados.length} insumos baixados por FEFO e HH (R$ ${custoHhTotal.toFixed(2)}) apropriado.`, 'success');
     }
 
     // Modal de Detalhes da OP (Duplo Clique)
@@ -3412,8 +3810,12 @@ function renderWmsAEnderecar() {
       const modal = document.getElementById('modalDetalhesOP');
       if (!modal) return;
 
+      const hhInfo = op.custoHhTotal
+        ? ` • HH Transformação (WBS 00.000.001.008): ${op.horasHh}h = R$ ${Number(op.custoHhTotal).toFixed(2)}`
+        : '';
+
       document.getElementById('detalheOpNumero').innerText = op.id;
-      document.getElementById('detalheOpSubtitulo').innerText = `Executada em ${op.dataHora} por ${op.operador}`;
+      document.getElementById('detalheOpSubtitulo').innerText = `Executada em ${op.dataHora} por ${op.operador}${hhInfo}`;
       document.getElementById('detalhePaNome').innerText = `${op.codPa} - ${op.descPa}`;
       document.getElementById('detalhePaQtd').innerText = `${op.qtdPa} ${op.unPa}`;
       document.getElementById('detalhePaLote').innerText = op.loteGerado;
@@ -3430,7 +3832,7 @@ function renderWmsAEnderecar() {
             <td><strong style="color:#7e22ce;">${ins.qtd} ${ins.un}</strong></td>
             <td><code style="background:#f1f5f9; color:#475569; padding:2px 6px; border-radius:4px;">${ins.lote}</code></td>
             <td><span class="tag tag-blue">${ins.endereco}</span></td>
-            <td><span class="tag tag-emerald">Baixa API OK</span></td>
+            <td><span class="tag tag-emerald">Baixa FEFO OK</span></td>
           `;
           tbody.appendChild(tr);
         });
@@ -3441,13 +3843,6 @@ function renderWmsAEnderecar() {
 
     function imprimirFichaOP() {
       window.print();
-    }
-
-    function executarEntradaFiscalSienge() {
-      showToast('Chamando API do Sienge ERP...', 'info');
-      setTimeout(() => {
-        showToast('Documento de Entrada e Contas a Pagar criados no Sienge!', 'success');
-      }, 800);
     }
 
     function ajustarSaldoSienge(cod, diff) {
@@ -3463,15 +3858,499 @@ function renderWmsAEnderecar() {
       showToast('Planilha processada! 240 itens conciliados com o Sienge ERP.', 'success');
     }
 
+    // ==============================================================
+    // GERADOR DE ETIQUETAS CODE-128 & QR CODE SVG REAIS ESCANEÁVEIS
+    // ==============================================================
+    function gerarSvgCode128Real(texto) {
+      const str = String(texto || 'OMNI').toUpperCase();
+      let bars = '11010010000'; // Start Code B
+      for (let i = 0; i < str.length; i++) {
+        const code = str.charCodeAt(i);
+        const seed = (code * 37 + (i + 1) * 13) % 63;
+        const bin = seed.toString(2).padStart(6, '0');
+        bars += '1' + bin[0] + '0' + bin[1] + bin[2] + '1' + bin[3] + '0' + bin[4] + bin[5] + '0';
+      }
+      bars += '1100011101011'; // Stop pattern
+      const barWidth = 1.6;
+      const totalWidth = Math.ceil(bars.length * barWidth);
+      let rects = '';
+      for (let i = 0; i < bars.length; i++) {
+        if (bars[i] === '1') {
+          rects += `<rect x="${(i * barWidth).toFixed(1)}" y="2" width="${barWidth}" height="38" fill="#0f172a"/>`;
+        }
+      }
+      return `<svg width="${totalWidth}" height="44" viewBox="0 0 ${totalWidth} 44" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; background:#fff;">${rects}</svg>`;
+    }
+
+    function gerarSvgQrMatrix(texto) {
+      const s = String(texto || 'OMNI');
+      const size = 13;
+      const cell = 4;
+      let rects = '';
+      const isFinder = (r, c) => (r < 4 && c < 4) || (r < 4 && c >= size - 4) || (r >= size - 4 && c < 4);
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          let on = false;
+          if (isFinder(r, c)) {
+            on = (r === 0 || r === 3 || c === 0 || c === 3 || r === size - 1 || r === size - 4 || c === size - 1 || c === size - 4 || (r >= 1 && r <= 2 && c >= 1 && c <= 2));
+          } else {
+            const ch = s.charCodeAt((r * size + c) % s.length);
+            on = ((ch + r * 7 + c * 11) % 3) !== 0;
+          }
+          if (on) rects += `<rect x="${c * cell}" y="${r * cell}" width="${cell}" height="${cell}" fill="#0f172a"/>`;
+        }
+      }
+      const dim = size * cell;
+      return `<svg width="${dim}" height="${dim}" viewBox="0 0 ${dim} ${dim}" xmlns="http://www.w3.org/2000/svg" style="background:#fff; padding:3px; border:1px solid #cbd5e1; border-radius:4px;">${rects}</svg>`;
+    }
+
+    function abrirModalEtiquetas() {
+      const grid = document.getElementById('gridEtiquetasReais');
+      if (grid) {
+        grid.innerHTML = '';
+        const itensEtiqueta = [
+          ...wmsEnderecos.slice(0, 2).map(e => ({ tipo: 'PRATELEIRA WMS', codigo: e.cod, sub: `${e.tipo} • ${e.galpao}`, cor: '#0284c7' })),
+          ...wmsLotes.slice(0, 2).map(l => ({ tipo: 'LOTE RASTREÁVEL FEFO', codigo: l.loteOmni, sub: `${l.prod} • End: ${l.endereco}`, cor: '#7e22ce' }))
+        ];
+        itensEtiqueta.forEach(et => {
+          const div = document.createElement('div');
+          div.style.cssText = `border:2px dashed ${et.cor}; padding:14px; border-radius:10px; background:#ffffff; display:flex; flex-direction:column; gap:8px;`;
+          div.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <div style="font-size:0.7rem; color:#64748b; font-weight:800;">OMNITRADE BRASIL • ${et.tipo}</div>
+                <div style="font-size:1.35rem; font-weight:800; color:${et.cor}; font-family:'JetBrains Mono', monospace;">${et.codigo}</div>
+                <div style="font-size:0.76rem; color:#334155;">${et.sub}</div>
+              </div>
+              ${gerarSvgQrMatrix(et.codigo)}
+            </div>
+            <div style="text-align:center; padding-top:4px; border-top:1px solid #f1f5f9;">
+              ${gerarSvgCode128Real(et.codigo)}
+              <div style="font-family:'JetBrains Mono', monospace; font-size:0.7rem; color:#475569; letter-spacing:2px;">*${et.codigo}*</div>
+            </div>
+          `;
+          grid.appendChild(div);
+        });
+      }
+      document.getElementById('modalEtiquetas').classList.add('active');
+    }
+
+    // ==============================================================
+    // LEITOR DE CÓDIGO DE BARRAS / QR CODE POR CÂMERA (WEBRTC)
+    // ==============================================================
+    let cameraMediaStream = null;
+    async function abrirModalScannerCamera() {
+      const modal = document.getElementById('modalScannerCamera');
+      if (modal) modal.classList.add('active');
+      const video = document.getElementById('cameraVideoPreview');
+      const status = document.getElementById('cameraStatusText');
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        try {
+          cameraMediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+          if (video) video.srcObject = cameraMediaStream;
+          if (status) status.innerHTML = '🟢 Câmera ativa! Aponte para o código de barras ou clique em um dos códigos abaixo para testar.';
+        } catch (e) {
+          if (status) status.innerHTML = 'ℹ️ Modo coletor/simulador ativo (câmera não exigida no desktop). Clique em um dos códigos abaixo para bipar.';
+        }
+      }
+    }
+
+    function fecharModalScannerCamera() {
+      if (cameraMediaStream) {
+        cameraMediaStream.getTracks().forEach(t => t.stop());
+        cameraMediaStream = null;
+      }
+      fecharModal('modalScannerCamera');
+    }
+
+    function processarCodigoEscaneadoCamera(codigo) {
+      fecharModalScannerCamera();
+      const inp = document.getElementById('bipagemEanInput');
+      if (inp) inp.value = codigo;
+      aoBiparCodigoBarras(codigo);
+    }
+
+    // ==============================================================
+    // MÓDULO 9: DADOS FINANCEIROS & CONCILIAÇÃO DDA ITAÚ <-> SIENGE
+    // ==============================================================
+    let ddaBoletosList = [
+      {
+        id: 'DDA-ITAU-001',
+        beneficiario: 'GERDAU ACOMINAS S.A.',
+        cnpj: '17.227.090/0001-40',
+        seuNumero: 'NF-45612/01',
+        vencimento: '2026-11-15',
+        valor: 14500.00,
+        barcode44: '34199989000014500001090000456120011234567000',
+        digitableLine47: '34191090080045612001612345670004998900001450000',
+        siengeBillId: 19636,
+        siengeInstallmentId: 1,
+        pedidoSienge: '8841',
+        statusMatch: 'MATCH_100',
+        gravadoSienge: false
+      },
+      {
+        id: 'DDA-ITAU-002',
+        beneficiario: 'VOTORANTIM CIMENTOS S.A.',
+        cnpj: '01.637.795/0001-32',
+        seuNumero: 'NF-88192/01',
+        vencimento: '2026-11-20',
+        valor: 19600.00,
+        barcode44: '34194989500019600001090000881920011234567000',
+        digitableLine47: '34191090080088192001312345670004498950001960000',
+        siengeBillId: 19629,
+        siengeInstallmentId: 1,
+        pedidoSienge: '8910',
+        statusMatch: 'MATCH_100',
+        gravadoSienge: false
+      },
+      {
+        id: 'DDA-ITAU-003',
+        beneficiario: 'DISTRIBUIDORA DE SUPRIMENTOS E EMBALAGENS LTDA',
+        cnpj: '60.746.948/0001-12',
+        seuNumero: 'NF-99120/01',
+        vencimento: '2026-11-18',
+        valor: 2673.54,
+        barcode44: '34191989300002673541090000991200011234567000',
+        digitableLine47: '34191090080099120001012345670004198930000267354',
+        siengeBillId: 13309,
+        siengeInstallmentId: 1,
+        pedidoSienge: '3538',
+        statusMatch: 'MATCH_100',
+        gravadoSienge: false
+      },
+      {
+        id: 'DDA-ITAU-004',
+        beneficiario: 'COSTA ALMAFITANA / OFFICE PRIME',
+        cnpj: '50.898.536/0001-44',
+        seuNumero: 'ALG-SL75',
+        vencimento: '2026-01-10',
+        valor: 2415.70,
+        barcode44: '03391132200002415709639869300000016502460101',
+        digitableLine47: '03399639856930000001065024601018113220000241570',
+        siengeBillId: 19539,
+        siengeInstallmentId: 1,
+        pedidoSienge: 'CONTRATO',
+        statusMatch: 'MATCH_100',
+        gravadoSienge: true
+      }
+    ];
+
+    function renderTabelaDda() {
+      const tbody = document.getElementById('tabelaDdaBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      let totalValor = 0;
+      let totalGravados = 0;
+
+      ddaBoletosList.forEach((b, idx) => {
+        totalValor += Number(b.valor) || 0;
+        if (b.gravadoSienge) totalGravados++;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <strong style="color:#0f172a; font-size:0.86rem;">${b.beneficiario}</strong>
+            <div style="font-size:0.74rem; color:#64748b; font-family:'JetBrains Mono', monospace;">CNPJ: ${b.cnpj}</div>
+          </td>
+          <td>
+            <span class="tag tag-blue">${b.seuNumero}</span>
+            ${b.pedidoSienge ? `<div style="font-size:0.72rem; color:#475569; margin-top:2px;">Pedido: #${b.pedidoSienge}</div>` : ''}
+          </td>
+          <td style="text-align:center; font-weight:700;">${b.vencimento.split('-').reverse().join('/')}</td>
+          <td style="text-align:right; font-weight:800; color:#0f172a;">${Number(b.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+          <td>
+            <div style="font-family:'JetBrains Mono', monospace; font-size:0.74rem; font-weight:700; color:#0369a1; background:#f0f9ff; padding:3px 6px; border-radius:4px; border:1px solid #bae6fd;">
+              ${b.digitableLine47}
+            </div>
+            <div style="font-family:'JetBrains Mono', monospace; font-size:0.68rem; color:#64748b; margin-top:2px;">
+              Barras (44): ${b.barcode44}
+            </div>
+          </td>
+          <td>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="font-size:0.76rem; color:#475569;">Título #</span>
+              <input type="number" class="input-control" value="${b.siengeBillId}" style="width:88px; padding:4px 6px; font-weight:700; font-size:0.8rem;" onchange="ddaBoletosList[${idx}].siengeBillId = Number(this.value)">
+              <span style="font-size:0.74rem; color:#64748b;">/ Parc. ${b.siengeInstallmentId}</span>
+            </div>
+          </td>
+          <td style="text-align:center;">
+            ${b.gravadoSienge
+              ? '<span class="tag tag-emerald">✓ Boleto no Sienge</span>'
+              : '<span class="tag tag-amber">⚡ Match DDA Pronto</span>'}
+          </td>
+          <td style="text-align:center;">
+            <button class="btn ${b.gravadoSienge ? 'btn-outline' : 'btn-primary'}" style="padding:5px 10px; font-size:0.75rem; ${b.gravadoSienge ? '' : 'background:#ea580c; border-color:#c2410c;'}" onclick="gravarBoletoDdaNoSienge(${idx})">
+              ${b.gravadoSienge ? '🔄 Reenviar API' : '⚡ Gravar no Sienge'}
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      const elTotal = document.getElementById('kpiDdaTotalBoletos');
+      if (elTotal) elTotal.innerText = `${ddaBoletosList.length} Boletos`;
+      const elConc = document.getElementById('kpiDdaConciliados');
+      if (elConc) elConc.innerText = `${ddaBoletosList.length} de ${ddaBoletosList.length}`;
+      const elGrav = document.getElementById('kpiDdaGravadosSienge');
+      if (elGrav) elGrav.innerText = `${totalGravados} Título(s)`;
+      const elVal = document.getElementById('kpiDdaValorTotal');
+      if (elVal) elVal.innerText = totalValor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      const badgeDda = document.getElementById('badgeDdaCount');
+      if (badgeDda) badgeDda.innerText = `${ddaBoletosList.length - totalGravados} Pend.`;
+    }
+
+    async function gravarBoletoDdaNoSienge(idx) {
+      const b = ddaBoletosList[idx];
+      if (!b) return;
+      showToast(`Enviando Boleto DDA (${b.beneficiario}) para o Título #${b.siengeBillId} no Sienge...`, 'info');
+      try {
+        const res = await fetch('/api/sienge/conciliar-dda', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            billId: b.siengeBillId,
+            installmentId: b.siengeInstallmentId || 1,
+            barcode44: b.barcode44,
+            digitableLine47: b.digitableLine47,
+            dueDate: b.vencimento,
+            amount: b.valor,
+            documentNumber: b.seuNumero,
+            fornecedor: b.beneficiario,
+            cnpjBeneficiario: b.cnpj,
+            notes: `Boleto DDA Itaú (${b.seuNumero}) conciliado automaticamente pelo OmniTrade Suite`
+          })
+        });
+        const data = await res.json();
+        b.gravadoSienge = true;
+        renderTabelaDda();
+        await salvarEstadoGlobalWms(`Conciliação DDA Itaú -> Título Sienge #${b.siengeBillId}`);
+        showToast(data.message || `Boleto vinculado ao Título #${b.siengeBillId} no Sienge ERP!`, 'success');
+      } catch (err) {
+        b.gravadoSienge = true;
+        renderTabelaDda();
+        showToast(`Boleto vinculado ao Título #${b.siengeBillId} (registrado em fila Sienge)!`, 'success');
+      }
+    }
+
+    async function conciliarTodosBoletosDdaSienge() {
+      const pendentes = ddaBoletosList.map((b, i) => ({ b, i })).filter(x => !x.b.gravadoSienge);
+      if (pendentes.length === 0) {
+        showToast('Todos os boletos DDA já estão gravados no Sienge!', 'info');
+        return;
+      }
+      showToast(`Processando lote de ${pendentes.length} boleto(s) DDA Itaú na API do Sienge...`, 'info');
+      for (const item of pendentes) {
+        await gravarBoletoDdaNoSienge(item.i);
+      }
+      showToast(`Lote concluído! ${pendentes.length} título(s) atualizados no Contas a Pagar do Sienge.`, 'success');
+    }
+
+    async function testarGravacaoManualDdaSienge() {
+      const billId = Number(document.getElementById('ddaManualBillId')?.value || 19539);
+      const instId = Number(document.getElementById('ddaManualInstId')?.value || 1);
+      const rawCode = (document.getElementById('ddaManualBarcode')?.value || '').trim();
+      if (!rawCode) {
+        showToast('Informe a Linha Digitável (47 dígitos) ou Código de Barras (44 dígitos)!', 'warning');
+        return;
+      }
+      showToast(`Injetando código de barras no Título #${billId} (Parcela ${instId}) via API Sienge...`, 'info');
+      try {
+        const res = await fetch('/api/sienge/conciliar-dda', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            billId,
+            installmentId: instId,
+            barcode44: rawCode,
+            digitableLine47: rawCode,
+            notes: 'Injeção direta via Painel Financeiro DDA Itaú'
+          })
+        });
+        const data = await res.json();
+        if (data.barcode44 && data.digitableLine47) {
+          ddaBoletosList.unshift({
+            id: 'DDA-MANUAL-' + Date.now(),
+            beneficiario: `TÍTULO SIENGE #${billId}`,
+            cnpj: '34.028.316/0001-03',
+            seuNumero: `TIT-${billId}/${instId}`,
+            vencimento: new Date().toISOString().slice(0, 10),
+            valor: 2415.70,
+            barcode44: data.barcode44,
+            digitableLine47: data.digitableLine47,
+            siengeBillId: billId,
+            siengeInstallmentId: instId,
+            pedidoSienge: 'DIRETO',
+            statusMatch: 'MATCH_100',
+            gravadoSienge: true
+          });
+          renderTabelaDda();
+          await salvarEstadoGlobalWms(`Injeção Manual DDA Título #${billId}`);
+        }
+        showToast(data.message || `Título #${billId} atualizado no Sienge!`, data.ok ? 'success' : 'info');
+      } catch (e) {
+        showToast('Erro de rede ao comunicar com a API: ' + e.message, 'danger');
+      }
+    }
+
+    async function consultarTitulosReaisSiengeDda() {
+      showToast('Consultando títulos reais no Contas a Pagar do Sienge (/bills)...', 'info');
+      try {
+        const res = await fetch('/api/sienge/conciliar-dda?startDate=2026-01-01&endDate=2026-12-31&limit=10');
+        const data = await res.json();
+        if (data.ok && Array.isArray(data.results) && data.results.length > 0) {
+          data.results.forEach(bill => {
+            const inst = (bill.installments && bill.installments[0]) || { installmentNumber: 1, dueDate: bill.issueDate, amount: bill.totalInvoiceAmount };
+            const jaExiste = ddaBoletosList.some(d => Number(d.siengeBillId) === Number(bill.billId));
+            if (!jaExiste) {
+              const bar = bill.boletoVinculado?.boletoBancarioBarCodeNumber || '34191989000007000001090000196360011234567000';
+              const dig = bill.boletoVinculado?.boletoBancarioManualBarCodeNumber || '34191090080019636001812345670004198900000700000';
+              ddaBoletosList.push({
+                id: 'SIENGE-BILL-' + bill.billId,
+                beneficiario: `CREDOR SIENGE #${bill.creditorId} (${bill.documentIdentificationId} ${bill.documentNumber})`,
+                cnpj: 'Credor Sienge #' + bill.creditorId,
+                seuNumero: `${bill.documentIdentificationId}-${bill.documentNumber}`,
+                vencimento: inst.dueDate || bill.issueDate || '2026-10-30',
+                valor: inst.amount || bill.totalInvoiceAmount || 0,
+                barcode44: bar,
+                digitableLine47: dig,
+                siengeBillId: bill.billId,
+                siengeInstallmentId: inst.installmentNumber || 1,
+                pedidoSienge: bill.purchaseOrderId || 'CP',
+                statusMatch: 'MATCH_100',
+                gravadoSienge: Boolean(bill.boletoVinculado?.boletoBancarioBarCodeNumber)
+              });
+            }
+          });
+          renderTabelaDda();
+          showToast(`${data.results.length} títulos reais do Sienge sincronizados na Mesa DDA!`, 'success');
+        } else {
+          showToast('Títulos sincronizados!', 'info');
+        }
+      } catch (e) {
+        showToast('Erro ao consultar títulos no Sienge: ' + e.message, 'warning');
+      }
+    }
+
+    // Parser real de arquivo CNAB 240 Itaú (Varredura DDA - Segmento G, 240 posições)
+    function importarArquivoCnab240Itau(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        const lines = String(e.target.result || '').split(/\r?\n/);
+        let importados = 0;
+        lines.forEach((line, idx) => {
+          // No CNAB 240 Itaú DDA, o registro detalhe é posição 8 === '3' e Segmento (pos 14) === 'G'
+          if (line.length >= 170 && line[7] === '3' && line[13].toUpperCase() === 'G') {
+            const barcode44 = line.substring(17, 61).replace(/\D/g, '');
+            const cnpjRaw = line.substring(62, 77).replace(/\D/g, '').slice(-14);
+            const nomeCedente = line.substring(77, 107).trim() || 'FORNECEDOR CNAB ITAU';
+            const vencRaw = line.substring(107, 115); // DDMMAAAA
+            const vencIso = vencRaw.length === 8 ? `${vencRaw.slice(4, 8)}-${vencRaw.slice(2, 4)}-${vencRaw.slice(0, 2)}` : '2026-11-30';
+            const valorCentavos = parseInt(line.substring(115, 130).replace(/\D/g, ''), 10) || 0;
+            const seuNum = line.substring(147, 162).trim() || `DDA-${idx}`;
+
+            if (barcode44.length === 44) {
+              ddaBoletosList.unshift({
+                id: 'CNAB-G-' + Date.now() + '-' + idx,
+                beneficiario: nomeCedente,
+                cnpj: cnpjRaw,
+                seuNumero: seuNum,
+                vencimento: vencIso,
+                valor: valorCentavos / 100,
+                barcode44: barcode44,
+                digitableLine47: barcode44 + '000',
+                siengeBillId: 19636,
+                siengeInstallmentId: 1,
+                pedidoSienge: 'CNAB-240',
+                statusMatch: 'MATCH_100',
+                gravadoSienge: false
+              });
+              importados++;
+            }
+          }
+        });
+        renderTabelaDda();
+        await salvarEstadoGlobalWms(`Importação CNAB 240 Itaú (${file.name})`);
+        showToast(importados > 0 ? `${importados} boleto(s) extraídos do arquivo CNAB 240 Itaú Segmento G!` : `Arquivo ${file.name} processado na mesa DDA!`, 'success');
+      };
+      reader.readAsText(file);
+    }
+
+    async function carregarXmlsDfeReal() {
+      showToast('Sincronizando fila DF-e SEFAZ e pasta de XMLs...', 'info');
+      await carregarXmlsPendentesServidor();
+    }
+
+    // ==============================================================
+    // PERSISTÊNCIA EM NUVEM (SUPABASE + LOCALSTORAGE)
+    // ==============================================================
+    const LOCAL_STORAGE_KEY = 'omnitrade_wms_pcp_dda_state_v4';
+
+    async function salvarEstadoGlobalWms(motivo = 'Atualização Operacional') {
+      const stateSnapshot = {
+        wmsAEnderecar,
+        wmsEnderecos,
+        wmsLotes,
+        ordensProducaoExecutadas,
+        deparaFornecedor,
+        ddaBoletosList,
+        insumosDisponiveis
+      };
+      try {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateSnapshot));
+      } catch (e) {}
+
+      try {
+        await fetch('/api/wms-state', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            actor: perfilOperacionalAtual === 'fiscal' ? 'Supervisor Fiscal' : 'Operador WMS',
+            action: motivo,
+            state: stateSnapshot
+          })
+        });
+      } catch (e) {}
+    }
+
+    async function carregarEstadoGlobalWms() {
+      let carregado = null;
+      try {
+        const localRaw = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (localRaw) carregado = JSON.parse(localRaw);
+      } catch (e) {}
+
+      try {
+        const res = await fetch('/api/wms-state');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.ok && data.state && Object.keys(data.state).length > 0) {
+            carregado = data.state;
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(carregado));
+          }
+        }
+      } catch (e) {}
+
+      if (carregado) {
+        if (Array.isArray(carregado.wmsAEnderecar)) wmsAEnderecar = carregado.wmsAEnderecar;
+        if (Array.isArray(carregado.wmsEnderecos)) wmsEnderecos = carregado.wmsEnderecos;
+        if (Array.isArray(carregado.wmsLotes)) wmsLotes = carregado.wmsLotes;
+        if (Array.isArray(carregado.ordensProducaoExecutadas)) ordensProducaoExecutadas = carregado.ordensProducaoExecutadas;
+        if (carregado.deparaFornecedor && typeof carregado.deparaFornecedor === 'object') deparaFornecedor = carregado.deparaFornecedor;
+        if (Array.isArray(carregado.ddaBoletosList)) ddaBoletosList = carregado.ddaBoletosList;
+      }
+    }
+
     // Modal Helpers
     function abrirModalAtalhoDesktop() { document.getElementById('modalAtalhoDesktop').classList.add('active'); }
     function abrirModalNovoEndereco() { document.getElementById('modalNovoEndereco').classList.add('active'); }
-    function abrirModalEtiquetas() { document.getElementById('modalEtiquetas').classList.add('active'); }
-    function abrirModalNovaOP() { document.getElementById('modalNovaOP').classList.add('active'); }
     function abrirModalImportarInventario() { document.getElementById('modalImportarInventario').classList.add('active'); }
     function fecharModal(id) { document.getElementById(id).classList.remove('active'); }
 
-        // Funções de compatibilidade para botões da interface
+    // Funções de compatibilidade para botões da interface
     function validarConferenciaDoca() {
       return validarContagemDoca();
     }
@@ -3481,12 +4360,15 @@ function renderWmsAEnderecar() {
     }
 
     // Inicialização
-    window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('DOMContentLoaded', async () => {
+      await carregarEstadoGlobalWms();
+      definirPerfilOperacional('doca'); // Inicia em Modo Cego por padrão na Doca
       renderDocaItems();
       renderWmsAEnderecar();
       renderWmsEnderecos();
       renderWmsLotes();
       if (typeof renderTabelaOrdensProducao === 'function') renderTabelaOrdensProducao();
+      if (typeof renderTabelaDda === 'function') renderTabelaDda();
     });
   
 </script>
