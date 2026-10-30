@@ -173,46 +173,144 @@ module.exports = async (req, res) => {
       }
     }
 
-    // 3. Obter itens e entregas agendadas do pedido (com suporte a Atendimento Parcial)
+    // 3. Obter itens e entregas agendadas do pedido (com suporte a Atendimento Parcial por Item e por Quantidade)
     const itemsRes = await siengeReq('GET', '/purchase-orders/' + poId + '/items');
-    const poItems = (itemsRes.data && itemsRes.data.results) || [];
+    const poItems = ((itemsRes.data && itemsRes.data.results) || []).sort(
+      (a, b) => Number(a.itemNumber || 0) - Number(b.itemNumber || 0)
+    );
 
     const deliveriesOrder = [];
-    for (const item of poItems) {
-      let targetQty = item.quantity || 1.0;
+    const itensSobraPedido = [];
+    const itensExcedentesNf = [];
+    const hasExplicitReceivedList = Array.isArray(itensRecebidos) && itensRecebidos.length > 0;
 
-      // Se itensRecebidos foi passado, busca quantidade faturada/convertida nesta NF-e
-      if (Array.isArray(itensRecebidos) && itensRecebidos.length > 0) {
-        const found = itensRecebidos.find(r =>
-          (r.cod && String(r.cod).trim() === String(item.resourceCode || item.resourceId).trim()) ||
-          (r.resourceId && String(r.resourceId).trim() === String(item.resourceId).trim()) ||
-          (r.itemNumber && Number(r.itemNumber) === Number(item.itemNumber))
-        );
-        if (found) {
-          const parsedQty = parseFloat(found.qtdSiengeConvertida || found.qtdNfe || found.quantity || found.qtd);
-          if (parsedQty > 0) targetQty = parsedQty;
-        }
-      }
+    for (const item of poItems) {
+      const fullDesc = item.detailDescription
+        ? `${item.resourceDescription || 'Insumo'} - ${item.detailDescription}`
+        : (item.resourceDescription || 'Insumo');
 
       const schedRes = await siengeReq('GET', `/purchase-orders/${poId}/items/${item.itemNumber}/delivery-schedules`);
       const schedules = (schedRes.data && schedRes.data.results) || [];
-      if (schedules.length > 0) {
-        for (const sc of schedules) {
-          const maxOpen = (sc.openQuantity > 0) ? sc.openQuantity : (sc.sheduledQuantity || item.quantity || 1.0);
-          const finalDelivered = Math.min(targetQty, maxOpen);
-          deliveriesOrder.push({
-            purchaseOrderId: poId,
-            itemNumber: item.itemNumber,
-            deliveryScheduleNumber: sc.deliveryScheduleNumber || 1,
-            deliveredQuantity: finalDelivered
+      const totalOpenInPo = schedules.length > 0
+        ? schedules.reduce((acc, s) => acc + Number(s.openQuantity != null ? s.openQuantity : (s.sheduledQuantity || item.quantity || 0)), 0)
+        : Number(item.quantity || 0);
+
+      let targetQty = 0;
+
+      if (hasExplicitReceivedList) {
+        // Prioridade 1: Match estrito pelo itemNumber do Pedido Sienge (evita colisão quando vários itens têm mesmo resourceId, ex: Botinas TAM 37..43)
+        let matchedEntries = itensRecebidos.filter(r =>
+          r.itemNumber != null && Number(r.itemNumber) === Number(item.itemNumber)
+        );
+
+        // Prioridade 2: Apenas para entradas sem itemNumber definido, tenta casar por detailId ou resourceId único no pedido
+        if (matchedEntries.length === 0) {
+          const sameResourceCount = poItems.filter(
+            p => String(p.resourceId || p.resourceCode).trim() === String(item.resourceId || item.resourceCode).trim()
+          ).length;
+
+          matchedEntries = itensRecebidos.filter(r => {
+            if (r.itemNumber != null) return false;
+            const rRes = String(r.resourceId || r.cod || '').trim();
+            const iRes = String(item.resourceId || item.resourceCode || '').trim();
+            if (!rRes || rRes !== iRes) return false;
+            if (r.detailId != null && item.detailId != null) {
+              return Number(r.detailId) === Number(item.detailId);
+            }
+            return sameResourceCount === 1;
           });
         }
+
+        targetQty = matchedEntries.reduce((acc, r) => {
+          const parsed = parseFloat(r.qtdSiengeConvertida ?? r.qtdDoca ?? r.qtdNfe ?? r.quantity ?? r.qtd ?? 0);
+          return acc + (isNaN(parsed) ? 0 : parsed);
+        }, 0);
       } else {
+        targetQty = totalOpenInPo;
+      }
+
+      // Se o item do pedido NÃO veio na Nota Fiscal (ex: Pedido tem 4 ou 7 itens e a NF veio com apenas 3 ou 4 itens),
+      // NÃO vincula entrega para este item -> mantém 100% do saldo em aberto no Sienge e no Omni!
+      if (targetQty <= 0) {
+        if (totalOpenInPo > 0) {
+          itensSobraPedido.push({
+            itemNumber: item.itemNumber,
+            resourceId: item.resourceId,
+            detailDescription: item.detailDescription || '',
+            description: fullDesc,
+            unitOfMeasure: item.unitOfMeasure || 'UN',
+            qtdPedido: Number(item.quantity || 0),
+            qtdAbertaAntes: totalOpenInPo,
+            qtdAtendidaNestaNf: 0,
+            saldoRemanescentePedido: totalOpenInPo,
+            statusSaldo: 'ITEM_NAO_FATURADO_NA_NF'
+          });
+        }
+        continue;
+      }
+
+      let remainingToDeliver = targetQty;
+      let deliveredForThisItem = 0;
+
+      if (schedules.length > 0) {
+        for (const sc of schedules) {
+          const maxOpen = (sc.openQuantity != null && sc.openQuantity > 0)
+            ? Number(sc.openQuantity)
+            : Number(sc.sheduledQuantity || item.quantity || 0);
+          if (maxOpen <= 0 || remainingToDeliver <= 0) continue;
+
+          const finalDelivered = Math.min(remainingToDeliver, maxOpen);
+          if (finalDelivered > 0) {
+            deliveriesOrder.push({
+              purchaseOrderId: poId,
+              itemNumber: item.itemNumber,
+              deliveryScheduleNumber: sc.deliveryScheduleNumber || 1,
+              deliveredQuantity: finalDelivered
+            });
+            deliveredForThisItem += finalDelivered;
+            remainingToDeliver = Math.max(0, Number((remainingToDeliver - finalDelivered).toFixed(4)));
+          }
+        }
+      } else {
+        const maxOpen = Number(item.quantity || targetQty);
+        const finalDelivered = Math.min(targetQty, maxOpen);
         deliveriesOrder.push({
           purchaseOrderId: poId,
           itemNumber: item.itemNumber,
           deliveryScheduleNumber: 1,
-          deliveredQuantity: targetQty
+          deliveredQuantity: finalDelivered
+        });
+        deliveredForThisItem = finalDelivered;
+        remainingToDeliver = Math.max(0, Number((targetQty - finalDelivered).toFixed(4)));
+      }
+
+      const saldoRestanteNoPedido = Math.max(0, Number((totalOpenInPo - deliveredForThisItem).toFixed(4)));
+      if (saldoRestanteNoPedido > 0) {
+        // Ex: Pedido pediu 4 e na NF vieram 3 -> fica 1 de saldo/sobra pendente no Pedido Sienge e no Omni
+        itensSobraPedido.push({
+          itemNumber: item.itemNumber,
+          resourceId: item.resourceId,
+          detailDescription: item.detailDescription || '',
+          description: fullDesc,
+          unitOfMeasure: item.unitOfMeasure || 'UN',
+          qtdPedido: Number(item.quantity || 0),
+          qtdAbertaAntes: totalOpenInPo,
+          qtdAtendidaNestaNf: deliveredForThisItem,
+          saldoRemanescentePedido: saldoRestanteNoPedido,
+          statusSaldo: 'ATENDIDO_PARCIAL_COM_SALDO_NO_PEDIDO'
+        });
+      }
+
+      if (remainingToDeliver > 0) {
+        // Ex: NF veio com quantidade maior que o saldo do pedido
+        itensExcedentesNf.push({
+          itemNumber: item.itemNumber,
+          resourceId: item.resourceId,
+          description: fullDesc,
+          qtdPedido: Number(item.quantity || 0),
+          qtdNf: targetQty,
+          qtdVinculadaSienge: deliveredForThisItem,
+          excedenteSobrePedido: remainingToDeliver
         });
       }
     }
@@ -228,6 +326,7 @@ module.exports = async (req, res) => {
     // 5. Verificar novo status do Pedido no Sienge
     const poAfterRes = await siengeReq('GET', '/purchase-orders/' + poId);
     const poDataAfter = poAfterRes.data || {};
+    const finalPoStatus = poDataAfter.status || (itensSobraPedido.length > 0 ? 'PARTIALLY_DELIVERED' : 'FULLY_DELIVERED');
 
     // 6. Gravar Auditoria no Supabase Cloud
     try {
@@ -249,10 +348,13 @@ module.exports = async (req, res) => {
             sequentialNumber,
             purchaseOrderId: poId,
             statusAnterior: poData.status,
-            novoStatusSienge: poDataAfter.status || 'FULLY_DELIVERED',
+            novoStatusSienge: finalPoStatus,
             chaveNfe: chaveNfe || null,
             fornecedor: fornecedor || null,
             itensAtendidos: deliveriesOrder.length,
+            entregasVinculadas: deliveriesOrder,
+            itensSobraPedido,
+            itensExcedentesNf,
             linkStatus: linkRes ? linkRes.status : 'N/A'
           }),
           level: 'info'
@@ -264,12 +366,14 @@ module.exports = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: `NF-e ${cleanNfNum} integrada com sucesso! Pedido #${poId} atualizado no Sienge para ${poDataAfter.status || 'FULLY_DELIVERED'}.`,
+      message: `NF-e ${cleanNfNum} integrada com sucesso! Pedido #${poId} atualizado no Sienge para ${finalPoStatus}.`,
       sequentialNumber,
       purchaseOrderId: poId,
       statusAnterior: poData.status,
-      novoStatusSienge: poDataAfter.status || 'FULLY_DELIVERED',
-      entregasVinculadas: deliveriesOrder
+      novoStatusSienge: finalPoStatus,
+      entregasVinculadas: deliveriesOrder,
+      itensSobraPedido,
+      itensExcedentesNf
     });
 
   } catch(err) {

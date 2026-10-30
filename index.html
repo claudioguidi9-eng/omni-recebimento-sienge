@@ -692,6 +692,7 @@
             <!-- CHIPS DE PEDIDOS REAIS DO SIENGE -->
             <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
               <span style="font-size:0.75rem; color:#64748b; font-weight:700;">Pedidos Reais Sienge:</span>
+              <button type="button" class="po-chip" onclick="selecionarPedidoRapido('3474')">#3474 (Botinas EPI Nortel - R$ 7.955,00)</button>
               <button type="button" class="po-chip" onclick="selecionarPedidoRapido('3538')">#3538 (Sacos & Higiene - R$ 2.673,54)</button>
               <button type="button" class="po-chip" onclick="selecionarPedidoRapido('3540')">#3540 (Mão de Obra - R$ 627,32)</button>
               <button type="button" class="po-chip" onclick="selecionarPedidoRapido('3543')">#3543 (Peças Mecânicas - R$ 1.780,00)</button>
@@ -755,18 +756,19 @@
             </div>
           </div>
 
-          <div class="table-container" style="margin-bottom:20px;">
+          <div class="table-container" style="margin-bottom:14px;">
             <table class="data-table">
               <thead>
                 <tr>
                   <th style="width: 40px; text-align:center;">Validar</th>
-                  <th>Insumo / Recurso no Pedido Sienge</th>
+                  <th>Insumo / Item no Pedido Sienge</th>
                   <th>Item Faturado no XML (Fornecedor)</th>
                   <th style="text-align:center;">Unid. XML</th>
                   <th style="text-align:center;">Fator IA</th>
-                  <th style="text-align:center;">Qtd Convertida</th>
+                  <th style="text-align:center;">Qtd NF (Conv.)</th>
                   <th style="text-align:center;">Qtd Pedido</th>
                   <th style="text-align:center;">Qtd Doca</th>
+                  <th style="text-align:center;">Saldo / Sobra Pedido</th>
                   <th style="text-align:center;">Variação Preço</th>
                   <th style="text-align:center;">Status Match</th>
                 </tr>
@@ -775,6 +777,11 @@
                 <!-- Renderizado dinamicamente via JS -->
               </tbody>
             </table>
+          </div>
+
+          <!-- PAINEL DE CONTROLE DE SOBRA / SALDO REMANESCENTE DO PEDIDO (OMNI x SIENGE) -->
+          <div id="resumoSobrasPedidoBox" style="display:none; background:#fffbeb; border:1.5px solid #fcd34d; border-radius:var(--radius-md); padding:14px 18px; margin-bottom:18px;">
+            <!-- Preenchido dinamicamente quando há entrega parcial (ex: Pedido 4 un x Nota 3 un) ou itens do pedido não faturados na NF -->
           </div>
 
           <!-- PAINEL DE CAPTURA SELETIVA DDA ITAÚ ESPECÍFICO DESTA NOTA FISCAL (MÓDULO 2) -->
@@ -2428,15 +2435,28 @@
           const detBloco = detMatch[1];
           const cProd = getTagValue('cProd', detBloco) || ('COD-' + itemIdx);
           const xProd = getTagValue('xProd', detBloco) || ('Item ' + itemIdx);
+          const infAdProd = getTagValue('infAdProd', detBloco) || '';
           const uCom = getTagValue('uCom', detBloco) || 'UN';
           const qCom = parseFloat(getTagValue('qCom', detBloco) || '1');
           const vUnCom = parseFloat(getTagValue('vUnCom', detBloco) || '0');
           const vProd = parseFloat(getTagValue('vProd', detBloco) || String(qCom * vUnCom));
           const cEAN = getTagValue('cEAN', detBloco) || ('789000' + itemIdx);
 
+          // Extrai <nItemPed> da tag XML ou do texto da descrição/infAdProd (ex: "PEDIDO 3474 - ITEM 6")
+          let nItemPed = getTagValue('nItemPed', detBloco);
+          if (!nItemPed) {
+            const textoItem = `${xProd} ${infAdProd}`;
+            const mItem = textoItem.match(/\bITEM\s*(?:DO\s*PEDIDO\s*)?[#:\-\s]*0*(\d{1,3})\b/i);
+            if (mItem && mItem[1]) nItemPed = mItem[1];
+          }
+          const xPedItem = getTagValue('xPed', detBloco);
+          if (!xPed && xPedItem) xPed = xPedItem;
+
           itens.push({
             cod: cProd,
             desc: xProd,
+            infAdProd: infAdProd,
+            nItemPed: nItemPed ? parseInt(nItemPed, 10) : null,
             un: uCom.toUpperCase(),
             qtdNfe: isNaN(qCom) ? 1 : qCom,
             valorUnit: isNaN(vUnCom) ? 0 : vUnCom,
@@ -2583,6 +2603,8 @@
       docaItems = notaAtual.itens.map((it, i) => ({
         cod: it.cod,
         desc: it.desc,
+        infAdProd: it.infAdProd || '',
+        nItemPed: it.nItemPed || null,
         un: it.un,
         qtdNf: it.qtdNfe,
         qtdNfe: it.qtdNfe,
@@ -3021,14 +3043,98 @@
       }
     }
 
-    function renderizarAmarracaoPedido(order, poItems) {
+    function getPoItemFullDesc(poIt) {
+      if (!poIt) return 'Insumo Sienge';
+      if (poIt.fullDescription) return poIt.fullDescription;
+      const base = poIt.resourceDescription || 'Insumo Sienge';
+      const det = (poIt.detailDescription || '').trim();
+      return det ? `${base} - ${det}` : base;
+    }
+
+    function recalcularItemAmarracao(it) {
+      if (!it || it.isApenasSaldoPedido) return;
+      const fator = Number(it.fatorConversao) > 0 ? Number(it.fatorConversao) : 1;
+      it.fatorConversao = fator;
+      it.qtdConvertida = Number((Number(it.xmlItem.qtdNfe || 0) * fator).toFixed(4));
+      const matchPo = it.poItem;
+      const qtdAbertaPo = matchPo
+        ? Number(matchPo.openQuantity != null && matchPo.openQuantity > 0 ? matchPo.openQuantity : matchPo.quantity)
+        : it.qtdConvertida;
+      it.qtdPedido = qtdAbertaPo;
+      it.qtdOriginalPedido = matchPo ? Number(matchPo.quantity || qtdAbertaPo) : it.qtdConvertida;
+      it.precoUnitPo = matchPo ? Number(matchPo.unitPrice || 0) : Number(it.xmlItem.valorUnit || 0);
+      it.precoUnitXml = Number(it.xmlItem.valorUnit || 0) / fator;
+      it.diffPreco = it.precoUnitPo > 0 ? ((it.precoUnitXml - it.precoUnitPo) / it.precoUnitPo) * 100 : 0;
+
+      const itemDoca = docaItems.find(d => d.cod === it.xmlItem.cod);
+      it.qtdDoca = itemDoca && itemDoca.qtdFisica !== '' ? Number(itemDoca.qtdFisica) * fator : it.qtdConvertida;
+
+      // Cálculo de Sobra / Saldo Remanescente do Pedido (Ex: Pedido veio com 4 un e na Nota 3 un -> Sobra no Pedido = 1 un)
+      it.saldoRemanescentePedido = matchPo ? Math.max(0, Number((it.qtdPedido - it.qtdConvertida).toFixed(4))) : 0;
+      it.excedenteNfSobrePedido = matchPo ? Math.max(0, Number((it.qtdConvertida - it.qtdPedido).toFixed(4))) : 0;
+
+      let statusBadge = '<span class="tag tag-emerald">✓ 100% Conforme</span>';
+      if (!matchPo) {
+        statusBadge = '<span class="tag tag-purple">➕ Fora do Pedido</span>';
+      } else if (Math.abs(it.diffPreco) > 2.0) {
+        statusBadge = `<span class="tag tag-rose">⚠️ Preço (${it.diffPreco > 0 ? '+' : ''}${it.diffPreco.toFixed(1)}%)</span>`;
+      } else if (it.saldoRemanescentePedido > 0) {
+        statusBadge = `<span class="tag tag-amber">⚠️ Parcial (Falta ${it.saldoRemanescentePedido})</span>`;
+      } else if (it.excedenteNfSobrePedido > 0) {
+        statusBadge = `<span class="tag tag-rose">🚨 Excedente (+${it.excedenteNfSobrePedido})</span>`;
+      }
+      it.statusBadge = statusBadge;
+    }
+
+    function sincronizarItensSaldoNaoFaturadosNaNota() {
+      const poItems = (poAtualCarregado && Array.isArray(poAtualCarregado.items))
+        ? [...poAtualCarregado.items].sort((a, b) => Number(a.itemNumber || 0) - Number(b.itemNumber || 0))
+        : [];
+      const xmlRows = amarracaoItensState.filter(r => !r.isApenasSaldoPedido);
+      const usedItemNums = new Set(
+        xmlRows.map(r => r.poItem && r.poItem.itemNumber != null ? Number(r.poItem.itemNumber) : null).filter(n => n != null)
+      );
+
+      const unbilledRows = poItems
+        .filter(p => !usedItemNums.has(Number(p.itemNumber)))
+        .map((poIt, i) => {
+          const openQty = Number(poIt.openQuantity != null && poIt.openQuantity > 0 ? poIt.openQuantity : poIt.quantity || 0);
+          return {
+            idx: xmlRows.length + i,
+            isApenasSaldoPedido: true,
+            ticarConfirmado: false,
+            poItem: poIt,
+            xmlItem: null,
+            fatorConversao: 1,
+            qtdConvertida: 0,
+            qtdPedido: openQty,
+            qtdOriginalPedido: Number(poIt.quantity || openQty),
+            precoUnitPo: Number(poIt.unitPrice || 0),
+            precoUnitXml: 0,
+            diffPreco: 0,
+            qtdDoca: 0,
+            saldoRemanescentePedido: openQty,
+            excedenteNfSobrePedido: 0,
+            statusBadge: '<span class="tag tag-amber">📦 Não veio na NF (Sobra Pedido)</span>'
+          };
+        });
+
+      amarracaoItensState = [...xmlRows, ...unbilledRows].map((r, i) => ({ ...r, idx: i }));
+    }
+
+    function renderizarAmarracaoPedido(order, rawPoItems) {
+      const poItems = Array.isArray(rawPoItems)
+        ? [...rawPoItems].sort((a, b) => Number(a.itemNumber || 0) - Number(b.itemNumber || 0))
+        : [];
+      if (poAtualCarregado) poAtualCarregado.items = poItems;
+
       const xmlItens = (notaAtual && notaAtual.itens) ? notaAtual.itens : (docaItems && docaItems.length > 0 ? docaItems : []);
 
       // Atualiza KPIs no Topo
       document.getElementById('kpiPoNumero').innerText = '#' + (order.id || '3538');
       document.getElementById('kpiPoDetalhes').innerText = `Comprador: ${order.buyerId || 'Jefferson Filho'} • Obra #${order.buildingId || '1212'}`;
       document.getElementById('kpiPoTotal').innerText = Number(order.totalAmount || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-      document.getElementById('kpiPoStatus').innerText = `Status: ${order.status || 'PENDING'} • Alçada OK`;
+      document.getElementById('kpiPoStatus').innerText = `Status: ${order.status || 'PENDING'} • ${poItems.length} itens no pedido`;
 
       if (notaAtual) {
         document.getElementById('kpiNfeNumero').innerText = `NF ${notaAtual.numeroNfe}`;
@@ -3038,10 +3144,11 @@
         document.getElementById('kpiNfeTotal').innerText = 'Total NF: R$ 0,00';
       }
 
-      // Cruzamento 3-Vias Inteligente com Memória De-Para por Fornecedor (CNPJ + cProd)
+      // Cruzamento 3-Vias Inteligente com Memória De-Para por Fornecedor (CNPJ + cProd + itemNumber/detailDescription)
       let conversaoDetectada = false;
       let textoConversao = '';
       const cnpjFornKey = String((notaAtual && notaAtual.cnpj) || '').replace(/\D/g, '') || 'DEFAULT';
+      const usedPoItemNumbers = new Set();
 
       function calcularScoreSimilaridade(xmlIt, poIt) {
         if (!poIt) return 0;
@@ -3049,40 +3156,99 @@
         const cXml = String(xmlIt.cod || '').toUpperCase().trim();
         const cPo = String(poIt.resourceCode || poIt.resourceId || '').toUpperCase().trim();
         if (cXml && cPo && cXml === cPo) score += 100;
-        const tokensXml = String(xmlIt.desc || '').toUpperCase().split(/[^A-Z0-9.]+/).filter(t => t.length >= 2);
-        const descPo = String(poIt.resourceDescription || '').toUpperCase();
+
+        const descXmlUpper = `${xmlIt.desc || ''} ${xmlIt.infAdProd || ''}`.toUpperCase();
+        const fullPoUpper = getPoItemFullDesc(poIt).toUpperCase();
+        const detUpper = String(poIt.detailDescription || '').toUpperCase().trim();
+
+        // 1. Verificar menção explícita a "ITEM X" no texto do XML vs itemNumber do Pedido Sienge
+        const matchItemTexto = descXmlUpper.match(/\bITEM\s*(?:DO\s*PEDIDO\s*)?[#:\-\s]*0*(\d{1,3})\b/i);
+        const explicitItemNum = xmlIt.nItemPed || (matchItemTexto && matchItemTexto[1] ? parseInt(matchItemTexto[1], 10) : null);
+        if (explicitItemNum != null) {
+          if (Number(poIt.itemNumber) === Number(explicitItemNum)) {
+            score += 500;
+          } else {
+            score -= 250;
+          }
+        }
+
+        // 2. Verificar tamanho/detalhe (ex: detailDescription = "TAM 37" vs "N37" / "TAM 37" / "37" no XML)
+        if (detUpper) {
+          const detNums = detUpper.match(/\d+/g) || [];
+          detNums.forEach(num => {
+            const regexTam = new RegExp(`(?:\\bN\\.?\\s*${num}\\b|\\bTAM\\.?\\s*${num}\\b|\\bT${num}\\b|\\b${num}\\b)`, 'i');
+            if (regexTam.test(descXmlUpper)) {
+              score += 140;
+            } else {
+              score -= 90;
+            }
+          });
+        }
+
+        const tokensXml = descXmlUpper.split(/[^A-Z0-9.]+/).filter(t => t.length >= 2);
         tokensXml.forEach(tk => {
-          if (descPo.includes(tk)) score += (/\d/.test(tk) ? 25 : 15);
+          if (fullPoUpper.includes(tk)) score += (/\d/.test(tk) ? 25 : 15);
         });
         return score;
       }
 
-      amarracaoItensState = xmlItens.map((xmlIt, idx) => {
+      const mappedXmlItems = xmlItens.map((xmlIt, idx) => {
         const memKey = `${cnpjFornKey}:${String(xmlIt.cod).toUpperCase()}`;
         const memoriaSalva = deparaFornecedor[memKey];
+        const descXmlUpper = `${xmlIt.desc || ''} ${xmlIt.infAdProd || ''}`.toUpperCase();
+        const matchItemTexto = descXmlUpper.match(/\bITEM\s*(?:DO\s*PEDIDO\s*)?[#:\-\s]*0*(\d{1,3})\b/i);
+        const explicitItemNum = xmlIt.nItemPed || (matchItemTexto && matchItemTexto[1] ? parseInt(matchItemTexto[1], 10) : null);
 
-        // 1. Tenta recuperar da memória De-Para do Fornecedor
         let matchPo = null;
-        if (memoriaSalva && memoriaSalva.resourceCode) {
-          matchPo = poItems.find(p => String(p.resourceCode || p.resourceId) === String(memoriaSalva.resourceCode));
+
+        // 1. Prioridade Máxima: Número do Item do Pedido explícito no XML (<nItemPed> ou "PEDIDO 3474 - ITEM 6")
+        if (explicitItemNum != null && poItems.length > 0) {
+          matchPo = poItems.find(p => Number(p.itemNumber) === Number(explicitItemNum));
         }
 
-        // 2. Match Semântico por Similaridade de Tokens + Números Dimensionais (independente da ordem na NF)
+        // 2. Memória De-Para do Fornecedor (respeitando itemNumber/detailDescription quando há múltiplos itens com mesmo resourceId)
+        if (!matchPo && memoriaSalva && memoriaSalva.resourceCode && poItems.length > 0) {
+          const candidatosMesmoRecurso = poItems.filter(
+            p => String(p.resourceCode || p.resourceId) === String(memoriaSalva.resourceCode)
+          );
+          if (memoriaSalva.itemNumber != null) {
+            matchPo = candidatosMesmoRecurso.find(
+              p => Number(p.itemNumber) === Number(memoriaSalva.itemNumber) && !usedPoItemNumbers.has(Number(p.itemNumber))
+            );
+          }
+          if (!matchPo && memoriaSalva.detailDescription) {
+            matchPo = candidatosMesmoRecurso.find(
+              p => String(p.detailDescription || '').toUpperCase() === String(memoriaSalva.detailDescription).toUpperCase() && !usedPoItemNumbers.has(Number(p.itemNumber))
+            );
+          }
+          if (!matchPo && candidatosMesmoRecurso.length === 1 && !usedPoItemNumbers.has(Number(candidatosMesmoRecurso[0].itemNumber))) {
+            matchPo = candidatosMesmoRecurso[0];
+          }
+        }
+
+        // 3. Match Semântico + Detalhe/Tamanho (priorizando itens do pedido ainda não vinculados 1-para-1)
         if (!matchPo && poItems.length > 0) {
-          let melhorScore = 0;
-          poItems.forEach(cand => {
+          let melhorScore = -9999;
+          const disponiveis = poItems.filter(cand => !usedPoItemNumbers.has(Number(cand.itemNumber)));
+          const listaBusca = disponiveis.length > 0 ? disponiveis : poItems;
+
+          listaBusca.forEach(cand => {
             const sc = calcularScoreSimilaridade(xmlIt, cand);
             if (sc > melhorScore) {
               melhorScore = sc;
               matchPo = cand;
             }
           });
-          if (melhorScore < 15 && poItems[idx]) {
-            matchPo = poItems[idx];
+          if (melhorScore < 10 && disponiveis[0]) {
+            matchPo = disponiveis[0];
           }
         }
 
-        // 3. Fator de Conversão de Unidades (Memória > Regras Inteligentes)
+        if (matchPo && matchPo.itemNumber != null) {
+          usedPoItemNumbers.add(Number(matchPo.itemNumber));
+        }
+
+        // 4. Fator de Conversão de Unidades (Memória > Regras Inteligentes)
         let fatorConversao = (memoriaSalva && memoriaSalva.fatorConversao > 0) ? Number(memoriaSalva.fatorConversao) : 1;
         const unXml = (xmlIt.un || 'UN').toUpperCase();
         const unPo = (matchPo && matchPo.unitOfMeasure ? matchPo.unitOfMeasure : 'un').toUpperCase();
@@ -3110,45 +3276,32 @@
           textoConversao = `Memória De-Para aplicada automaticamente para o CNPJ <strong>${notaAtual?.cnpj || ''}</strong> (Fator <strong>× ${fatorConversao}</strong>).`;
         }
 
-        const qtdConvertida = xmlIt.qtdNfe * fatorConversao;
-        const qtdPedido = matchPo ? matchPo.quantity : qtdConvertida;
-        const precoUnitPo = matchPo ? matchPo.unitPrice : xmlIt.valorUnit;
-
-        // Variação de Preço
-        const precoConvertidoXml = xmlIt.valorUnit / fatorConversao;
-        const diffPreco = precoUnitPo > 0 ? ((precoConvertidoXml - precoUnitPo) / precoUnitPo) * 100 : 0;
-
-        // Qtd Contada na Doca
-        const itemDoca = docaItems.find(d => d.cod === xmlIt.cod);
-        const qtdDoca = itemDoca && itemDoca.qtdFisica !== '' ? Number(itemDoca.qtdFisica) * fatorConversao : qtdConvertida;
-
-        // Status Match
-        let statusBadge = '<span class="tag tag-emerald">✓ 100% Conforme</span>';
-        if (!matchPo) {
-          statusBadge = '<span class="tag tag-purple">➕ Fora do Pedido</span>';
-        } else if (Math.abs(diffPreco) > 2.0) {
-          statusBadge = `<span class="tag tag-rose">⚠️ Preço (${diffPreco > 0 ? '+' : ''}${diffPreco.toFixed(1)}%)</span>`;
-        } else if (qtdConvertida < qtdPedido) {
-          statusBadge = '<span class="tag tag-amber">⚠️ Parcial</span>';
-        }
-
-        return {
+        const rowObj = {
           idx: idx,
+          isApenasSaldoPedido: false,
           memKey: memKey,
           memorizado: Boolean(memoriaSalva),
           xmlItem: xmlIt,
           poItem: matchPo,
           fatorConversao: fatorConversao,
-          qtdConvertida: qtdConvertida,
-          qtdPedido: qtdPedido,
-          precoUnitPo: precoUnitPo,
-          precoUnitXml: precoConvertidoXml,
-          diffPreco: diffPreco,
-          qtdDoca: qtdDoca,
-          statusBadge: statusBadge,
+          qtdConvertida: 0,
+          qtdPedido: 0,
+          qtdOriginalPedido: 0,
+          precoUnitPo: 0,
+          precoUnitXml: 0,
+          diffPreco: 0,
+          qtdDoca: 0,
+          saldoRemanescentePedido: 0,
+          excedenteNfSobrePedido: 0,
+          statusBadge: '',
           ticarConfirmado: true
         };
+        recalcularItemAmarracao(rowObj);
+        return rowObj;
       });
+
+      amarracaoItensState = mappedXmlItems;
+      sincronizarItensSaldoNaoFaturadosNaNota();
 
       // Exibe ou esconde Copilot IA de Conversão
       const aiBox = document.getElementById('aiConversionBox');
@@ -3167,23 +3320,55 @@
       }
     }
 
+    function alterarItemPoVinculado(idx, novoItemNumStr) {
+      const it = amarracaoItensState[idx];
+      if (!it || it.isApenasSaldoPedido) return;
+      const poItems = (poAtualCarregado && Array.isArray(poAtualCarregado.items)) ? poAtualCarregado.items : [];
+      const novoItem = novoItemNumStr === '' ? null : poItems.find(p => Number(p.itemNumber) === Number(novoItemNumStr));
+      it.poItem = novoItem || null;
+      recalcularItemAmarracao(it);
+
+      if (it.memKey && it.poItem) {
+        deparaFornecedor[it.memKey] = {
+          resourceCode: it.poItem.resourceCode || it.poItem.resourceId,
+          itemNumber: it.poItem.itemNumber,
+          detailId: it.poItem.detailId || null,
+          detailDescription: it.poItem.detailDescription || '',
+          fatorConversao: it.fatorConversao || 1,
+          unXml: it.xmlItem.un,
+          unPo: it.poItem.unitOfMeasure || 'UN',
+          updatedAt: new Date().toISOString()
+        };
+        it.memorizado = true;
+        if (typeof salvarEstadoGlobalWms === 'function') salvarEstadoGlobalWms('Vínculo Manual de Item do Pedido Sienge');
+      }
+
+      sincronizarItensSaldoNaoFaturadosNaNota();
+      renderizarTabelaAmarracao();
+      showToast(
+        it.poItem
+          ? `Vinculado ao Item #${it.poItem.itemNumber} (${getPoItemFullDesc(it.poItem)} — Qtd Pedido: ${it.qtdPedido})!`
+          : 'Item desvinculado do Pedido de Compra.',
+        'info'
+      );
+    }
+
     function alterarFatorConversaoAmarracao(idx, novoFatorStr) {
       const it = amarracaoItensState[idx];
-      if (!it) return;
+      if (!it || it.isApenasSaldoPedido) return;
       const fator = parseFloat(novoFatorStr);
       if (!fator || fator <= 0) return;
 
       it.fatorConversao = fator;
-      it.qtdConvertida = it.xmlItem.qtdNfe * fator;
-      it.precoUnitXml = it.xmlItem.valorUnit / fator;
-      it.diffPreco = it.precoUnitPo > 0 ? ((it.precoUnitXml - it.precoUnitPo) / it.precoUnitPo) * 100 : 0;
-      const itemDoca = docaItems.find(d => d.cod === it.xmlItem.cod);
-      it.qtdDoca = itemDoca && itemDoca.qtdFisica !== '' ? Number(itemDoca.qtdFisica) * fator : it.qtdConvertida;
+      recalcularItemAmarracao(it);
 
       // Memorizar automaticamente no dicionário De-Para do fornecedor
       if (it.memKey && it.poItem) {
         deparaFornecedor[it.memKey] = {
           resourceCode: it.poItem.resourceCode || it.poItem.resourceId,
+          itemNumber: it.poItem.itemNumber,
+          detailId: it.poItem.detailId || null,
+          detailDescription: it.poItem.detailDescription || '',
           fatorConversao: fator,
           unXml: it.xmlItem.un,
           unPo: it.poItem.unitOfMeasure || 'UN',
@@ -3196,45 +3381,207 @@
       showToast(`Fator ×${fator} memorizado para o item ${it.xmlItem.cod}!`, 'success');
     }
 
+    function renderizarResumoSobrasPedido() {
+      const box = document.getElementById('resumoSobrasPedidoBox');
+      if (!box) return;
+
+      const itensParciaisComSobra = amarracaoItensState.filter(i => !i.isApenasSaldoPedido && i.poItem && i.saldoRemanescentePedido > 0);
+      const itensPedidoNaoVindosNaNota = amarracaoItensState.filter(i => i.isApenasSaldoPedido && i.saldoRemanescentePedido > 0);
+      const itensExcedentes = amarracaoItensState.filter(i => !i.isApenasSaldoPedido && i.poItem && i.excedenteNfSobrePedido > 0);
+
+      if (itensParciaisComSobra.length === 0 && itensPedidoNaoVindosNaNota.length === 0 && itensExcedentes.length === 0) {
+        box.style.display = 'none';
+        box.innerHTML = '';
+        return;
+      }
+
+      const poId = poAtualCarregado?.order?.id || notaAtual?.pedidoSienge || '3538';
+      let html = `
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
+          <div>
+            <strong style="color:#92400e; font-size:0.92rem;">📦 Controle de Sobra / Saldo Remanescente do Pedido #${poId} (Omni × Sienge ERP)</strong>
+            <div style="font-size:0.79rem; color:#78350f; margin-top:2px;">
+              O Sienge dará baixa <strong>apenas nas quantidades efetivamente recebidas nesta NF-e</strong>. As sobras abaixo permanecem em aberto na programação de entrega (<code>PARTIALLY_DELIVERED</code>) tanto no nosso sistema quanto no Sienge.
+            </div>
+          </div>
+          <span class="tag tag-amber" style="font-weight:800;">Atendimento Parcial Detectado</span>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:10px;">
+      `;
+
+      itensParciaisComSobra.forEach(it => {
+        const un = (it.poItem.unitOfMeasure || 'UN').toUpperCase();
+        html += `
+          <div style="background:#ffffff; border:1px solid #fde68a; border-left:4px solid #f59e0b; border-radius:8px; padding:10px 12px; font-size:0.8rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong style="color:#0f172a;">Item #${it.poItem.itemNumber} • ${getPoItemFullDesc(it.poItem)}</strong>
+              <span class="tag tag-amber" style="font-size:0.7rem;">Parcial na NF</span>
+            </div>
+            <div style="margin-top:4px; color:#475569;">
+              Pedido: <strong>${it.qtdPedido} ${un}</strong> • Veio na NF: <strong style="color:#0284c7;">${it.qtdConvertida} ${un}</strong>
+            </div>
+            <div style="margin-top:3px; color:#b45309; font-weight:800;">
+              ⏳ Sobra Pendente no Pedido (Omni + Sienge): ${it.saldoRemanescentePedido} ${un}
+            </div>
+          </div>
+        `;
+      });
+
+      itensPedidoNaoVindosNaNota.forEach(it => {
+        const un = (it.poItem.unitOfMeasure || 'UN').toUpperCase();
+        html += `
+          <div style="background:#ffffff; border:1px solid #fed7aa; border-left:4px solid #ea580c; border-radius:8px; padding:10px 12px; font-size:0.8rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong style="color:#0f172a;">Item #${it.poItem.itemNumber} • ${getPoItemFullDesc(it.poItem)}</strong>
+              <span class="tag" style="background:#ffedd5; color:#c2410c; font-size:0.7rem;">Não veio nesta NF</span>
+            </div>
+            <div style="margin-top:4px; color:#475569;">
+              Pedido: <strong>${it.qtdPedido} ${un}</strong> • Veio na NF: <strong>0 ${un}</strong>
+            </div>
+            <div style="margin-top:3px; color:#c2410c; font-weight:800;">
+              ⏳ Sobra Integral no Pedido (Omni + Sienge): ${it.saldoRemanescentePedido} ${un} (100% em aberto)
+            </div>
+          </div>
+        `;
+      });
+
+      itensExcedentes.forEach(it => {
+        const un = (it.poItem.unitOfMeasure || 'UN').toUpperCase();
+        html += `
+          <div style="background:#ffffff; border:1px solid #fecdd3; border-left:4px solid #e11d48; border-radius:8px; padding:10px 12px; font-size:0.8rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong style="color:#0f172a;">Item #${it.poItem.itemNumber} • ${getPoItemFullDesc(it.poItem)}</strong>
+              <span class="tag tag-rose" style="font-size:0.7rem;">Excedente na NF</span>
+            </div>
+            <div style="margin-top:4px; color:#475569;">
+              Pedido: <strong>${it.qtdPedido} ${un}</strong> • Veio na NF: <strong style="color:#be123c;">${it.qtdConvertida} ${un}</strong>
+            </div>
+            <div style="margin-top:3px; color:#be123c; font-weight:800;">
+              🚨 Sobra Física Acima do Pedido: +${it.excedenteNfSobrePedido} ${un}
+            </div>
+          </div>
+        `;
+      });
+
+      html += '</div>';
+      box.innerHTML = html;
+      box.style.display = 'block';
+    }
+
     function renderizarTabelaAmarracao() {
       const tbody = document.getElementById('amarracaoTableBody');
       if (!tbody) return;
       tbody.innerHTML = '';
 
       if (amarracaoItensState.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:30px; color:#94a3b8;">Nenhum item em cruzamento. Carregue uma NF-e na Doca para sincronizar.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; padding:30px; color:#94a3b8;">Nenhum item em cruzamento. Carregue uma NF-e na Doca para sincronizar.</td></tr>';
+        renderizarResumoSobrasPedido();
         return;
       }
+
+      const poItems = (poAtualCarregado && Array.isArray(poAtualCarregado.items)) ? poAtualCarregado.items : [];
 
       amarracaoItensState.forEach((it, idx) => {
         const tr = document.createElement('tr');
         tr.className = 'amarracao-row-ticar';
+
+        // Caso seja um item do Pedido Sienge que NÃO veio nesta NF-e (ex: Pedido tem 4 ou 7 itens e a NF veio com 3 ou 4)
+        if (it.isApenasSaldoPedido && it.poItem) {
+          tr.style.background = '#fffbeb';
+          const unPo = (it.poItem.unitOfMeasure || 'UN').toUpperCase();
+          tr.innerHTML = `
+            <td style="text-align:center;" title="Item não faturado nesta NF — permanece em aberto no Pedido Sienge">
+              <span style="font-size:0.85rem; color:#d97706; font-weight:800;">⏳</span>
+            </td>
+            <td>
+              <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                <span class="tag tag-amber" style="font-size:0.73rem; font-weight:800;">Item #${it.poItem.itemNumber}</span>
+                <span class="tag tag-blue" style="font-size:0.73rem;">Cód. ${it.poItem.resourceCode || it.poItem.resourceId}</span>
+                ${it.poItem.detailDescription ? `<span class="tag" style="background:#fef3c7; color:#92400e; font-weight:800; font-size:0.73rem;">${it.poItem.detailDescription}</span>` : ''}
+              </div>
+              <strong style="display:block; font-size:0.85rem; margin-top:3px; color:#0f172a;">${getPoItemFullDesc(it.poItem)}</strong>
+              <div style="font-size:0.72rem; color:#64748b;">Preço Pedido: R$ ${Number(it.precoUnitPo).toFixed(2)} / ${unPo}</div>
+            </td>
+            <td colspan="3" style="color:#92400e; font-size:0.8rem; font-weight:600;">
+              — Item do Pedido de Compra <strong>não faturado nesta NF-e</strong> (aguardando próxima remessa/NF do fornecedor) —
+            </td>
+            <td style="text-align:center; font-weight:700; color:#94a3b8;">0 ${unPo}</td>
+            <td style="text-align:center; font-weight:800; color:#0f172a;">${it.qtdPedido.toLocaleString('pt-BR')} ${unPo}</td>
+            <td style="text-align:center; color:#94a3b8;">0</td>
+            <td style="text-align:center;">
+              <span class="tag tag-amber" style="font-weight:800;">⏳ Sobra Pedido: ${it.saldoRemanescentePedido.toLocaleString('pt-BR')} ${unPo}</span>
+              <div style="font-size:0.68rem; color:#b45309; margin-top:2px;">100% em aberto (Omni + Sienge)</div>
+            </td>
+            <td style="text-align:center; color:#94a3b8;">—</td>
+            <td style="text-align:center;">${it.statusBadge}</td>
+          `;
+          tbody.appendChild(tr);
+          return;
+        }
+
+        const unPo = it.poItem && it.poItem.unitOfMeasure ? it.poItem.unitOfMeasure.toUpperCase() : it.xmlItem.un;
+
+        // Monta seletor de itens do Pedido Sienge para permitir ajuste fino se necessário
+        const optionsPoHtml = [
+          `<option value="" ${!it.poItem ? 'selected' : ''}>— Sem vínculo / Item fora do pedido —</option>`,
+          ...poItems.map(p => {
+            const sel = (it.poItem && Number(it.poItem.itemNumber) === Number(p.itemNumber)) ? 'selected' : '';
+            const openQ = p.openQuantity != null && p.openQuantity > 0 ? p.openQuantity : p.quantity;
+            return `<option value="${p.itemNumber}" ${sel}>Item #${p.itemNumber} • ${getPoItemFullDesc(p)} (Ped: ${openQ} ${(p.unitOfMeasure || 'UN').toUpperCase()})</option>`;
+          })
+        ].join('');
+
+        let colSaldoPedidoHtml = '<span class="tag tag-emerald">✓ 0 (Atendido Total)</span>';
+        if (!it.poItem) {
+          colSaldoPedidoHtml = '<span class="tag tag-purple">Fora do Pedido</span>';
+        } else if (it.saldoRemanescentePedido > 0) {
+          colSaldoPedidoHtml = `
+            <span class="tag tag-amber" style="font-weight:800;">⏳ Sobra Pedido: ${it.saldoRemanescentePedido.toLocaleString('pt-BR')} ${unPo}</span>
+            <div style="font-size:0.68rem; color:#b45309; margin-top:2px;">Fica aberto no Omni & Sienge</div>
+          `;
+        } else if (it.excedenteNfSobrePedido > 0) {
+          colSaldoPedidoHtml = `
+            <span class="tag tag-rose" style="font-weight:800;">🚨 +${it.excedenteNfSobrePedido.toLocaleString('pt-BR')} ${unPo} Acima</span>
+            <div style="font-size:0.68rem; color:#be123c; margin-top:2px;">Sobra física sobre o pedido</div>
+          `;
+        }
+
         tr.innerHTML = `
           <td style="text-align:center;">
             <input type="checkbox" ${it.ticarConfirmado ? 'checked' : ''} onchange="toggleTicarItem(${idx})">
           </td>
           <td>
             ${it.poItem ? `
-              <span class="tag tag-blue" style="font-size:0.75rem;">${it.poItem.resourceCode || it.poItem.resourceId || 'INS-PO'}</span>
-              ${it.memorizado ? '<span class="tag tag-emerald" style="font-size:0.68rem;">🧠 De-Para Memorizado</span>' : ''}
-              <strong style="display:block; font-size:0.85rem; margin-top:2px;">${it.poItem.resourceDescription || 'Insumo Sienge'}</strong>
-              <div style="font-size:0.72rem; color:#64748b;">Preço Negociado: R$ ${Number(it.precoUnitPo).toFixed(2)} / ${it.poItem.unitOfMeasure || 'un'}</div>
-            ` : '<span style="color:#b91c1c; font-weight:700;">Item não consta no Pedido de Compra</span>'}
+              <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap; margin-bottom:4px;">
+                <span class="tag tag-blue" style="font-size:0.73rem; font-weight:800;">Item #${it.poItem.itemNumber}</span>
+                <span class="tag" style="background:#e0f2fe; color:#0369a1; font-size:0.72rem;">Cód. ${it.poItem.resourceCode || it.poItem.resourceId || 'INS-PO'}</span>
+                ${it.poItem.detailDescription ? `<span class="tag" style="background:#dbeafe; color:#1e40af; font-weight:800; font-size:0.73rem;">${it.poItem.detailDescription}</span>` : ''}
+                ${it.memorizado ? '<span class="tag tag-emerald" style="font-size:0.68rem;">🧠 De-Para</span>' : ''}
+              </div>
+            ` : '<div style="color:#b91c1c; font-weight:700; font-size:0.78rem; margin-bottom:4px;">Item não consta no Pedido de Compra</div>'}
+            <select class="input-control" style="font-size:0.78rem; font-weight:700; padding:4px 8px; height:auto; max-width:330px; background:#f8fafc;" onchange="alterarItemPoVinculado(${idx}, this.value)" title="Item correspondente no Pedido de Compra Sienge">
+              ${optionsPoHtml}
+            </select>
+            ${it.poItem ? `<div style="font-size:0.72rem; color:#64748b; margin-top:3px;">Preço Negociado: R$ ${Number(it.precoUnitPo).toFixed(2)} / ${it.poItem.unitOfMeasure || 'un'}</div>` : ''}
           </td>
           <td>
-            <span class="tag" style="background:#f1f5f9; color:#475569; font-size:0.75rem;">${it.xmlItem.cod}</span>
+            <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
+              <span class="tag" style="background:#f1f5f9; color:#475569; font-size:0.75rem;">${it.xmlItem.cod}</span>
+              ${it.xmlItem.nItemPed ? `<span class="tag" style="background:#f3e8ff; color:#6b21a8; font-size:0.7rem; font-weight:800;">XML Item Ped #${it.xmlItem.nItemPed}</span>` : ''}
+            </div>
             <strong style="display:block; font-size:0.85rem; margin-top:2px;">${it.xmlItem.desc}</strong>
             <div style="font-size:0.72rem; color:#64748b;">Faturado: R$ ${Number(it.xmlItem.valorUnit).toFixed(2)} / ${it.xmlItem.un}</div>
           </td>
           <td style="text-align:center; font-weight:700;">${it.xmlItem.un}</td>
           <td style="text-align:center;">
             <input type="number" step="0.01" min="0.01" value="${it.fatorConversao}" title="Editar fator de conversão (memoriza automaticamente por CNPJ + Código)"
-              style="width:72px; text-align:center; font-weight:800; color:#7e22ce; border:1px solid #d8b4fe; background:#faf5ff; border-radius:6px; padding:4px;"
+              style="width:68px; text-align:center; font-weight:800; color:#7e22ce; border:1px solid #d8b4fe; background:#faf5ff; border-radius:6px; padding:4px;"
               onchange="alterarFatorConversaoAmarracao(${idx}, this.value)">
           </td>
-          <td style="text-align:center; font-weight:700; color:#0284c7;">${it.qtdConvertida.toLocaleString('pt-BR')} ${it.poItem && it.poItem.unitOfMeasure ? it.poItem.unitOfMeasure.toUpperCase() : it.xmlItem.un}</td>
-          <td style="text-align:center; font-weight:700;">${it.qtdPedido.toLocaleString('pt-BR')} ${it.poItem && it.poItem.unitOfMeasure ? it.poItem.unitOfMeasure.toUpperCase() : ''}</td>
+          <td style="text-align:center; font-weight:800; color:#0284c7;">${it.qtdConvertida.toLocaleString('pt-BR')} ${unPo}</td>
+          <td style="text-align:center; font-weight:800;">${it.qtdPedido.toLocaleString('pt-BR')} ${unPo}</td>
           <td style="text-align:center; font-weight:700; color:#059669;">${it.qtdDoca.toLocaleString('pt-BR')}</td>
+          <td style="text-align:center;">${colSaldoPedidoHtml}</td>
           <td style="text-align:center;">
             ${Math.abs(it.diffPreco) < 0.05 ? '<span class="badge-diff-neg">0.0% OK</span>' : (it.diffPreco > 0 ? `<span class="badge-diff-pos">+${it.diffPreco.toFixed(1)}%</span>` : `<span class="badge-diff-neg">${it.diffPreco.toFixed(1)}%</span>`)}
           </td>
@@ -3243,35 +3590,46 @@
         tbody.appendChild(tr);
       });
 
+      renderizarResumoSobrasPedido();
       atualizarStatusTicar();
     }
 
     function toggleTicarItem(idx) {
-      if (amarracaoItensState[idx]) {
+      if (amarracaoItensState[idx] && !amarracaoItensState[idx].isApenasSaldoPedido) {
         amarracaoItensState[idx].ticarConfirmado = !amarracaoItensState[idx].ticarConfirmado;
         atualizarStatusTicar();
       }
     }
 
     function ticarTodosItensAmarracao(marcar) {
-      amarracaoItensState.forEach(i => i.ticarConfirmado = marcar);
+      amarracaoItensState.forEach(i => {
+        if (!i.isApenasSaldoPedido) i.ticarConfirmado = marcar;
+      });
       renderizarTabelaAmarracao();
-      if (typeof atualizarPainelDdaNotaFiscal === 'function') {
-        atualizarPainelDdaNotaFiscal(order);
+      if (typeof atualizarPainelDdaNotaFiscal === 'function' && poAtualCarregado?.order) {
+        atualizarPainelDdaNotaFiscal(poAtualCarregado.order);
       }
     }
 
     function atualizarStatusTicar() {
-      const ticados = amarracaoItensState.filter(i => i.ticarConfirmado).length;
-      const total = amarracaoItensState.length;
+      const itensNota = amarracaoItensState.filter(i => !i.isApenasSaldoPedido);
+      const ticados = itensNota.filter(i => i.ticarConfirmado).length;
+      const total = itensNota.length;
+      const sobrasCount = amarracaoItensState.filter(i => i.saldoRemanescentePedido > 0).length;
+
       const kpi = document.getElementById('kpiItensValidados');
-      if (kpi) kpi.innerText = `${ticados} de ${total} itens ticados e validados`;
+      if (kpi) {
+        kpi.innerText = `${ticados} de ${total} itens da NF ticados` + (sobrasCount > 0 ? ` • ${sobrasCount} c/ saldo no pedido` : '');
+      }
 
       const badge = document.getElementById('kpiAderenciaBadge');
       if (badge) {
-        if (ticados === total && total > 0) {
+        if (ticados === total && total > 0 && sobrasCount === 0) {
           badge.className = 'tag tag-emerald';
           badge.innerText = '✓ 100% Conforme';
+        } else if (ticados === total && total > 0 && sobrasCount > 0) {
+          badge.className = 'tag tag-amber';
+          badge.innerText = `⚠️ Parcial (${sobrasCount} c/ Sobra no Pedido)`;
         } else {
           badge.className = 'tag tag-amber';
           badge.innerText = `⚠️ ${ticados}/${total} Ticados`;
@@ -3348,14 +3706,14 @@
     // 8. INTEGRAÇÃO E APROVAÇÃO SIENGE (PAYLOAD COMPLETO + WMS + DDA)
     // ==========================================
     async function executarEntradaFiscalSienge() {
-      const itensTicados = amarracaoItensState.filter(i => i.ticarConfirmado);
+      const itensTicados = amarracaoItensState.filter(i => i.ticarConfirmado && !i.isApenasSaldoPedido && i.xmlItem);
       const ticados = itensTicados.length;
       if (ticados === 0) {
-        showToast('Nenhum item marcado para homologação!', 'warning');
+        showToast('Nenhum item da NF marcado para homologação!', 'warning');
         return;
       }
 
-      showToast('Enviando Documento de Entrada e Duplicatas para a API do Sienge ERP...', 'info');
+      showToast('Enviando Documento de Entrada e quantidades exatas por item para a API do Sienge ERP...', 'info');
 
       const poId = poAtualCarregado?.order?.id || notaAtual?.pedidoSienge || '3538';
       const nfNumero = notaAtual?.numeroNfe || '45612';
@@ -3365,11 +3723,14 @@
       const nfCnpj = notaAtual?.cnpj || '';
       const nfValorTotal = notaAtual?.valorTotal || 2673.54;
 
-      // Memorizar todos os vínculos De-Para validados nesta nota
+      // Memorizar todos os vínculos De-Para validados nesta nota (incluindo itemNumber e detailDescription!)
       itensTicados.forEach(it => {
         if (it.memKey && it.poItem) {
           deparaFornecedor[it.memKey] = {
             resourceCode: it.poItem.resourceCode || it.poItem.resourceId,
+            itemNumber: it.poItem.itemNumber,
+            detailId: it.poItem.detailId || null,
+            detailDescription: it.poItem.detailDescription || '',
             fatorConversao: it.fatorConversao || 1,
             unXml: it.xmlItem.un,
             unPo: it.poItem.unitOfMeasure || 'UN',
@@ -3378,14 +3739,14 @@
         }
       });
 
-      // Enviar lotes conferidos para a fila de 'A Endereçar' do WMS
+      // Enviar lotes conferidos para a fila de 'A Endereçar' do WMS (com descrição completa incluindo tamanho/detalhe)
       itensTicados.forEach((it, idx) => {
         const loteOmniGerado = `OMN-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}-${nfNumero}-${idx + 1}`;
         const unFinal = it.poItem && it.poItem.unitOfMeasure ? it.poItem.unitOfMeasure.toUpperCase() : it.xmlItem.un;
         if (!wmsAEnderecar.some(w => w.loteOmni === loteOmniGerado)) {
           wmsAEnderecar.unshift({
             cod: (it.poItem && (it.poItem.resourceCode || it.poItem.resourceId)) || it.xmlItem.cod,
-            desc: (it.poItem && it.poItem.resourceDescription) || it.xmlItem.desc,
+            desc: it.poItem ? getPoItemFullDesc(it.poItem) : it.xmlItem.desc,
             loteOmni: loteOmniGerado,
             loteFab: `FAB-${nfNumero}-${idx + 1}`,
             validade: '15/10/2029',
@@ -3395,6 +3756,10 @@
         }
       });
       renderWmsAEnderecar();
+
+      const sobrasLocais = amarracaoItensState
+        .filter(i => i.poItem && i.saldoRemanescentePedido > 0)
+        .map(i => `Item #${i.poItem.itemNumber} (${getPoItemFullDesc(i.poItem)}): Sobra Pedido ${i.saldoRemanescentePedido} ${(i.poItem.unitOfMeasure || 'UN').toUpperCase()}`);
 
       try {
         const res = await fetch('/api/sienge/liquidar', {
@@ -3414,19 +3779,32 @@
             valorTotal: nfValorTotal,
             impostos: notaAtual?.impostos || {},
             duplicatas: notaAtual?.duplicatas || [],
-            itensRecebidos: itensTicados.map(it => ({
-              cod: (it.poItem && (it.poItem.resourceCode || it.poItem.resourceId)) || it.xmlItem.cod,
-              resourceId: it.poItem?.resourceId || it.poItem?.resourceCode,
-              itemNumber: it.poItem?.itemNumber || (it.idx + 1),
-              qtdNfe: it.xmlItem.qtdNfe,
-              qtdSiengeConvertida: it.qtdConvertida,
-              qtdDoca: it.qtdDoca,
-              fatorConversao: it.fatorConversao
-            }))
+            itensRecebidos: itensTicados
+              .filter(it => it.poItem && it.poItem.itemNumber != null)
+              .map(it => ({
+                cod: it.poItem.resourceCode || it.poItem.resourceId || it.xmlItem.cod,
+                resourceId: it.poItem.resourceId || it.poItem.resourceCode,
+                detailId: it.poItem.detailId || null,
+                itemNumber: Number(it.poItem.itemNumber),
+                qtdNfe: it.xmlItem.qtdNfe,
+                qtdSiengeConvertida: it.qtdConvertida,
+                qtdDoca: it.qtdDoca,
+                fatorConversao: it.fatorConversao
+              }))
           })
         });
 
         const data = await res.json();
+
+        // Atualiza saldos locais do pedido carregado caso haja sobra
+        if (poAtualCarregado && Array.isArray(poAtualCarregado.items)) {
+          itensTicados.forEach(it => {
+            if (it.poItem) {
+              it.poItem.openQuantity = it.saldoRemanescentePedido;
+              it.poItem.deliveredQuantity = Number((Number(it.poItem.deliveredQuantity || 0) + Number(it.qtdConvertida || 0)).toFixed(4));
+            }
+          });
+        }
 
         // Se o checkbox "Gravar automaticamente Linha Digitável DDA no Contas a Pagar do Sienge" estiver marcado,
         // garante que o DDA específico desta NF seja buscado e injetado no Sienge!
@@ -3439,13 +3817,18 @@
         await salvarEstadoGlobalWms(`Liquidação Fiscal + DDA NF ${nfNumero} / Pedido #${poId}`);
 
         const seqMsg = data.sequentialNumber ? ` (Sequencial Sienge #${data.sequentialNumber})` : '';
-        showToast(`NF-e ${nfNumero} liquidada no Sienge${seqMsg} + Boleto DDA vinculado!`, 'success');
+        showToast(`NF-e ${nfNumero} liquidada no Sienge${seqMsg} + saldos do Pedido #${poId} atualizados!`, 'success');
+
+        const resumoSobrasTexto = sobrasLocais.length > 0
+          ? `\n📦 SALDO / SOBRA PENDENTE NO PEDIDO #${poId} (OMNI & SIENGE):\n  - ` + sobrasLocais.join('\n  - ') + '\n'
+          : '\n• Saldo do Pedido: 100% Atendido (Sem sobras pendentes)\n';
 
         alert(
           '🎉 AMARRAÇÃO FISCAL, ENTRADA SIENGE & BOLETO DDA CONCLUÍDOS!\n\n' +
-          `• Pedido Sienge: #${poId} (${data.novoStatusSienge || 'ATENDIDO'})\n` +
+          `• Pedido Sienge: #${poId} (${data.novoStatusSienge || (sobrasLocais.length > 0 ? 'PARTIALLY_DELIVERED' : 'FULLY_DELIVERED')})\n` +
           `• NF-e: ${nfNumero} (${nfFornecedor})${seqMsg}\n` +
-          `• Itens Homologados: ${ticados} de ${amarracaoItensState.length} (De-Para memorizado)\n` +
+          `• Itens Faturados Homologados: ${ticados} item(ns) da NF-e\n` +
+          resumoSobrasTexto + '\n' +
           (resumoDdaInjetado ? `• DDA Itaú Conciliado na NF: ${resumoDdaInjetado}\n\n` : `• Duplicatas XML: ${(notaAtual?.duplicatas || []).length} parcela(s) enviadas para Conciliação DDA Itaú (Módulo 9).\n\n`) +
           'Os lotes já foram gerados no Módulo 3 (WMS & A Endereçar).'
         );

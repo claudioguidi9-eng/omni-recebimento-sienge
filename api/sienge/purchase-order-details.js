@@ -77,7 +77,7 @@ module.exports = async (req, res) => {
 
     const orderData = orderRes.data;
 
-    // 2. Buscar itens do pedido
+    // 2. Buscar itens do pedido e ordenar por itemNumber
     let items = [];
     try {
       const itemsRes = await siengeReq('/purchase-orders/' + cleanId + '/items');
@@ -87,6 +87,45 @@ module.exports = async (req, res) => {
     } catch(errItems) {
       console.warn('Erro ao buscar itens do pedido ' + cleanId + ':', errItems.message);
     }
+
+    items.sort((a, b) => Number(a.itemNumber || 0) - Number(b.itemNumber || 0));
+
+    // 3. Buscar saldos de entrega (delivery-schedules) em paralelo para saber o saldo em aberto real no Sienge
+    const enrichedItems = await Promise.all(items.map(async (it) => {
+      let deliveredQty = 0;
+      let openQty = Number(it.quantity || 0);
+      try {
+        const schedRes = await siengeReq(`/purchase-orders/${cleanId}/items/${it.itemNumber}/delivery-schedules`);
+        const schedules = (schedRes.status === 200 && schedRes.data && Array.isArray(schedRes.data.results))
+          ? schedRes.data.results
+          : [];
+        if (schedules.length > 0) {
+          deliveredQty = schedules.reduce((acc, s) => acc + Number(s.deliveredQuantity || 0), 0);
+          openQty = schedules.reduce((acc, s) => acc + Number(s.openQuantity != null ? s.openQuantity : (Number(s.sheduledQuantity || it.quantity || 0) - Number(s.deliveredQuantity || 0))), 0);
+        }
+      } catch (e) {}
+
+      const baseDesc = it.resourceDescription || 'Material/Serviço';
+      const detDesc = (it.detailDescription || '').trim();
+      const fullDesc = detDesc ? `${baseDesc} - ${detDesc}` : baseDesc;
+
+      return {
+        itemNumber: it.itemNumber,
+        resourceId: it.resourceId,
+        resourceCode: it.resourceCode || '',
+        resourceDescription: baseDesc,
+        detailId: it.detailId || null,
+        detailDescription: detDesc,
+        fullDescription: fullDesc,
+        unitOfMeasure: it.unitOfMeasure || 'UN',
+        quantity: Number(it.quantity || 0),
+        deliveredQuantity: deliveredQty,
+        openQuantity: openQty,
+        unitPrice: Number(it.unitPrice || 0),
+        netPrice: Number(it.netPrice || 0),
+        notes: it.notes || ''
+      };
+    }));
 
     res.status(200).json({
       success: true,
@@ -107,17 +146,7 @@ module.exports = async (req, res) => {
         disapproved: orderData.disapproved,
         freightType: orderData.freightType
       },
-      items: items.map(it => ({
-        itemNumber: it.itemNumber,
-        resourceId: it.resourceId,
-        resourceCode: it.resourceCode || '',
-        resourceDescription: it.resourceDescription || 'Material/Serviço',
-        unitOfMeasure: it.unitOfMeasure || 'UN',
-        quantity: it.quantity || 0,
-        unitPrice: it.unitPrice || 0,
-        netPrice: it.netPrice || 0,
-        notes: it.notes || ''
-      }))
+      items: enrichedItems
     });
   } catch(err) {
     res.status(500).json({
