@@ -415,6 +415,34 @@ const handler = async (req, res) => {
     return;
   }
 
+  // 7.0.3 Leitura Inteligente de Boleto em PDF & Conversor FEBRABAN
+  if (pathname === '/api/ler-boleto-pdf' || pathname === '/api/financeiro/ler-boleto-pdf') {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', async () => {
+      try {
+        req.query = Object.fromEntries(reqUrl.searchParams);
+        req.body = body ? JSON.parse(body) : {};
+        const fakeRes = {
+          setHeader: (k, v) => res.setHeader(k, v),
+          status: (code) => ({
+            json: (data) => {
+              res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8' });
+              res.end(JSON.stringify(data));
+            },
+            end: () => res.end()
+          })
+        };
+        const boletoHandler = require('./api/financeiro/ler-boleto-pdf.js');
+        await boletoHandler(req, fakeRes);
+      } catch (err) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+    return;
+  }
+
   // 7. Aprovação do Supervisor & Ajuste Sienge
   if (pathname === '/api/sienge/aprovar' && req.method === 'POST') {
     let body = '';
