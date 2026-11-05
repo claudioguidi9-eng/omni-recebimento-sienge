@@ -5540,7 +5540,7 @@ function renderWmsAEnderecar() {
               reader.onload = () => resolve(reader.result.split(',')[1]);
               reader.readAsDataURL(file);
             });
-            const apiRes = await fetch('/api/financeiro/ler-boleto-pdf', {
+            const apiRes = await fetch('/api/ler-boleto-pdf', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ base64, text: extractedText })
