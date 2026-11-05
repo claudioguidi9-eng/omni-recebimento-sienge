@@ -4,6 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OmniTrade WMS & Fiscal Suite – Recebimento Cego, Amarração Sienge, Lotes & PCP</title>
+
+  <!-- PDF.js para leitura e OCR direto de Boletos em PDF no Navegador -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  </script>
   
   <!-- Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -373,6 +381,10 @@
 
       <button class="btn btn-outline" style="padding: 6px 12px; font-size: 0.78rem; background:#fff7ed; border-color:#fb923c; color:#c2410c; font-weight:800;" onclick="switchModule('dda')" title="Abrir Mesa de Conciliação Financeira DDA Itaú e Configuração Híbrida (API + CNAB 240)">
         🏦 9. Financeiro & DDA Itaú
+      </button>
+
+      <button class="btn btn-outline" style="padding: 6px 12px; font-size: 0.78rem; background:#fef2f2; border-color:#fca5a5; color:#b91c1c; font-weight:700;" onclick="confirmarLimpezaGeralDados()" title="Limpar todos os dados e zerar o sistema para teste real com compras">
+        🗑️ Limpar Dados p/ Teste Real
       </button>
 
       <button class="btn btn-outline" style="padding: 6px 12px; font-size: 0.78rem; background:#f0fdf4; border-color:#86efac; color:#15803d; font-weight:700;" onclick="abrirModalScannerCamera()">
@@ -1306,18 +1318,90 @@
             </div>
           </div>
 
-          <!-- SIMULADOR / INJETOR RÁPIDO DE LINHA DIGITÁVEL OU CÓDIGO DE BARRAS NO SIENGE -->
-          <div style="background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border: 1px solid #fed7aa; border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 18px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
-              <div style="font-weight:800; color:#9a3412; font-size:0.9rem; display:flex; align-items:center; gap:8px;">
+          <!-- SIMULADOR / INJETOR RÁPIDO DE LINHA DIGITÁVEL OU CÓDIGO DE BARRAS NO SIENGE COM LEITOR DE PDF -->
+          <div style="background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border: 1px solid #fed7aa; border-radius: var(--radius-md); padding: 16px 18px; margin-bottom: 18px; box-shadow: 0 2px 6px rgba(234,88,12,0.06);">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+              <div style="font-weight:800; color:#9a3412; font-size:0.92rem; display:flex; align-items:center; gap:8px;">
                 <span>🏦 Injetor Direto de Boleto / DDA em Título do Sienge (Conversor Automático FEBRABAN 44 ↔ 47 dígitos)</span>
               </div>
-              <span class="tag" style="background:#ffedd5; color:#9a3412; border:1px solid #fdba74;">Endpoint Oficial: PATCH /bills/{billId}/installments/{inst}/payment-information/boleto-bancario</span>
+              <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <input type="file" id="pdfBoletoUploadInput" accept=".pdf,image/*" style="display:none;" onchange="aoSelecionarBoletoPdf(event)">
+                <button type="button" class="btn btn-primary" style="background:#0284c7; border-color:#0369a1; font-size:0.8rem; padding:6px 14px; font-weight:800; display:flex; align-items:center; gap:6px; box-shadow:0 2px 4px rgba(2,132,199,0.25);" onclick="document.getElementById('pdfBoletoUploadInput').click()">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                  📄 Puxar Boleto em PDF (Leitura Automática)
+                </button>
+                <span class="tag" style="background:#ffedd5; color:#9a3412; border:1px solid #fdba74;">Endpoint Oficial: PATCH /bills/{billId}/installments/{inst}/payment-information/boleto-bancario</span>
+              </div>
             </div>
-            <div style="display:grid; grid-template-columns: 120px 100px 1fr auto; gap:10px; align-items:end;">
+
+            <!-- ÁREA DE ARRASTE / DROP ZONE DO PDF DO BOLETO -->
+            <div id="dropZoneBoletoPdf" onclick="document.getElementById('pdfBoletoUploadInput').click()" ondragover="event.preventDefault(); this.style.borderColor='#ea580c'; this.style.background='#fff7ed';" ondragleave="this.style.borderColor='#fed7aa'; this.style.background='#fffaf5';" ondrop="aoSoltarBoletoPdf(event)" style="border: 2px dashed #fed7aa; background: #fffaf5; border-radius: 8px; padding: 12px 16px; margin-bottom: 12px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s;">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div style="width:38px; height:38px; border-radius:8px; background:#ea580c; color:white; display:flex; align-items:center; justify-content:center; font-size:1.25rem; flex-shrink:0;">
+                  📄
+                </div>
+                <div>
+                  <div style="font-weight:800; color:#9a3412; font-size:0.88rem;">
+                    Clique ou Arraste o Boleto Bancário em PDF aqui
+                  </div>
+                  <div style="font-size:0.75rem; color:#64748b;">
+                    Leitura automática e instantânea: Linha Digitável, Código de Barras 44, Valor, Vencimento, Fornecedor e CNPJ para alimentar o Financeiro.
+                  </div>
+                </div>
+              </div>
+              <span class="btn btn-outline" style="font-size:0.75rem; padding:5px 12px; background:#ffffff; border-color:#fed7aa; color:#ea580c; font-weight:700;">
+                Selecionar Arquivo PDF
+              </span>
+            </div>
+
+            <!-- CARD DE PREVIEW COM OS DADOS EXTRAÍDOS DO PDF -->
+            <div id="cardDadosBoletoExtraido" style="display:none; background:#ffffff; border:1px solid #10b981; border-radius:8px; padding:12px 16px; margin-bottom:12px; box-shadow:0 2px 6px rgba(16,185,129,0.1);">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span class="tag tag-emerald" style="font-size:0.8rem; font-weight:800;">✓ Boleto PDF Lido com Sucesso</span>
+                  <span id="boletoPdfBanco" style="font-weight:800; color:#0f172a; font-size:0.84rem;">Banco Identificado</span>
+                </div>
+                <div style="display:flex; gap:8px;">
+                  <button type="button" class="btn btn-outline" onclick="limparLeituraBoletoPdf()" style="font-size:0.72rem; padding:3px 8px; color:#64748b;">✕ Limpar</button>
+                </div>
+              </div>
+              <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px; font-size:0.8rem; margin-bottom:10px;">
+                <div>
+                  <span style="color:#64748b; font-size:0.7rem; font-weight:700; text-transform:uppercase;">Beneficiário / Fornecedor:</span>
+                  <div id="boletoPdfBeneficiario" style="font-weight:800; color:#0f172a;">-</div>
+                  <div id="boletoPdfCnpj" style="font-size:0.72rem; color:#64748b; font-family:'JetBrains Mono', monospace;">-</div>
+                </div>
+                <div>
+                  <span style="color:#64748b; font-size:0.7rem; font-weight:700; text-transform:uppercase;">Valor do Boleto:</span>
+                  <div id="boletoPdfValor" style="font-weight:800; color:#059669; font-size:1.05rem;">R$ 0,00</div>
+                </div>
+                <div>
+                  <span style="color:#64748b; font-size:0.7rem; font-weight:700; text-transform:uppercase;">Data de Vencimento:</span>
+                  <div id="boletoPdfVencimento" style="font-weight:800; color:#d97706; font-size:0.95rem;">-</div>
+                </div>
+                <div>
+                  <span style="color:#64748b; font-size:0.7rem; font-weight:700; text-transform:uppercase;">Documento / NF / Parcela:</span>
+                  <div id="boletoPdfDoc" style="font-weight:800; color:#0284c7;">-</div>
+                </div>
+              </div>
+              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:8px 10px; font-family:'JetBrains Mono', monospace; font-size:0.78rem;">
+                <div style="color:#0369a1; font-weight:700;" id="boletoPdfLinhaDigitavel">-</div>
+                <div style="color:#64748b; font-size:0.7rem; margin-top:2px;" id="boletoPdfBarras">-</div>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; gap:8px; flex-wrap:wrap;">
+                <span style="font-size:0.74rem; color:#059669; font-weight:600;">
+                  ⚡ Os campos abaixo foram preenchidos automaticamente com a linha digitável e o título do Sienge.
+                </span>
+                <button class="btn btn-primary" style="background:#ea580c; border-color:#c2410c; padding:6px 14px; font-size:0.8rem;" onclick="testarGravacaoManualDdaSienge()">
+                  ⚡ Gravar este Boleto no Sienge Agora
+                </button>
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 140px 100px 1fr auto; gap:10px; align-items:end;">
               <div>
                 <label class="stat-label">Título Sienge (billId):</label>
-                <input type="number" id="ddaManualBillId" class="input-control" value="19539" style="font-weight:700;">
+                <input type="number" id="ddaManualBillId" class="input-control" value="" placeholder="Ex: 19539" style="font-weight:700;">
               </div>
               <div>
                 <label class="stat-label">Parcela:</label>
@@ -1325,7 +1409,7 @@
               </div>
               <div>
                 <label class="stat-label">Linha Digitável (47 dígitos) ou Código de Barras (44 dígitos):</label>
-                <input type="text" id="ddaManualBarcode" class="input-control" value="03399639856930000001065024601018113220000241570" style="font-family:'JetBrains Mono', monospace; font-size:0.82rem; font-weight:700;">
+                <input type="text" id="ddaManualBarcode" class="input-control" value="" placeholder="Cole a linha digitável ou puxe o PDF do boleto acima..." style="font-family:'JetBrains Mono', monospace; font-size:0.82rem; font-weight:700;">
               </div>
               <div>
                 <button class="btn btn-primary" style="background:#ea580c; border-color:#c2410c; height:38px;" onclick="testarGravacaoManualDdaSienge()">
@@ -1965,22 +2049,14 @@
     // Estado da Doca / Itens em conferência
     let docaItems = [];
 
-    // WMS e PCP Data Mock
-    let wmsAEnderecar = [
-      { cod: 'CAB-025', desc: 'Cabo Cobre Flexível 2.5mm', loteOmni: 'OMN-202610-00412', loteFab: 'LOTE-SIL-998', validade: '28/10/2030', qtd: '5.000 METROS', sugestao: 'R01-P03-N1-B01' },
-      { cod: 'PAR-008', desc: 'Parafuso Sextavado 8x40', loteOmni: 'OMN-202610-00413', loteFab: 'LOTE-CIS-441', validade: '15/04/2032', qtd: '5.000 UN', sugestao: 'R02-P01-N2-B04' }
-    ];
-
+    // WMS e PCP - Base Limpa para Testes Reais
+    let wmsAEnderecar = [];
     let wmsEnderecos = [
-      { cod: 'R01-P03-N1-B01', galpao: 'Galpão Principal', rua: 'Rua 01', prat: 'Prateleira 03', nivel: 'Nível 1 (Chão)', box: 'Box 01', tipo: 'Porta Pallet', cap: '1.500 kg', status: 'Ativo' },
-      { cod: 'R02-P01-N2-B04', galpao: 'Galpão Principal', rua: 'Rua 02', prat: 'Prateleira 01', nivel: 'Nível 2', box: 'Box 04', tipo: 'Picking Fracionado', cap: '400 kg', status: 'Ativo' },
-      { cod: 'R05-P02-N1-B01', galpao: 'Galpão Principal', rua: 'Rua 05', prat: 'Prateleira 02', nivel: 'Nível 1', box: 'Box 01', tipo: 'Área de PA Acabado', cap: '2.000 kg', status: 'Ativo' }
+      { cod: 'R01-P01-N1-B01', galpao: 'Galpão Principal', rua: 'Rua 01', prat: 'Prateleira 01', nivel: 'Nível 1 (Chão)', box: 'Box 01', tipo: 'Porta Pallet', cap: '1.500 kg', status: 'Ativo' },
+      { cod: 'R01-P02-N1-B01', galpao: 'Galpão Principal', rua: 'Rua 01', prat: 'Prateleira 02', nivel: 'Nível 1 (Chão)', box: 'Box 01', tipo: 'Porta Pallet', cap: '1.500 kg', status: 'Ativo' },
+      { cod: 'R02-P01-N2-B01', galpao: 'Galpão Principal', rua: 'Rua 02', prat: 'Prateleira 01', nivel: 'Nível 2', box: 'Box 01', tipo: 'Picking Fracionado', cap: '400 kg', status: 'Ativo' }
     ];
-
-    let wmsLotes = [
-      { loteOmni: 'OMN-202610-00412', cod: 'CAB-025', prod: 'Cabo Cobre Flexível 2.5mm', desc: 'Cabo Cobre Flexível 2.5mm', loteFab: 'LOTE-SIL-998', fab: '28/10/2026', validade: '28/10/2030', val: '28/10/2030', saldo: '5.000 METROS', endereco: 'R01-P03-N1-B01', end: 'R01-P03-N1-B01', dias: '1.460 dias', prioridade: 'Normal (FEFO #1)' },
-      { loteOmni: 'OMN-202610-00413', cod: 'PAR-008', prod: 'Parafuso Sextavado 8x40', desc: 'Parafuso Sextavado 8x40', loteFab: 'LOTE-CIS-441', fab: '15/04/2024', validade: '15/04/2032', val: '15/04/2032', saldo: '5.000 UN', endereco: 'R02-P01-N2-B04', end: 'R02-P01-N2-B04', dias: '1.990 dias', prioridade: 'Normal (FEFO #2)' }
-    ];
+    let wmsLotes = [];
 
     // Helper Toast
     function showToast(msg, type = 'info') {
@@ -4032,60 +4108,8 @@ function renderWmsAEnderecar() {
       { cod: 'PASTA-TERM-100G', desc: 'Pasta Térmica Dissipadora Alta Condutividade 100g', saldo: 95, un: 'UN', lote: 'OMN-202610-00710', endereco: 'R03-P02-N1-B01' }
     ];
 
-    // Histórico de OPs Executadas
-    let ordensProducaoExecutadas = [
-      {
-        id: 'OP-202610-0042',
-        dataHora: '28/10/2026 14:30',
-        codPa: 'LUM-LED-150W-PA',
-        descPa: 'Luminária LED Industrial 150W High Bay',
-        qtdPa: 50,
-        unPa: 'UN',
-        loteGerado: 'LOTE-PA-20261042',
-        operador: 'Marcio Souza (Líder Montagem)',
-        enderecoDestino: 'R04-P01-N1-B01',
-        status: 'Concluída • A Endereçar',
-        insumos: [
-          { cod: 'DRV-PHILIPS-150W', desc: 'Driver Philips LED 150W IP65', qtd: 50, un: 'UN', lote: 'OMN-202610-00108', endereco: 'R02-P01-N2-B01' },
-          { cod: 'CABO-COB-25', desc: 'Cabo Cobre Flexível 2.5mm', qtd: 125, un: 'M', lote: 'OMN-202610-00412', endereco: 'R01-P03-N1-B02' },
-          { cod: 'MOD-LED-50W', desc: 'Módulo LED SMD 50W', qtd: 150, un: 'UN', lote: 'OMN-202610-00215', endereco: 'R02-P02-N1-B01' },
-          { cod: 'CARC-ALUM-LUM', desc: 'Carcaça Alumínio Injetado', qtd: 50, un: 'UN', lote: 'OMN-202610-00330', endereco: 'R03-P01-N1-B01' }
-        ]
-      },
-      {
-        id: 'OP-202610-0041',
-        dataHora: '27/10/2026 16:15',
-        codPa: 'LUM-LED-200W-PA',
-        descPa: 'Luminária LED Industrial 200W High Bay',
-        qtdPa: 30,
-        unPa: 'UN',
-        loteGerado: 'LOTE-PA-20261041',
-        operador: 'Marcio Souza (Líder Montagem)',
-        enderecoDestino: 'R04-P01-N1-B01',
-        status: 'Concluída • Endereçado',
-        insumos: [
-          { cod: 'DRV-PHILIPS-150W', desc: 'Driver Philips LED 150W IP65', qtd: 60, un: 'UN', lote: 'OMN-202610-00108', endereco: 'R02-P01-N2-B01' },
-          { cod: 'CABO-COB-25', desc: 'Cabo Cobre Flexível 2.5mm', qtd: 90, un: 'M', lote: 'OMN-202610-00412', endereco: 'R01-P03-N1-B02' },
-          { cod: 'MOD-LED-50W', desc: 'Módulo LED SMD 50W', qtd: 120, un: 'UN', lote: 'OMN-202610-00215', endereco: 'R02-P02-N1-B01' }
-        ]
-      },
-      {
-        id: 'OP-202610-0040',
-        dataHora: '26/10/2026 11:00',
-        codPa: 'PAINEL-SOLAR-KIT-PA',
-        descPa: 'Kit Gerador Solar Off-Grid 1kW Montado',
-        qtdPa: 40,
-        unPa: 'KIT',
-        loteGerado: 'LOTE-PA-20261040',
-        operador: 'Carlos Eduardo (Eletrotécnica)',
-        enderecoDestino: 'R05-P02-N1-B01',
-        status: 'Concluída • Endereçado',
-        insumos: [
-          { cod: 'CABO-COB-25', desc: 'Cabo Cobre Flexível 2.5mm', qtd: 200, un: 'M', lote: 'OMN-202610-00412', endereco: 'R01-P03-N1-B02' },
-          { cod: 'CONECT-WAGO-3V', desc: 'Conector Rápido Wago 3 Vias', qtd: 160, un: 'UN', lote: 'OMN-202610-00620', endereco: 'R01-P02-N1-B03' }
-        ]
-      }
-    ];
+    // Histórico de OPs Executadas - Base Limpa
+    let ordensProducaoExecutadas = [];
 
     function renderTabelaOrdensProducao(lista = ordensProducaoExecutadas) {
       const tbody = document.getElementById('tbodyOrdensProducao');
@@ -4577,68 +4601,7 @@ function renderWmsAEnderecar() {
     // ==============================================================
     // MÓDULO 9: DADOS FINANCEIROS & CONCILIAÇÃO DDA ITAÚ <-> SIENGE
     // ==============================================================
-    let ddaBoletosList = [
-      {
-        id: 'DDA-ITAU-001',
-        beneficiario: 'GERDAU ACOMINAS S.A.',
-        cnpj: '17.227.090/0001-40',
-        seuNumero: 'NF-45612/01',
-        vencimento: '2026-11-15',
-        valor: 14500.00,
-        barcode44: '34199989000014500001090000456120011234567000',
-        digitableLine47: '34191090080045612001612345670004998900001450000',
-        siengeBillId: 19636,
-        siengeInstallmentId: 1,
-        pedidoSienge: '8841',
-        statusMatch: 'MATCH_100',
-        gravadoSienge: false
-      },
-      {
-        id: 'DDA-ITAU-002',
-        beneficiario: 'VOTORANTIM CIMENTOS S.A.',
-        cnpj: '01.637.795/0001-32',
-        seuNumero: 'NF-88192/01',
-        vencimento: '2026-11-20',
-        valor: 19600.00,
-        barcode44: '34194989500019600001090000881920011234567000',
-        digitableLine47: '34191090080088192001312345670004498950001960000',
-        siengeBillId: 19629,
-        siengeInstallmentId: 1,
-        pedidoSienge: '8910',
-        statusMatch: 'MATCH_100',
-        gravadoSienge: false
-      },
-      {
-        id: 'DDA-ITAU-003',
-        beneficiario: 'DISTRIBUIDORA DE SUPRIMENTOS E EMBALAGENS LTDA',
-        cnpj: '60.746.948/0001-12',
-        seuNumero: 'NF-99120/01',
-        vencimento: '2026-11-18',
-        valor: 2673.54,
-        barcode44: '34191989300002673541090000991200011234567000',
-        digitableLine47: '34191090080099120001012345670004198930000267354',
-        siengeBillId: 13309,
-        siengeInstallmentId: 1,
-        pedidoSienge: '3538',
-        statusMatch: 'MATCH_100',
-        gravadoSienge: false
-      },
-      {
-        id: 'DDA-ITAU-004',
-        beneficiario: 'COSTA ALMAFITANA / OFFICE PRIME',
-        cnpj: '50.898.536/0001-44',
-        seuNumero: 'ALG-SL75',
-        vencimento: '2026-01-10',
-        valor: 2415.70,
-        barcode44: '03391132200002415709639869300000016502460101',
-        digitableLine47: '03399639856930000001065024601018113220000241570',
-        siengeBillId: 19539,
-        siengeInstallmentId: 1,
-        pedidoSienge: 'CONTRATO',
-        statusMatch: 'MATCH_100',
-        gravadoSienge: true
-      }
-    ];
+    let ddaBoletosList = [];
 
     function renderTabelaDda() {
       const tbody = document.getElementById('tabelaDdaBody');
@@ -5297,7 +5260,7 @@ function renderWmsAEnderecar() {
         if ('caches' in window) {
           const keys = await caches.keys();
           for (const k of keys) {
-            if (k !== 'omnifiscal-recebimento-v4.2') await caches.delete(k);
+            if (k !== 'omnifiscal-recebimento-v4.4') await caches.delete(k);
           }
         }
         if ('serviceWorker' in navigator) {
@@ -5317,6 +5280,417 @@ function renderWmsAEnderecar() {
       if (typeof atualizarPainelDdaNotaFiscal === 'function') atualizarPainelDdaNotaFiscal();
     });
   
-</script>
+
+    // ==============================================================
+    // LEITURA & OCR INTELIGENTE DE BOLETO BANCÁRIO EM PDF
+    // ==============================================================
+    const BANCOS_NOMES_BRASIL = {
+      '001': 'Banco do Brasil S.A.',
+      '033': 'Banco Santander (Brasil) S.A.',
+      '104': 'Caixa Econômica Federal',
+      '237': 'Banco Bradesco S.A.',
+      '341': 'Banco Itaú Unibanco S.A.',
+      '389': 'Banco Mercantil do Brasil S.A.',
+      '422': 'Banco Safra S.A.',
+      '748': 'Banco Cooperativo Sicredi S.A.',
+      '756': 'Bancoob (Sicoob)',
+      '077': 'Banco Inter S.A.',
+      '260': 'Nubank (Nu Pagamentos)',
+      '212': 'Banco Original S.A.',
+      '655': 'Banco Votorantim S.A.',
+      '208': 'Banco BTG Pactual S.A.',
+      '041': 'Banrisul',
+      '070': 'BRB (Banco de Brasília)'
+    };
+
+    function modulo10FebrabanLocal(bloco) {
+      let soma = 0, peso = 2;
+      for (let i = bloco.length - 1; i >= 0; i--) {
+        let mult = parseInt(bloco[i], 10) * peso;
+        if (mult > 9) mult = Math.floor(mult / 10) + (mult % 10);
+        soma += mult;
+        peso = peso === 2 ? 1 : 2;
+      }
+      const resto = soma % 10;
+      return resto === 0 ? 0 : 10 - resto;
+    }
+
+    function bar44ToDig47Local(bar) {
+      bar = String(bar || '').replace(/\D/g, '');
+      if (bar.length !== 44) return '';
+      const b1 = bar.substring(0, 4);
+      const dvGeral = bar.substring(4, 5);
+      const fatorValor = bar.substring(5, 19);
+      const cl1 = bar.substring(19, 24);
+      const cl2 = bar.substring(24, 34);
+      const cl3 = bar.substring(34, 44);
+
+      const campo1 = b1 + cl1;
+      const dv1 = modulo10FebrabanLocal(campo1);
+      const campo2 = cl2;
+      const dv2 = modulo10FebrabanLocal(campo2);
+      const campo3 = cl3;
+      const dv3 = modulo10FebrabanLocal(campo3);
+
+      return campo1 + dv1 + campo2 + dv2 + campo3 + dv3 + dvGeral + fatorValor;
+    }
+
+    function dig47ToBar44Local(dig) {
+      dig = String(dig || '').replace(/\D/g, '');
+      if (dig.length !== 47) return '';
+      const b1 = dig.substring(0, 4);
+      const dvGeral = dig.substring(32, 33);
+      const fatorValor = dig.substring(33, 47);
+      const campoLivre = dig.substring(4, 9) + dig.substring(10, 20) + dig.substring(21, 31);
+      return b1 + dvGeral + fatorValor + campoLivre;
+    }
+
+    function calcularVencimentoFatorFebrabanLocal(fatorStr) {
+      const fator = parseInt(fatorStr, 10);
+      if (isNaN(fator) || fator < 1000) return null;
+      let dt;
+      if (fator >= 1000 && fator <= 5500) {
+        const baseCiclo2 = new Date(Date.UTC(2025, 1, 22));
+        const dias = fator - 1000;
+        dt = new Date(baseCiclo2.getTime() + dias * 86400000);
+      } else {
+        const baseCiclo1 = new Date(Date.UTC(1997, 9, 7));
+        dt = new Date(baseCiclo1.getTime() + fator * 86400000);
+      }
+      return dt.toISOString().slice(0, 10);
+    }
+
+    function formatarLinhaDigitavelVisual(dig) {
+      dig = String(dig || '').replace(/\D/g, '');
+      if (dig.length === 47) {
+        return `${dig.slice(0, 5)}.${dig.slice(5, 10)} ${dig.slice(10, 15)}.${dig.slice(15, 21)} ${dig.slice(21, 26)}.${dig.slice(26, 32)} ${dig.slice(32, 33)} ${dig.slice(33, 47)}`;
+      }
+      if (dig.length === 48) {
+        return `${dig.slice(0, 12)} ${dig.slice(12, 24)} ${dig.slice(24, 36)} ${dig.slice(36, 48)}`;
+      }
+      return dig;
+    }
+
+    function parseBoletoTextClient(text) {
+      const clean = text.replace(/[\r\n]+/g, ' ');
+      let digitableLine47 = '';
+      let barcode44 = '';
+      let tipoBoleto = 'COBRANCA';
+
+      const fmtMatch = clean.match(/\b(\d{5})[\.\s]?(\d{5})\s*(\d{5})[\.\s]?(\d{6})\s*(\d{5})[\.\s]?(\d{6})\s*(\d{1})\s*(\d{14})\b/);
+      if (fmtMatch) {
+        digitableLine47 = fmtMatch[1] + fmtMatch[2] + fmtMatch[3] + fmtMatch[4] + fmtMatch[5] + fmtMatch[6] + fmtMatch[7] + fmtMatch[8];
+      } else {
+        const raw47 = clean.match(/\b\d{47}\b/);
+        if (raw47) {
+          digitableLine47 = raw47[0];
+        } else {
+          const raw48 = clean.match(/\b\d{48}\b/);
+          if (raw48) {
+            digitableLine47 = raw48[0];
+            tipoBoleto = 'CONCESSIONARIA_TRIBUTO';
+          } else {
+            const raw44 = clean.match(/\b\d{44}\b/);
+            if (raw44) {
+              barcode44 = raw44[0];
+              digitableLine47 = bar44ToDig47Local(barcode44);
+            }
+          }
+        }
+      }
+
+      if (digitableLine47.length === 47 && !barcode44) {
+        barcode44 = dig47ToBar44Local(digitableLine47);
+      }
+
+      let codBanco = '';
+      let nomeBanco = 'Banco Não Identificado';
+      if (digitableLine47.length >= 3) {
+        codBanco = digitableLine47.substring(0, 3);
+        nomeBanco = BANCOS_NOMES_BRASIL[codBanco] || `Banco Código ${codBanco}`;
+      }
+
+      let valor = 0;
+      if (digitableLine47.length === 47) {
+        const valCentavos = parseInt(digitableLine47.slice(-10), 10);
+        if (!isNaN(valCentavos) && valCentavos > 0) {
+          valor = valCentavos / 100;
+        }
+      }
+      if (!valor) {
+        const valTextMatch = clean.match(/(?:Valor(?:\s*do\s*Documento)?|Total\s*a\s*Pagar|Valor\s*Cobrado)[\s\:\$R]*([0-9]{1,3}(?:\.[0-9]{3})*\,[0-9]{2})/i);
+        if (valTextMatch) {
+          valor = parseFloat(valTextMatch[1].replace(/\./g, '').replace(',', '.'));
+        }
+      }
+
+      let vencimento = '';
+      if (digitableLine47.length === 47) {
+        const fatorStr = digitableLine47.substring(33, 37);
+        vencimento = calcularVencimentoFatorFebrabanLocal(fatorStr);
+      }
+      if (!vencimento) {
+        const vencTextMatch = clean.match(/(?:Vencimento|Data\s*de\s*Vencimento)[\s\:]*([0-9]{2}[\/\-\Single][0-9]{2}[\/\-\Single][0-9]{4})/i);
+        if (vencTextMatch) {
+          const parts = vencTextMatch[1].split(/[\/\-\Single]/);
+          vencimento = `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+      }
+
+      const cnpjs = clean.match(/\b\d{2}\.\d{3}\.\d{3}\/\d{4}\-\d{2}\b/g) || [];
+      let cnpjBeneficiario = '';
+      let cnpjPagador = '';
+      for (const c of cnpjs) {
+        if (c === '34.028.316/0001-03') {
+          cnpjPagador = c;
+        } else if (!cnpjBeneficiario) {
+          cnpjBeneficiario = c;
+        } else if (!cnpjPagador) {
+          cnpjPagador = c;
+        }
+      }
+
+      let beneficiario = '';
+      const benMatch = clean.match(/(?:Benefici[áa]rio|Cedente|Raz[ãa]o\s*Social|Favorecido)[\s\:\-]*([A-Z0-9\.\-\s]{4,60}?)(?:CNPJ|CPF|Endere|Ag[êe]ncia|Nosso|Data|$)/i);
+      if (benMatch) {
+        beneficiario = benMatch[1].trim().replace(/\s+/g, ' ');
+      }
+
+      let docNumero = '';
+      const docMatch = clean.match(/(?:N[úu]mero\s*do\s*Documento|Nº\s*do\s*Doc(?:umento)?|Nº\s*Doc|Seu\s*N[úu]mero)[\s\:\-]*([a-zA-Z0-9\/\-\.\s]{1,30}?)(?:\s+(?:Esp[ée]cie|Data|Aceite|Uso|Carteira|Valor|Vencimento|\n|\r|$))/i) ||
+                       clean.match(/(?:N[úu]mero\s*do\s*Documento|Nº\s*do\s*Doc(?:umento)?|Nº\s*Doc|Seu\s*N[úu]mero)[\s\:\-]*([a-zA-Z0-9\/\-\.]+)/i);
+      if (docMatch) {
+        docNumero = docMatch[1].trim();
+      }
+
+      return {
+        ok: Boolean(digitableLine47 || barcode44),
+        tipoBoleto,
+        codBanco,
+        nomeBanco,
+        barcode44,
+        digitableLine47,
+        digitableLineFormatada: formatarLinhaDigitavelVisual(digitableLine47),
+        valor,
+        valorFormatado: Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+        vencimento,
+        vencimentoFormatado: vencimento ? vencimento.split('-').reverse().join('/') : '',
+        beneficiario: beneficiario || 'FORNECEDOR / BENEFICIÁRIO',
+        cnpjBeneficiario,
+        cnpjPagador,
+        docNumero
+      };
+    }
+
+    async function aoSelecionarBoletoPdf(event) {
+      const file = event.target.files && event.target.files[0];
+      if (file) await processarArquivoBoletoPdf(file);
+      event.target.value = '';
+    }
+
+    async function aoSoltarBoletoPdf(event) {
+      event.preventDefault();
+      const dropZone = document.getElementById('dropZoneBoletoPdf');
+      if (dropZone) {
+        dropZone.style.borderColor = '#fed7aa';
+        dropZone.style.background = '#fffaf5';
+      }
+      const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+      if (file) await processarArquivoBoletoPdf(file);
+    }
+
+    async function processarArquivoBoletoPdf(file) {
+      showToast(`📄 Lendo boleto: ${file.name}...`, 'info');
+      let extractedText = '';
+
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        if (window.pdfjsLib && (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'))) {
+          try {
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            const numPages = Math.min(pdf.numPages, 3);
+            for (let i = 1; i <= numPages; i++) {
+              const page = await pdf.getPage(i);
+              const textContent = await page.getTextContent();
+              const pageText = textContent.items.map(item => item.str).join(' ');
+              extractedText += ' ' + pageText;
+            }
+          } catch (pdfErr) {
+            console.warn('PDF.js falhou, tentando fallback binário:', pdfErr);
+          }
+        }
+
+        if (!extractedText) {
+          const uint8 = new Uint8Array(arrayBuffer);
+          let str = '';
+          for (let i = 0; i < uint8.length; i++) {
+            if (uint8[i] >= 32 && uint8[i] <= 126) str += String.fromCharCode(uint8[i]);
+            else str += ' ';
+          }
+          extractedText = str;
+        }
+
+        let parsed = parseBoletoTextClient(extractedText);
+
+        // Se local não encontrou a linha digitável, tenta API do backend
+        if (!parsed.ok) {
+          try {
+            const base64 = await new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result.split(',')[1]);
+              reader.readAsDataURL(file);
+            });
+            const apiRes = await fetch('/api/financeiro/ler-boleto-pdf', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ base64, text: extractedText })
+            });
+            if (apiRes.ok) {
+              const apiData = await apiRes.json();
+              if (apiData.dadosBoleto && apiData.dadosBoleto.ok) {
+                parsed = apiData.dadosBoleto;
+              }
+            }
+          } catch (apiErr) {}
+        }
+
+        if (!parsed.ok) {
+          showToast('Não foi possível identificar a Linha Digitável no arquivo. Você pode digitar ou colar diretamente no campo.', 'warning');
+          return;
+        }
+
+        // Preenche campos do Injetor Direto
+        const barInput = document.getElementById('ddaManualBarcode');
+        if (barInput) barInput.value = parsed.digitableLine47 || parsed.barcode44;
+
+        // Tenta associar Título do Sienge automaticamente
+        let matchedBillId = null;
+        if (parsed.docNumero) {
+          const docNumClean = parsed.docNumero.replace(/\D/g, '');
+          if (notaAtual && (notaAtual.numeroNfe.includes(docNumClean) || (notaAtual.pedidoSienge && docNumClean.includes(notaAtual.pedidoSienge)))) {
+            matchedBillId = notaAtual.pedidoSienge;
+          }
+        }
+        if (matchedBillId) {
+          const billInput = document.getElementById('ddaManualBillId');
+          if (billInput && !billInput.value) billInput.value = matchedBillId;
+        }
+
+        // Exibe Card de Preview Visual
+        exibirCardBoletoExtraido(parsed);
+
+        // Adiciona o boleto à lista de Boletos DDA / Financeiro
+        const novoBoletoDda = {
+          id: 'BOL-PDF-' + Date.now(),
+          beneficiario: parsed.beneficiario,
+          cnpj: parsed.cnpjBeneficiario || 'CNPJ do Boleto',
+          seuNumero: parsed.docNumero || `DOC-${Date.now().toString().slice(-4)}`,
+          vencimento: parsed.vencimento || new Date().toISOString().slice(0, 10),
+          valor: parsed.valor || 0,
+          barcode44: parsed.barcode44,
+          digitableLine47: parsed.digitableLine47,
+          siengeBillId: Number(document.getElementById('ddaManualBillId')?.value) || 0,
+          siengeInstallmentId: Number(document.getElementById('ddaManualInstId')?.value) || 1,
+          pedidoSienge: parsed.docNumero ? 'PDF' : '',
+          origem: 'PDF Boleto Importado',
+          statusMatch: 'MATCH_100',
+          gravadoSienge: false
+        };
+
+        const jaExiste = ddaBoletosList.some(b => b.digitableLine47 === parsed.digitableLine47);
+        if (!jaExiste) {
+          ddaBoletosList.unshift(novoBoletoDda);
+          renderTabelaDda();
+          await salvarEstadoGlobalWms(`Importação Boleto PDF (${parsed.beneficiario})`);
+        }
+
+        showToast(`✓ Boleto lido com sucesso! ${parsed.nomeBanco} • ${parsed.valorFormatado} • Venc. ${parsed.vencimentoFormatado}`, 'success');
+      } catch (err) {
+        showToast('Erro ao ler PDF: ' + err.message, 'danger');
+      }
+    }
+
+    function exibirCardBoletoExtraido(dados) {
+      const card = document.getElementById('cardDadosBoletoExtraido');
+      if (!card) return;
+      card.style.display = 'block';
+
+      const elBanco = document.getElementById('boletoPdfBanco');
+      if (elBanco) elBanco.innerText = `${dados.nomeBanco} (${dados.codBanco || 'FEBRABAN'})`;
+
+      const elBen = document.getElementById('boletoPdfBeneficiario');
+      if (elBen) elBen.innerText = dados.beneficiario;
+
+      const elCnpj = document.getElementById('boletoPdfCnpj');
+      if (elCnpj) elCnpj.innerText = dados.cnpjBeneficiario ? `CNPJ: ${dados.cnpjBeneficiario}` : '';
+
+      const elVal = document.getElementById('boletoPdfValor');
+      if (elVal) elVal.innerText = dados.valorFormatado;
+
+      const elVenc = document.getElementById('boletoPdfVencimento');
+      if (elVenc) elVenc.innerText = dados.vencimentoFormatado || dados.vencimento;
+
+      const elDoc = document.getElementById('boletoPdfDoc');
+      if (elDoc) elDoc.innerText = dados.docNumero || 'NF / Parcela 1';
+
+      const elLinha = document.getElementById('boletoPdfLinhaDigitavel');
+      if (elLinha) elLinha.innerText = dados.digitableLineFormatada || dados.digitableLine47;
+
+      const elBar = document.getElementById('boletoPdfBarras');
+      if (elBar) elBar.innerText = `Código de Barras (44 dígitos): ${dados.barcode44}`;
+    }
+
+    function limparLeituraBoletoPdf() {
+      const card = document.getElementById('cardDadosBoletoExtraido');
+      if (card) card.style.display = 'none';
+      const barInput = document.getElementById('ddaManualBarcode');
+      if (barInput) barInput.value = '';
+    }
+
+    // ==============================================================
+    // RESET TOTAL DA BASE PARA TESTES REAIS (COMPRAS & FISCAL)
+    // ==============================================================
+    async function confirmarLimpezaGeralDados() {
+      const resp = confirm(
+        "⚠️ ATENÇÃO: Deseja realmente ZERAR TODOS OS DADOS do sistema?\n\n" +
+        "Esta ação limpará:\n" +
+        "• Itens em conferência na Doca\n" +
+        "• Fila WMS 'A Endereçar' e Lotes armazenados\n" +
+        "• Ordens de Produção (PCP)\n" +
+        "• Boletos da Mesa Financeira e DDA\n\n" +
+        "O sistema ficará 100% limpo e pronto para o teste real com o pessoal de compras amanhã."
+      );
+      if (!resp) return;
+
+      try {
+        localStorage.removeItem(LOCAL_STORAGE_KEY);
+      } catch (e) {}
+
+      docaItems = [];
+      wmsAEnderecar = [];
+      wmsLotes = [];
+      ordensProducaoExecutadas = [];
+      ddaBoletosList = [];
+      deparaFornecedor = {};
+      notaAtual = null;
+
+      limparLeituraBoletoPdf();
+      const barInput = document.getElementById('ddaManualBarcode');
+      if (barInput) barInput.value = '';
+      const billInput = document.getElementById('ddaManualBillId');
+      if (billInput) billInput.value = '';
+
+      renderDocaItems();
+      renderWmsAEnderecar();
+      renderWmsEnderecos();
+      renderWmsLotes();
+      if (typeof renderTabelaOrdensProducao === 'function') renderTabelaOrdensProducao();
+      if (typeof renderTabelaDda === 'function') renderTabelaDda();
+
+      await salvarEstadoGlobalWms('Reset Total de Dados para Teste Real');
+      showToast('✅ Todos os dados foram limpos com sucesso! O sistema está zerado e pronto para o teste real.', 'success');
+    }
+
+  </script>
 </body>
 </html>
