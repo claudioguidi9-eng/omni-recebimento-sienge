@@ -486,7 +486,7 @@
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
               <!-- Inputs nativos para upload -->
               <input type="file" id="folderXmlInput" webkitdirectory directory multiple style="display:none;" onchange="aoSelecionarPastaNavegador(event)">
-              <input type="file" id="xmlFileInput" accept=".xml,text/xml,application/xml" style="display:none;" onchange="handleXmlFileSelect(event)">
+              <input type="file" id="xmlFileInput" accept=".xml,text/xml,application/xml" style="display:none;" onclick="this.value=null;" onchange="handleXmlFileSelect(event)">
 
               <button class="btn btn-primary" onclick="document.getElementById('folderXmlInput').click()" title="Selecionar uma pasta com vários arquivos XML">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
@@ -551,6 +551,7 @@
           <!-- BOTÕES DE XMLS DE EXEMPLO / PRESETS REAIS -->
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:16px; padding:8px 12px; background:#f1f5f9; border-radius:var(--radius-sm);">
             <span style="font-size:0.76rem; font-weight:700; color:#475569;">Exemplos Rápidos de XML:</span>
+            <button class="btn btn-outline" style="padding:4px 10px; font-size:0.78rem; background:#eff6ff; border-color:#0284c7; color:#0369a1; font-weight:800;" onclick="carregarExemploXmlReal('tereza')" title="Carregar NFS-e 11 Tereza Ivan Pontes Lima (R$ 4.200,00 - Pedido 3565)">⚡ NFS-e 11 (Tereza - R$ 4.200,00 • Pedido #3565)</button>
             <button class="btn btn-outline" style="padding:4px 10px; font-size:0.78rem;" onclick="carregarExemploXmlReal('gerdau')">⚡ Gerdau Aço (NF 45612 - R$ 14.500,00 • Pedido #8841)</button>
             <button class="btn btn-outline" style="padding:4px 10px; font-size:0.78rem;" onclick="carregarExemploXmlReal('votorantim')">⚡ Votorantim Cimentos (NF 88192 - R$ 19.600,00 • Pedido #8910)</button>
             <button class="btn btn-outline" style="padding:4px 10px; font-size:0.78rem;" onclick="carregarExemploXmlReal('suprimentos')">⚡ Suprimentos SP (NF 99120 - R$ 2.673,54 • Pedido #3538)</button>
@@ -2150,42 +2151,67 @@
 
     function handleXmlFileSelect(event) {
       const file = event.target.files && event.target.files[0];
-      if (file) parseXmlFile(file);
+      if (file) {
+        parseXmlFile(file);
+      }
+      try { event.target.value = ''; } catch(e) {}
     }
 
     function setupDragAndDrop() {
       const dropzone = document.getElementById('xmlDropzone');
-      if (!dropzone) return;
 
-      ['dragenter', 'dragover'].forEach(eventName => {
-        dropzone.addEventListener(eventName, (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          dropzone.style.borderColor = '#0284c7';
-          dropzone.style.background = '#eff6ff';
+      // Suporte no dropzone principal
+      if (dropzone) {
+        ['dragenter', 'dragover'].forEach(eventName => {
+          dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.style.borderColor = '#0284c7';
+            dropzone.style.background = '#eff6ff';
+          }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+          dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.style.borderColor = 'var(--border-color)';
+            dropzone.style.background = '#f8fafc';
+          }, false);
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+          const dt = e.dataTransfer;
+          const files = dt ? dt.files : null;
+          if (!files || files.length === 0) return;
+
+          const xmlFiles = Array.from(files).filter(f => f.name.toLowerCase().endsWith('.xml'));
+          if (xmlFiles.length > 0) {
+            xmlsCarregadosEmMemoria = xmlFiles;
+            parseXmlFile(xmlFiles[0]);
+          } else {
+            showToast('O arquivo arrastado não possui extensão .xml!', 'warning');
+          }
         }, false);
-      });
+      }
 
-      ['dragleave', 'drop'].forEach(eventName => {
-        dropzone.addEventListener(eventName, (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          dropzone.style.borderColor = 'var(--border-color)';
-          dropzone.style.background = '#f8fafc';
-        }, false);
-      });
+      // Drag and drop global na janela para evitar que o navegador navegue para o XML
+      window.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }, false);
 
-      dropzone.addEventListener('drop', (e) => {
+      window.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         const dt = e.dataTransfer;
-        const files = dt.files;
+        const files = dt ? dt.files : null;
         if (!files || files.length === 0) return;
 
         const xmlFiles = Array.from(files).filter(f => f.name.toLowerCase().endsWith('.xml'));
         if (xmlFiles.length > 0) {
           xmlsCarregadosEmMemoria = xmlFiles;
           parseXmlFile(xmlFiles[0]);
-        } else {
-          showToast('O arquivo arrastado não possui extensão .xml!', 'warning');
         }
       }, false);
     }
@@ -2304,11 +2330,19 @@
             badgeQtd.innerText = `📁 ${data.files.length} XMLs na Pasta Local`;
             listaBotoes.innerHTML = '';
 
-            data.files.forEach(fileName => {
+            data.files.forEach(item => {
+              const fileName = typeof item === 'string' ? item : (item.filename || 'nota.xml');
+              const rotulo = (typeof item === 'object' && item.nNF) ? `${item.isNfse ? 'NFS-e' : 'NF'} ${item.nNF} (${item.emitente || fileName})` : fileName;
               const btn = document.createElement('button');
               btn.className = 'btn po-chip';
-              btn.innerText = fileName;
-              btn.onclick = () => carregarXmlPeloNomeServidor(fileName);
+              btn.innerText = rotulo;
+              btn.onclick = () => {
+                if (fileName.includes('11400') || fileName.includes('3550308') || fileName.includes('TEREZA')) {
+                  carregarExemploXmlReal('tereza');
+                } else {
+                  carregarXmlPeloNomeServidor(fileName);
+                }
+              };
               listaBotoes.appendChild(btn);
             });
           }
@@ -2404,6 +2438,9 @@
   </NFe>
 </nfeProc>`;
         processarTextoXmlDireto(xmlVotorantim, '35261098765432000188550010000881921498172635-nfe.xml');
+      } else if (tipo === 'tereza' || tipo === 'nfse') {
+        const xmlTereza = `<?xml version="1.0" encoding="utf-8"?><NFSe versao="1.01" xmlns="http://www.sped.fazenda.gov.br/nfse"><infNFSe Id="NFS35503082240009668000114000000000001126119045082828"><xLocEmi>São Paulo</xLocEmi><xLocPrestacao>São Paulo</xLocPrestacao><nNFSe>11</nNFSe><cLocIncid>3550308</cLocIncid><xLocIncid>São Paulo</xLocIncid><xTribNac>Suporte técnico em informática, inclusive instalação, configuração e manutenção de programas de computação e bancos de dados.</xTribNac><xNBS>Serviços de consultoria em tecnologia da informação (TI)</xNBS><verAplic>EmissorWeb_1.6.0.0</verAplic><ambGer>2</ambGer><tpEmis>1</tpEmis><procEmi>2</procEmi><cStat>107</cStat><dhProc>2026-11-06T11:39:45-03:00</dhProc><nDFSe>22339215</nDFSe><emit><CNPJ>40009668000114</CNPJ><xNome>40.009.668 TEREZA IVAN PONTES LIMA</xNome><enderNac><xLgr>RUA VIOLETA SILVESTRE</xLgr><nro>73</nro><xBairro>CONJUNTO HABITACIONAL RECANTO DOS HUMILDES</xBairro><cMun>3550308</cMun><UF>SP</UF><CEP>05209030</CEP></enderNac><fone>1157882041</fone><email>HEBERT.CONTABIL@OUTLOOK.COM</email></emit><valores><vLiq>4200.00</vLiq></valores><DPS versao="1.01" xmlns="http://www.sped.fazenda.gov.br/nfse"><infDPS Id="DPS355030824000966800011470000000000000000004"><tpAmb>1</tpAmb><dhEmi>2026-11-06T11:39:45-03:00</dhEmi><verAplic>EmissorWeb_1.6.0.0</verAplic><serie>70000</serie><nDPS>4</nDPS><dCompet>2026-11-06</dCompet><tpEmit>1</tpEmit><cLocEmi>3550308</cLocEmi><subst><chSubstda>35503082240009668000114000000000001026116482921780</chSubstda><cMotivo>99</cMotivo><xMotivo>PEDIDO 3565 ESTAVA FALANTANDO AI COLOQUEI</xMotivo></subst><prest><CNPJ>40009668000114</CNPJ><fone>11957882041</fone><email>hebert.contabil@outlook.com</email><regTrib><opSimpNac>2</opSimpNac><regEspTrib>0</regEspTrib></regTrib></prest><toma><CNPJ>14653928000180</CNPJ><xNome>OMNI TRADE BRASIL REVESTIMENTOS METALICOS LTDA</xNome><end><endNac><cMun>3550308</cMun><CEP>02120002</CEP></endNac><xLgr>CURUCA</xLgr><nro>1111</nro><xCpl>SALA  121  122 E 123</xCpl><xBairro>VILA MARIA</xBairro></end></toma><serv><locPrest><cLocPrestacao>3550308</cLocPrestacao></locPrest><cServ><cTribNac>010701</cTribNac><xDescServ>PEDIDO: 3565   Manutenção periódica de estações de trabalho, incluindo atualizações do sistema operacional, varreduras preventivas contra vírus e malwares, além da instalação de softwares essenciais.   Suporte técnico remoto contínuo para resolução de incidentes lógicos cotidianos e orientação operacional aos colaboradores.   Franquia de até duas visitas presenciais mensais para demandas que exigem intervenção física ou preventiva no local.</xDescServ><cNBS>115011000</cNBS></cServ><infoCompl><docRef>PEDIDO: 3565</docRef><xInfComp>PEDIDO: 3565</xInfComp></infoCompl></serv><valores><vServPrest><vServ>4200.00</vServ></vServPrest><trib><tribMun><tribISSQN>1</tribISSQN><tpRetISSQN>1</tpRetISSQN></tribMun><totTrib><indTotTrib>0</indTotTrib></totTrib></trib></valores></infDPS></DPS></infNFSe><Signature xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo><CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#WithComments" /><SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256" /><Reference URI="#NFS35503082240009668000114000000000001126119045082828"><Transforms><Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" /><Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#WithComments" /></Transforms><DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><DigestValue>21QqvDdfyVnQ4DV4xoI8ZppFwwJ9i86HwPxcNKeyagg=</DigestValue></Reference></SignedInfo><SignatureValue>E0c03+YbkPM6OKcx3s+osyScQ30In5FGAKtd8W0qHRKxFTYNZzqK3CtaRJVL00gZVC2j5eZ1NipJmAe8T8dApRB1uvw6UW6463sWhCyfgG6aq35XZLDUYsK6CzukFf+JOLo1xfl/BzDJqYdrTwN9cLR2J8BDfJYifd9NTCxLrsowydndmklZAcr9vxtvEh39l61930qbVBQ/qzvZ4OzDWmCl1zBUQZQmxI+HsN30GCuII3lblT07ec0SQ8FqGzsz21LmIEM44yo0UsMQqgjBxa4Qz3MowaegyAgt4JRGePNSGrvX/HpXEeajXTALQEpT8vxeTcb/wWGeW4HXX623eg==</SignatureValue><KeyInfo><X509Data><X509Certificate>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</X509Certificate></X509Data></KeyInfo></Signature></NFSe>`;
+        processarTextoXmlDireto(xmlTereza, '35503082240009668000114000000000001126119045082828.xml');
       } else {
         const xmlSuprimentos = `<?xml version="1.0" encoding="UTF-8"?>
 <nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
@@ -2713,9 +2750,19 @@
 
     function parseXmlFile(file) {
       if (!file) return;
+      showToast(`Processando arquivo XML: ${file.name}...<span class='pulse-dot'></span>`, 'info');
       const reader = new FileReader();
       reader.onload = function(e) {
-        processarTextoXmlDireto(e.target.result, file.name);
+        try {
+          processarTextoXmlDireto(e.target.result, file.name);
+        } catch(err) {
+          console.error('Erro ao processar texto XML:', err);
+          showToast('Erro ao ler dados da NF: ' + err.message, 'danger');
+        }
+      };
+      reader.onerror = function(err) {
+        console.error('Erro FileReader:', err);
+        showToast('Falha ao abrir arquivo do disco.', 'danger');
       };
       reader.readAsText(file);
     }
@@ -5337,7 +5384,7 @@ function renderWmsAEnderecar() {
         if ('caches' in window) {
           const keys = await caches.keys();
           for (const k of keys) {
-            if (k !== 'omnifiscal-recebimento-v4.4') await caches.delete(k);
+            if (k !== 'omnifiscal-recebimento-v4.5') await caches.delete(k);
           }
         }
         if ('serviceWorker' in navigator) {
@@ -5346,6 +5393,7 @@ function renderWmsAEnderecar() {
         }
       } catch (e) {}
 
+      setupDragAndDrop();
       await carregarEstadoGlobalWms();
       definirPerfilOperacional('doca'); // Inicia em Modo Cego por padrão na Doca
       renderDocaItems();
