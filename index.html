@@ -678,6 +678,10 @@
               </div>
             </div>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button class="btn btn-outline" style="background:#eff6ff; border-color:#0284c7; color:#0369a1; font-weight:700;" onclick="document.getElementById('xmlFileInput').click()" title="Importar XML de NF-e ou NFS-e de Serviço">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                📄 Selecionar Arquivo XML
+              </button>
               <button class="btn btn-outline" onclick="abrirModalSiengeOrders()">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
                 Listar Pedidos Abertos no Sienge
@@ -705,6 +709,7 @@
             <!-- CHIPS DE PEDIDOS REAIS DO SIENGE -->
             <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
               <span style="font-size:0.75rem; color:#64748b; font-weight:700;">Pedidos Reais Sienge:</span>
+              <button type="button" class="po-chip" style="border-color:#0284c7; color:#0369a1; font-weight:800;" onclick="selecionarPedidoRapido('3565')">#3565 (Serviços TI Tereza - R$ 50.400,00)</button>
               <button type="button" class="po-chip" onclick="selecionarPedidoRapido('3474')">#3474 (Botinas EPI Nortel - R$ 7.955,00)</button>
               <button type="button" class="po-chip" onclick="selecionarPedidoRapido('3538')">#3538 (Sacos & Higiene - R$ 2.673,54)</button>
               <button type="button" class="po-chip" onclick="selecionarPedidoRapido('3540')">#3540 (Mão de Obra - R$ 627,32)</button>
@@ -2516,7 +2521,7 @@
 
         // Emitente / Prestador
         let emitBloco = '';
-        const emitMatch = xmlText.match(/<(?:emit|prest|PrestadorServico|IdentificacaoPrestador)\b[^>]*>([\s\S]*?)<\/emit|prest|PrestadorServico|IdentificacaoPrestador)>/i);
+        const emitMatch = xmlText.match(/<(?:emit|prest|PrestadorServico|IdentificacaoPrestador)\b[^>]*>([\s\S]*?)<\/(?:emit|prest|PrestadorServico|IdentificacaoPrestador)>/i);
         if (emitMatch) emitBloco = emitMatch[1];
         let xNome = getTagValue('xNome', emitBloco) || getTagValue('RazaoSocial', emitBloco) || getTagValue('xNome') || 'FORNECEDOR HOMOLOGADO';
         let cnpj = getTagValue('CNPJ', emitBloco) || getTagValue('Cnpj', emitBloco) || getTagValue('CNPJ') || '17.227.090/0001-40';
@@ -2796,7 +2801,7 @@
         qtdNfe: it.qtdNfe,
         valorUnit: it.valorUnit || 0,
         valorTotal: it.valorTotal || 0,
-        qtdFisica: '',
+        qtdFisica: notaAtual.isNfse ? it.qtdNfe : '',
         loteFab: 'FAB-' + (notaAtual.numeroNfe) + '-' + (i + 1),
         validade: validadePadrao,
         cEAN: it.cEAN || ''
@@ -5384,7 +5389,7 @@ function renderWmsAEnderecar() {
         if ('caches' in window) {
           const keys = await caches.keys();
           for (const k of keys) {
-            if (k !== 'omnifiscal-recebimento-v4.5') await caches.delete(k);
+            if (k !== 'omnifiscal-recebimento-v4.6') await caches.delete(k);
           }
         }
         if ('serviceWorker' in navigator) {
