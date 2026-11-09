@@ -268,23 +268,40 @@ module.exports = async (req, res) => {
 
     // AÇÃO 1: BUSCA SELETIVA DDA ITAÚ ESPECÍFICA DESTA NF-E (CNPJ EMITENTE + VALOR + DUPLICATAS XML)
     if (body.action === 'buscar_dda_nota') {
-      const numeroNf = String(body.numeroNf || '3538').replace(/\D/g, '') || '3538';
-      const fornecedor = body.fornecedor || 'FORNECEDOR HOMOLOGADO';
-      const cnpjEmitente = body.cnpj || '60.746.948/0001-12';
-      const pedidoSienge = String(body.pedidoSienge || '3538');
-      const valorTotal = Number(body.valorTotal) || 2673.54;
+      const numeroNf = String(body.numeroNf || '').replace(/\D/g, '');
+      const fornecedor = body.fornecedor || '';
+      const cnpjEmitente = body.cnpj || '';
+      const pedidoSienge = String(body.pedidoSienge || '').replace(/\D/g, '');
+      const valorTotal = Number(body.valorTotal) || 0;
+      if (!numeroNf || !valorTotal) {
+        res.status(400).json({
+          ok: false,
+          error: 'Carregue um XML de Nota Fiscal válido antes de consultar o DDA no Itaú.'
+        });
+        return;
+      }
       const duplicatasXml = Array.isArray(body.duplicatas) && body.duplicatas.length > 0
-        ? body.duplicatas
-        : [{ numero: '001', vencimento: new Date(Date.now() + 15 * 86400000).toISOString().slice(0, 10), valor: valorTotal }];
+        ? body.duplicatas.map((d, i) => ({
+            numero: d.numero || d.nDup || String(i + 1).padStart(3, '0'),
+            vencimento: d.vencimento || d.dVenc || new Date(Date.now() + 15 * 86400000).toISOString().slice(0, 10),
+            valor: Number(d.valor || d.vDup || valorTotal)
+          }))
+        : [{ numero: '001', vencimento: body.vencimento || new Date(Date.now() + 15 * 86400000).toISOString().slice(0, 10), valor: valorTotal }];
 
-      // Tenta localizar Título aberto correspondente no Sienge (/bills) pelo documentNumber ou purchaseOrderId
-      let siengeBillIdEncontrado = (pedidoSienge === '3538' ? 13309 : pedidoSienge === '8841' ? 19636 : pedidoSienge === '8910' ? 19629 : 19636);
+      // Tenta localizar Título aberto correspondente no Sienge (/bills) pelo forecastBillId do Pedido, documentNumber ou purchaseOrderId
+      let siengeBillIdEncontrado = Number(body.forecastBillId) || 0;
       try {
+        if (!siengeBillIdEncontrado && pedidoSienge) {
+          const poLookup = await siengeReq('GET', `/purchase-orders/${pedidoSienge}`);
+          if (poLookup.status === 200 && poLookup.data?.forecastBillId) {
+            siengeBillIdEncontrado = poLookup.data.forecastBillId;
+          }
+        }
         const billsLookup = await siengeReq('GET', `/bills?startDate=2025-01-01&endDate=2026-12-31&limit=30&offset=0`);
         if (billsLookup.status === 200 && Array.isArray(billsLookup.data?.results)) {
           const matchBill = billsLookup.data.results.find(b =>
-            String(b.documentNumber || '').includes(numeroNf) ||
-            (b.purchaseOrderId && String(b.purchaseOrderId) === pedidoSienge) ||
+            (numeroNf && String(b.documentNumber || '') === numeroNf) ||
+            (pedidoSienge && b.purchaseOrderId && String(b.purchaseOrderId) === pedidoSienge) ||
             Math.abs((Number(b.totalInvoiceAmount) || 0) - valorTotal) < 0.05
           );
           if (matchBill && matchBill.id) {

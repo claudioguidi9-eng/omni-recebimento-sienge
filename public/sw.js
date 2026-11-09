@@ -1,5 +1,5 @@
 // Service Worker para PWA do OmniFiscal AI v4.6
-const CACHE_NAME = 'omnifiscal-recebimento-v4.6';
+const CACHE_NAME = 'omnifiscal-recebimento-v4.7';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',

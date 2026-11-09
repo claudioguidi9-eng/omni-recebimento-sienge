@@ -682,9 +682,10 @@
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
                 📄 Selecionar Arquivo XML
               </button>
-              <button class="btn btn-outline" onclick="abrirModalSiengeOrders()">
+              <button class="btn btn-outline" onclick="abrirModalSiengeOrders()" style="position:relative;">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
                 Listar Pedidos Abertos no Sienge
+                <span id="btnListarPedidosAbertosCount" class="tag tag-blue" style="margin-left:6px; font-size:0.7rem; padding:1px 6px;">Sincronizando...</span>
               </button>
               <button class="btn btn-primary" onclick="consultarSiengePoManual()">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
@@ -693,30 +694,23 @@
             </div>
           </div>
 
-          <!-- BARRA DE SELEÇÃO DO PEDIDO SIENGE -->
+          <!-- BARRA DE SELEÇÃO DO PEDIDO SIENGE + AGENTE SINCRONIZADOR EM TEMPO REAL -->
           <div style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:var(--radius-md); padding:14px 18px; margin-bottom:16px;">
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:10px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
               <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:280px;">
                 <label style="font-size:0.85rem; font-weight:700; color:#334155; white-space:nowrap;">Nº Pedido Sienge:</label>
-                <input type="text" id="poSearchInput" class="input-control" style="background:#ffffff; font-weight:700; width:160px;" placeholder="Ex: 3538, 8841..." value="3538" onkeydown="if(event.key==='Enter') consultarSiengePoManual()">
-                <button class="btn btn-primary" style="padding:8px 14px; font-size:0.82rem;" onclick="consultarSiengePoManual()">Buscar</button>
+                <input type="text" id="poSearchInput" class="input-control" style="background:#ffffff; font-weight:700; width:180px;" placeholder="Ex: 3565..." value="" onkeydown="if(event.key==='Enter') consultarSiengePoManual()">
+                <button class="btn btn-primary" style="padding:8px 14px; font-size:0.82rem;" onclick="consultarSiengePoManual()">Buscar no Sienge</button>
               </div>
-              <div style="font-size:0.82rem; color:#475569;">
-                Status da Conexão: <span class="tag tag-emerald" id="siengeStatusBadge">● Sienge API Cloud: omnitrade (Online)</span>
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:0.8rem; color:#475569;">
+                <span class="tag tag-emerald" id="siengeStatusBadge" style="display:inline-flex; align-items:center; gap:5px;">
+                  <span class="pulse-dot" style="width:7px; height:7px; background:#10b981; border-radius:50%; display:inline-block;"></span>
+                  🤖 Agente Sienge Ativo (Sincronizando...)
+                </span>
+                <button type="button" class="btn btn-outline" style="padding:4px 10px; font-size:0.74rem; background:#ffffff;" onclick="sincronizarPedidosAbertosSiengeAgente(false)" title="Forçar varredura imediata de pedidos abertos no Sienge">
+                  🔄 Sincronizar Agora
+                </button>
               </div>
-            </div>
-            
-            <!-- CHIPS DE PEDIDOS REAIS DO SIENGE -->
-            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-              <span style="font-size:0.75rem; color:#64748b; font-weight:700;">Pedidos Reais Sienge:</span>
-              <button type="button" class="po-chip" style="border-color:#0284c7; color:#0369a1; font-weight:800;" onclick="selecionarPedidoRapido('3565')">#3565 (Serviços TI Tereza - R$ 50.400,00)</button>
-              <button type="button" class="po-chip" onclick="selecionarPedidoRapido('3474')">#3474 (Botinas EPI Nortel - R$ 7.955,00)</button>
-              <button type="button" class="po-chip" onclick="selecionarPedidoRapido('3538')">#3538 (Sacos & Higiene - R$ 2.673,54)</button>
-              <button type="button" class="po-chip" onclick="selecionarPedidoRapido('3540')">#3540 (Mão de Obra - R$ 627,32)</button>
-              <button type="button" class="po-chip" onclick="selecionarPedidoRapido('3543')">#3543 (Peças Mecânicas - R$ 1.780,00)</button>
-              <button type="button" class="po-chip" onclick="selecionarPedidoRapido('3541')">#3541 (Manutenção - R$ 11.315,18)</button>
-              <button type="button" class="po-chip" onclick="selecionarPedidoRapido('3513')">#3513 (Tintas e Primer - R$ 1.840,00)</button>
-              <button type="button" class="po-chip" onclick="selecionarPedidoRapido('8841')">#8841 (Fios e Cabos - R$ 14.500,00)</button>
             </div>
           </div>
 
@@ -728,37 +722,34 @@
               </div>
               <div>
                 <strong style="color:#0369a1; font-size:0.95rem;" id="aiConversionTitle">Omni Fiscal Copilot (IA): Conversão Inteligente de Unidade Detectada!</strong>
-                <div style="color:#334155; font-size:0.85rem; margin-top:2px;" id="aiConversionDesc">
-                  O fornecedor faturou em <strong>ROLOS (5 ROLOS)</strong>, mas o Pedido Sienge é controlado em <strong>METROS (5.000 M)</strong>.<br>
-                  A IA identificou na descrição que cada rolo contém 1.000m. <strong>Fator de Conversão Aplicado: × 1.000</strong>.
-                </div>
+                <div style="color:#334155; font-size:0.85rem; margin-top:2px;" id="aiConversionDesc"></div>
               </div>
             </div>
             <div style="text-align:right; flex-shrink:0;">
-              <span class="tag tag-emerald" style="font-size:0.82rem; padding:4px 10px;" id="aiConversionBadge">Entrada no WMS: 5.000 METROS</span>
+              <span class="tag tag-emerald" style="font-size:0.82rem; padding:4px 10px;" id="aiConversionBadge">Conversão Ativa</span>
             </div>
           </div>
 
-          <!-- RESUMO KPI DA SINCRONIZAÇÃO -->
+          <!-- RESUMO KPI DA SINCRONIZAÇÃO (SOMENTE DADOS REAIS ATRELADOS) -->
           <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-bottom:16px;">
             <div style="background:#ffffff; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:14px;">
-              <span class="stat-label">Pedido Sienge</span><br>
-              <strong style="font-size:1.1rem; color:#0284c7;" id="kpiPoNumero">#3538</strong>
-              <div style="font-size:0.75rem; color:#64748b; margin-top:2px;" id="kpiPoDetalhes">Comprador: Jefferson Filho • Obra #1212</div>
+              <span class="stat-label">Pedido Sienge Atrelado</span><br>
+              <strong style="font-size:1.1rem; color:#0284c7;" id="kpiPoNumero">Sem informação</strong>
+              <div style="font-size:0.75rem; color:#64748b; margin-top:2px;" id="kpiPoDetalhes">Nenhum pedido vinculado</div>
             </div>
             <div style="background:#ffffff; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:14px;">
               <span class="stat-label">Total Pedido Autorizado</span><br>
-              <strong style="font-size:1.1rem; color:#0f172a;" id="kpiPoTotal">R$ 2.673,54</strong>
-              <div style="font-size:0.75rem; color:#059669; margin-top:2px;" id="kpiPoStatus">Status: Liberado / Consistente</div>
+              <strong style="font-size:1.1rem; color:#0f172a;" id="kpiPoTotal">Sem informação</strong>
+              <div style="font-size:0.75rem; color:#64748b; margin-top:2px;" id="kpiPoStatus">Aguardando busca de pedido</div>
             </div>
             <div style="background:#ffffff; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:14px;">
-              <span class="stat-label">NF-e Faturada (XML)</span><br>
-              <strong style="font-size:1.1rem; color:#7e22ce;" id="kpiNfeNumero">NF 3538</strong>
-              <div style="font-size:0.75rem; color:#64748b; margin-top:2px;" id="kpiNfeTotal">Total NF: R$ 2.673,54</div>
+              <span class="stat-label">NF-e / NFS-e Faturada (XML)</span><br>
+              <strong style="font-size:1.1rem; color:#7e22ce;" id="kpiNfeNumero">Sem informação</strong>
+              <div style="font-size:0.75rem; color:#64748b; margin-top:2px;" id="kpiNfeTotal">Nenhum XML carregado</div>
             </div>
             <div style="background:#ffffff; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:14px;">
               <span class="stat-label">Conformidade 3-Vias</span><br>
-              <span class="tag tag-emerald" id="kpiAderenciaBadge" style="font-size:0.85rem; font-weight:700;">✓ 100% Conforme</span>
+              <span class="tag" id="kpiAderenciaBadge" style="font-size:0.85rem; font-weight:700; background:#f1f5f9; color:#64748b;">Aguardando Vínculo</span>
               <div style="font-size:0.75rem; color:#64748b; margin-top:2px;" id="kpiItensValidados">0 de 0 itens ticados</div>
             </div>
           </div>
@@ -766,7 +757,7 @@
           <!-- TABELA SINCRONIZADA DE AMARRAÇÃO 3-VIAS -->
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
             <div style="font-size:0.85rem; font-weight:700; color:#334155;">
-              Cruzamento Item a Item (Pedido Sienge ERP × NF-e XML × Conferência Doca)
+              Cruzamento Item a Item (Pedido Sienge ERP × NF-e/NFS-e XML × Conferência Doca)
             </div>
             <div style="display:flex; gap:8px;">
               <button class="btn btn-outline" style="font-size:0.75rem; padding:4px 10px;" onclick="ticarTodosItensAmarracao(true)">☑️ Ticar Todos</button>
@@ -792,72 +783,113 @@
                 </tr>
               </thead>
               <tbody id="amarracaoTableBody">
-                <!-- Renderizado dinamicamente via JS -->
+                <tr><td colspan="11" style="text-align:center; padding:30px; color:#94a3b8;">Nenhum item em cruzamento. Carregue um XML ou vincule um Pedido do Sienge.</td></tr>
               </tbody>
             </table>
           </div>
 
           <!-- PAINEL DE CONTROLE DE SOBRA / SALDO REMANESCENTE DO PEDIDO (OMNI x SIENGE) -->
           <div id="resumoSobrasPedidoBox" style="display:none; background:#fffbeb; border:1.5px solid #fcd34d; border-radius:var(--radius-md); padding:14px 18px; margin-bottom:18px;">
-            <!-- Preenchido dinamicamente quando há entrega parcial (ex: Pedido 4 un x Nota 3 un) ou itens do pedido não faturados na NF -->
           </div>
 
-          <!-- PAINEL DE CAPTURA SELETIVA DDA ITAÚ ESPECÍFICO DESTA NOTA FISCAL (MÓDULO 2) -->
+          <!-- PAINEL FINANCEIRO DA NOTA FISCAL & AMARRAÇÃO SIENGE (COM OU SEM DDA) -->
           <div style="background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border: 1.5px solid #fdba74; border-radius: var(--radius-md); padding: 16px 18px; margin-bottom: 18px;">
             <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
               <div>
                 <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                  <strong style="color:#9a3412; font-size:0.95rem;">🏦 Dados Financeiros da NF-e & Busca Seletiva de Boleto DDA no Itaú</strong>
-                  <span class="tag" id="badgeModoDdaFiscal" style="background:#ffffff; color:#c2410c; border:1px solid #fb923c;">⚡ Híbrido Ativo: API Itaú Seletiva + Arquivo CNAB 240</span>
+                  <strong style="color:#9a3412; font-size:0.95rem;">🏦 Dados Financeiros da NF-e / NFS-e & Amarração no Contas a Pagar Sienge</strong>
+                  <span class="tag" id="badgeModoDdaFiscal" style="background:#ffffff; color:#c2410c; border:1px solid #fb923c;">⚡ Suporte Completo: Com DDA Itaú ou Sem DDA (PIX / TED / Boleto Manual / Previsão)</span>
                 </div>
                 <div style="font-size:0.8rem; color:#7c2d12; margin-top:4px;" id="fiscalDdaSubtitulo">
-                  Filtra no Itaú <strong>exclusivamente o(s) boleto(s) desta NF-e</strong> pelo <code>CNPJ Emitente + Valor/Duplicatas (&lt;cobr&gt;&lt;dup&gt;) + Nº NF</code>, evitando baixar boletos avulsos desnecessários.
+                  Exibe <strong>exclusivamente os dados reais extraídos do XML e do Pedido Sienge atrelado</strong>. Se a nota não tiver DDA (ex: NFS-e de Serviço, PIX ou TED), defina abaixo o Vencimento e a Forma de Pagamento para o Sienge amarrar a parcela.
                 </div>
               </div>
 
               <div style="display:flex; gap:8px; flex-wrap:wrap;">
                 <input type="file" id="cnabDdaNotaInput" accept=".ret,.txt,.rem,.cnab" style="display:none;" onchange="filtrarCnab240ApenasDestaNota(event)">
                 <button type="button" class="btn btn-primary" style="background:#ea580c; border-color:#c2410c; font-size:0.8rem; padding:8px 14px;" onclick="buscarDdaEspecificoDestaNota('API_ITAU')">
-                  🔍 Buscar DDA no Itaú (Só desta NF-e)
+                  🔍 Buscar DDA no Itaú (Só desta NF)
                 </button>
                 <button type="button" class="btn btn-outline" style="background:#ffffff; border-color:#fdba74; color:#c2410c; font-size:0.8rem; padding:8px 12px;" onclick="document.getElementById('cnabDdaNotaInput').click()" title="Lê o arquivo CNAB 240 (.RET) e extrai apenas o boleto desta Nota Fiscal">
-                  📂 Ler DDA desta NF via Arquivo (.RET)
+                  📂 Ler DDA via Arquivo (.RET)
                 </button>
                 <button type="button" class="btn btn-outline" style="background:#ffffff; border-color:#cbd5e1; color:#334155; font-size:0.8rem; padding:8px 12px;" onclick="abrirModalConfigDdaItau()">
-                  ⚙️ Configurar Itaú (API / Arquivo)
+                  ⚙️ Configurar Itaú
                 </button>
               </div>
             </div>
 
-            <!-- Resumo das Duplicatas extraídas do XML atual -->
-            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:10px; background:#ffffff; border:1px solid #fed7aa; border-radius:8px; padding:10px 14px; margin-bottom:10px; font-size:0.8rem;">
+            <!-- Resumo Estrito do que foi Puxado/Atrelado (Sem dados falsos!) -->
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:10px; background:#ffffff; border:1px solid #fed7aa; border-radius:8px; padding:10px 14px; margin-bottom:12px; font-size:0.8rem;">
               <div>
                 <span style="color:#64748b; font-size:0.72rem; font-weight:700; text-transform:uppercase;">Beneficiário / Emitente XML:</span>
-                <div style="font-weight:800; color:#0f172a; margin-top:2px;" id="fiscalDdaFornecedor">DISTRIBUIDORA DE SUPRIMENTOS LTDA</div>
+                <div style="font-weight:800; color:#94a3b8; margin-top:2px;" id="fiscalDdaFornecedor">Sem informação</div>
               </div>
               <div>
-                <span style="color:#64748b; font-size:0.72rem; font-weight:700; text-transform:uppercase;">CNPJ Filtro DDA Itaú:</span>
-                <div style="font-weight:800; color:#ea580c; font-family:'JetBrains Mono', monospace; margin-top:2px;" id="fiscalDdaCnpj">60.746.948/0001-12</div>
+                <span style="color:#64748b; font-size:0.72rem; font-weight:700; text-transform:uppercase;">CNPJ Emitente XML:</span>
+                <div style="font-weight:800; color:#94a3b8; font-family:'JetBrains Mono', monospace; margin-top:2px;" id="fiscalDdaCnpj">Sem informação</div>
               </div>
               <div>
-                <span style="color:#64748b; font-size:0.72rem; font-weight:700; text-transform:uppercase;">Documento / Pedido Sienge:</span>
-                <div style="font-weight:800; color:#0284c7; margin-top:2px;" id="fiscalDdaNfPo">NF 3538 • Pedido #3538</div>
+                <span style="color:#64748b; font-size:0.72rem; font-weight:700; text-transform:uppercase;">Documento XML / Pedido Sienge:</span>
+                <div style="font-weight:800; color:#94a3b8; margin-top:2px;" id="fiscalDdaNfPo">Sem informação</div>
               </div>
               <div>
                 <span style="color:#64748b; font-size:0.72rem; font-weight:700; text-transform:uppercase;">Duplicatas XML (&lt;cobr&gt;&lt;dup&gt;):</span>
-                <div style="font-weight:800; color:#059669; margin-top:2px;" id="fiscalDdaDuplicatasResumo">1x de R$ 2.673,54</div>
+                <div style="font-weight:800; color:#94a3b8; margin-top:2px;" id="fiscalDdaDuplicatasResumo">Sem informação</div>
+              </div>
+            </div>
+
+            <!-- BLOCO DE AMARRAÇÃO FINANCEIRA NO SIENGE (COM OU SEM DDA) -->
+            <div style="background:#ffffff; border:1px solid #fdba74; border-radius:8px; padding:12px 14px; margin-bottom:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+                <div style="font-size:0.82rem; font-weight:800; color:#9a3412;">
+                  🔗 Parâmetros de Amarração Financeira p/ Sienge ERP (Obrigatórios quando NÃO houver DDA)
+                </div>
+                <div id="fiscalPrevisaoSiengeInfo" style="font-size:0.75rem; color:#64748b; font-weight:700; background:#f8fafc; padding:3px 10px; border-radius:6px; border:1px solid #e2e8f0;">
+                  Previsão Sienge: Sem informação
+                </div>
+              </div>
+
+              <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap:10px; align-items:end;">
+                <div>
+                  <label style="font-size:0.72rem; font-weight:700; color:#475569; text-transform:uppercase; display:block; margin-bottom:4px;">Forma de Pagamento Sienge:</label>
+                  <select id="finModalidadeSienge" class="input-control" style="font-size:0.8rem; font-weight:700; height:36px; background:#fff7ed; border-color:#fdba74; color:#9a3412;" onchange="aoMudarModalidadeFinanceiraSienge()">
+                    <option value="SEM_DDA_PIX">⚡ Sem DDA: PIX (paymentTypeId 14)</option>
+                    <option value="SEM_DDA_TED">🏦 Sem DDA: TED / Transferência (paymentTypeId 6)</option>
+                    <option value="BOLETO_MANUAL">📄 Sem DDA: Boleto Manual / PDF (paymentTypeId 2)</option>
+                    <option value="DDA_ITAU">🔍 Com DDA Itaú (paymentTypeId 1 - Boleto Itaú)</option>
+                    <option value="SEM_DDA_CARTEIRA">📋 Sem DDA: Manter Previsão do Pedido (Carteira)</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size:0.72rem; font-weight:700; color:#475569; text-transform:uppercase; display:block; margin-bottom:4px;">Data de Vencimento no Sienge:</label>
+                  <input type="date" id="finVencimentoSienge" class="input-control" style="font-size:0.82rem; font-weight:700; height:36px;" value="">
+                </div>
+                <div>
+                  <label style="font-size:0.72rem; font-weight:700; color:#475569; text-transform:uppercase; display:block; margin-bottom:4px;">Valor Líquido da NF (R$):</label>
+                  <input type="text" id="finValorSienge" class="input-control" style="font-size:0.82rem; font-weight:800; height:36px; color:#059669; background:#f8fafc;" placeholder="Sem informação" value="" readonly>
+                </div>
+                <div>
+                  <label id="lblFinChaveOuLinha" style="font-size:0.72rem; font-weight:700; color:#475569; text-transform:uppercase; display:block; margin-bottom:4px;">Chave PIX / Dados Bancários:</label>
+                  <input type="text" id="finChaveOuLinhaSienge" class="input-control" style="font-size:0.8rem; font-family:'JetBrains Mono', monospace; height:36px;" placeholder="Sem informação (Opcional)" value="">
+                </div>
+              </div>
+
+              <div style="margin-top:8px; font-size:0.74rem; color:#64748b; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <span id="finExplicacaoFluxoSienge">
+                  ℹ️ <strong>Como o Sienge amarra sem DDA:</strong> Ao aprovar a entrada, o sistema cria a NF/NFS-e vinculada ao Pedido (abatendo a previsão <code>PPC</code>), gera o título definitivo no Contas a Pagar pelo valor da NF e grava o <strong>Vencimento + Forma de Pagamento</strong> na parcela (<code>/bills/{id}/installments/1</code>).
+                </span>
               </div>
             </div>
 
             <!-- Resultado dos Boletos DDA localizados especificamente para esta Nota Fiscal -->
             <div id="boxResultadoDdaNotaFiscal" style="display:none; background:#ffffff; border:1px solid #fdba74; border-radius:8px; padding:12px; margin-top:8px;">
-              <!-- Preenchido dinamicamente ao clicar em "Buscar DDA no Itaú (Só desta NF-e)" -->
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:8px; font-size:0.78rem; color:#9a3412;">
               <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:700;">
-                <input type="checkbox" id="chkAutoInjetarDdaAoLiquidar" checked>
-                <span>☑️ Gravar automaticamente Linha Digitável DDA no Contas a Pagar do Sienge (<code>PATCH /boleto-bancario</code>) junto com a Liquidação do Pedido</span>
+                <input type="checkbox" id="chkAutoInjetarDdaAoLiquidar">
+                <span>☑️ Buscar e injetar Linha Digitável DDA Itaú automaticamente ao liquidar (marque apenas se a NF tiver boleto DDA)</span>
               </label>
               <a href="javascript:void(0)" onclick="switchModule('dda')" style="color:#c2410c; font-weight:800; text-decoration:underline;">Abrir Mesa Completa DDA Itaú (Opção 9) →</a>
             </div>
@@ -865,9 +897,9 @@
 
           <div style="background:#f8fafc; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
             <div>
-              <strong style="color:#059669;" id="statusHomologacaoFiscal">✓ Auditoria Fiscal, Conversões e DDA Prontos!</strong>
+              <strong style="color:#059669;" id="statusHomologacaoFiscal">✓ Amarração Fiscal & Financeira Sienge Pronta!</strong>
               <div style="font-size:0.8rem; color:#64748b; margin-top:2px;">
-                O disparo gerará o <strong>Documento de Entrada</strong>, vinculará o <strong>Boleto DDA Itaú no Contas a Pagar</strong> do Sienge ERP e liberará os lotes para o WMS.
+                Registra o <strong>Documento de Entrada (NF-e / NFS-e)</strong>, abate o saldo do Pedido e atualiza o <strong>Contas a Pagar no Sienge ERP</strong> (com ou sem DDA).
               </div>
             </div>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
@@ -877,7 +909,7 @@
               </button>
               <button class="btn btn-success" id="btnAprovarSienge" onclick="executarEntradaFiscalSienge()">
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                Aprovar Amarração & Integrar Sienge + DDA
+                Aprovar Amarração & Integrar no Sienge
               </button>
             </div>
           </div>
@@ -1934,20 +1966,29 @@
   </div>
 
   <!-- JAVASCRIPT STATE & INTERACTION -->
-    <!-- MODAL: LISTAGEM DE PEDIDOS SIENGE EM ABERTO -->
+    <!-- MODAL: LISTAGEM DE PEDIDOS SIENGE EM ABERTO (AGENTE EM TEMPO REAL) -->
   <div class="modal-backdrop" id="modalSiengeOrders">
-    <div class="modal-window" style="max-width:900px; max-height:90vh; overflow-y:auto;">
+    <div class="modal-window" style="max-width:940px; max-height:90vh; overflow-y:auto;">
       <div class="modal-header">
-        <div class="modal-title">📦 Pedidos de Compra em Aberto no Sienge ERP (omnitrade)</div>
+        <div>
+          <div class="modal-title">📦 Pedidos de Compra Reais em Aberto no Sienge ERP (omnitrade)</div>
+          <div id="modalSiengeAgentStatus" style="font-size:0.78rem; color:#059669; font-weight:700; margin-top:2px;">
+            🤖 Agente Sincronizador Sienge: consultando API em tempo real...
+          </div>
+        </div>
         <button class="modal-close" onclick="fecharModal('modalSiengeOrders')">&times;</button>
       </div>
-      <div style="font-size:0.85rem; color:#475569; margin-bottom:14px;">
-        Pedidos consultados diretamente na API Cloud do Sienge. Clique em <strong>Vincular Este Pedido</strong> para sincronizar com a NF-e:
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:14px; background:#f8fafc; padding:10px 14px; border-radius:8px; border:1px solid #e2e8f0;">
+        <input type="text" id="modalSiengeSearchInput" class="input-control" style="flex:1; min-width:240px; background:#ffffff; font-weight:600;" placeholder="🔎 Filtrar por Nº do Pedido (ex: 3565), Comprador, Obra, Valor ou Descrição..." oninput="filtrarListaModalPedidosSienge()">
+        <button type="button" class="btn btn-outline" style="background:#ffffff;" onclick="sincronizarPedidosAbertosSiengeAgente(false)">
+          🔄 Atualizar do Sienge Agora
+        </button>
       </div>
-      <div id="siengeOrdersListContent" style="display:flex; flex-direction:column; gap:10px;">
-        <div style="text-align:center; padding:30px; color:#64748b;">Carregando pedidos do Sienge...</div>
+      <div id="siengeOrdersListContent" style="display:flex; flex-direction:column; gap:10px; max-height:60vh; overflow-y:auto; padding-right:4px;">
+        <div style="text-align:center; padding:30px; color:#64748b;">Carregando pedidos reais do Sienge...</div>
       </div>
-      <div style="margin-top:16px; text-align:right;">
+      <div style="margin-top:16px; display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size:0.76rem; color:#64748b;">Exibindo apenas pedidos em aberto (<code>PENDING</code> / <code>PARTIALLY_DELIVERED</code>) diretamente do Sienge.</span>
         <button class="btn btn-secondary" onclick="fecharModal('modalSiengeOrders')">Fechar</button>
       </div>
     </div>
@@ -2567,13 +2608,13 @@
           }
         }
 
-        // Se ainda nao identificou, vincular pelo Fornecedor ou Valor
+        // Se ainda nao identificou pelo texto do XML, vincular apenas se for um dos XMLs homologados conhecidos
         if (!xPed || xPed === '2026') {
-          if (xNome.includes('GERDAU') || nNF === '45612' || vNF === 14500) xPed = '8841';
-          else if (xNome.includes('VOTORANTIM') || nNF === '88192' || vNF === 19600) xPed = '8910';
-          else if (xNome.includes('TEREZA') || vNF === 4200) xPed = '3565';
-          else if (vNF === 2673.54 || nNF === '99120') xPed = '3538';
-          else xPed = '3538';
+          if (xNome.includes('GERDAU') || nNF === '45612') xPed = '8841';
+          else if (xNome.includes('VOTORANTIM') || nNF === '88192') xPed = '8910';
+          else if (xNome.includes('TEREZA') || (isNfse && vNF === 4200)) xPed = '3565';
+          else if (nNF === '99120') xPed = '3538';
+          else xPed = '';
         }
 
         // Extracao de Itens (<det> para NF-e ou <serv> para NFS-e)
@@ -2682,26 +2723,35 @@
           vDesc: parseFloat(getTagValue('vDesc', icmsTotBloco) || '0') || 0
         };
 
-        // Extrair Duplicatas (<cobr><dup>)
+        // Extrair Duplicatas Reais do XML (<cobr><dup>) — Sem inventar duplicata se o XML não tiver!
         const duplicatas = [];
         const dupRegex = /<dup\b[^>]*>([\s\S]*?)<\/dup>/gi;
         let dupMatch;
         let dupIdx = 1;
         while ((dupMatch = dupRegex.exec(xmlText)) !== null) {
           const dupBloco = dupMatch[1];
+          const nDupVal = getTagValue('nDup', dupBloco) || String(dupIdx).padStart(3, '0');
+          const dVencVal = getTagValue('dVenc', dupBloco) || '';
+          const vDupVal = parseFloat(getTagValue('vDup', dupBloco) || String(vNF)) || vNF;
           duplicatas.push({
-            nDup: getTagValue('nDup', dupBloco) || String(dupIdx).padStart(3, '0'),
-            dVenc: getTagValue('dVenc', dupBloco) || dEmi,
-            vDup: parseFloat(getTagValue('vDup', dupBloco) || String(vNF)) || vNF
+            nDup: nDupVal,
+            numero: nDupVal,
+            dVenc: dVencVal,
+            vencimento: dVencVal,
+            vDup: vDupVal,
+            valor: vDupVal
           });
           dupIdx++;
         }
-        if (duplicatas.length === 0) {
-          const venc30 = new Date(new Date(dEmi || Date.now()).getTime() + 30 * 86400000).toISOString().slice(0, 10);
-          duplicatas.push({ nDup: '001', dVenc: venc30, vDup: vNF });
-        }
 
+        const foneEmit = getTagValue('fone', emitBloco) || getTagValue('fone') || '';
+        const emailEmit = getTagValue('email', emitBloco) || getTagValue('email') || '';
         const tipoDocLabel = isNfse ? 'NFS-e' : 'NF-e';
+
+        boletosDdaNotaFiscalAtual = [];
+        if (typeof renderizarResultadoDdaNotaFiscal === 'function') {
+          renderizarResultadoDdaNotaFiscal();
+        }
 
         notaAtual = {
           isNfse: isNfse,
@@ -2712,9 +2762,12 @@
           dataEmissao: dEmi,
           fornecedor: xNome,
           cnpj: cnpj,
+          fone: foneEmit,
+          email: emailEmit,
           valorTotal: vNF,
           pedidoSienge: xPed,
           impostos: impostos,
+          temDuplicatasXml: duplicatas.length > 0,
           duplicatas: duplicatas,
           itens: itens
         };
@@ -2727,21 +2780,27 @@
               <span>✅</span> <strong>XML Carregado: ${fileName}</strong>
             </div>
             <div style="font-size:0.8rem; color:#334155; margin-top:4px;">
-              ${tipoDocLabel} nº <strong>${nNF}</strong> • ${xNome} • <strong>${itens.length}</strong> ${isNfse ? 'serviço faturado' : 'itens faturados'} • Pedido Sienge: <strong>#${xPed}</strong> • Total: <strong>${Number(vNF).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
+              ${tipoDocLabel} nº <strong>${nNF}</strong> • ${xNome} • <strong>${itens.length}</strong> ${isNfse ? 'serviço faturado' : 'itens faturados'} • Pedido Sienge: <strong>${xPed ? '#' + xPed : 'A vincular'}</strong> • Total: <strong>${Number(vNF).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
             </div>
           `;
         }
 
         // Atualizar Banners de Sincronizacao
         const bannerPed = document.getElementById('docaBannerPedido');
-        if (bannerPed) bannerPed.innerText = '#' + xPed;
+        if (bannerPed) bannerPed.innerText = xPed ? ('#' + xPed) : 'A vincular';
         const bannerForn = document.getElementById('docaBannerFornecedor');
         if (bannerForn) bannerForn.innerText = xNome;
 
         aplicarNotaNaDoca();
+        if (typeof atualizarPainelDdaNotaFiscal === 'function') {
+          atualizarPainelDdaNotaFiscal(poAtualCarregado?.order || null);
+        }
+        if (typeof salvarEstadoGlobalWms === 'function') {
+          salvarEstadoGlobalWms(`Upload XML ${tipoDocLabel} ${nNF}`);
+        }
         showToast(`${tipoDocLabel} ${nNF} (${xNome}) carregada com ${itens.length} ${isNfse ? 'serviço' : 'itens'}!`, 'success');
 
-        // Dispara sincronizacao com o Sienge
+        // Dispara sincronizacao com o Sienge se o XML trouxer o Pedido
         if (xPed) {
           const poInput = document.getElementById('poSearchInput');
           if (poInput) poInput.value = xPed;
@@ -3060,15 +3119,18 @@
     // ==========================================
     function resetDoca() {
       notaAtual = null;
+      poAtualCarregado = null;
       docaItems = [];
       docaTentativa = 1;
       amarracaoItensState = [];
+      boletosDdaNotaFiscalAtual = [];
 
       // Limpar Inputs
       if (document.getElementById('docaChaveInput')) document.getElementById('docaChaveInput').value = '';
       if (document.getElementById('bipagemEanInput')) document.getElementById('bipagemEanInput').value = '';
       if (document.getElementById('folderXmlInput')) document.getElementById('folderXmlInput').value = '';
       if (document.getElementById('xmlFileInput')) document.getElementById('xmlFileInput').value = '';
+      if (document.getElementById('poSearchInput')) document.getElementById('poSearchInput').value = '';
 
       // Limpar Cabeçalho
       if (document.getElementById('docaNumeroNfe')) document.getElementById('docaNumeroNfe').innerText = 'Aguardando XML...';
@@ -3101,10 +3163,10 @@
         dropContent.innerHTML = `
           <div style="font-size:0.95rem; color:#1e293b; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px;">
             <svg width="22" height="22" fill="none" stroke="#0284c7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-            <span>Arraste e solte arquivos <strong>XML de NF-e</strong> aqui ou clique para selecionar</span>
+            <span>Arraste e solte arquivos <strong>XML de NF-e ou NFS-e</strong> aqui ou clique para selecionar</span>
           </div>
           <div style="font-size:0.8rem; color:#64748b; margin-top:4px;">
-            Identifica automaticamente Chave de Acesso, Emitente, Itens faturados e Pedido Sienge vinculado (tag <code>&lt;xPed&gt;</code> ou <code>&lt;infCpl&gt;</code>).
+            Identifica automaticamente Chave de Acesso, Emitente/Prestador, Itens/Serviços e Pedido Sienge vinculado.
           </div>
         `;
       }
@@ -3119,9 +3181,12 @@
       if (boxPasta) boxPasta.style.display = 'none';
 
       renderDocaItems();
-      atualizarModuloFiscal();
+      renderizarTabelaAmarracao();
+      if (typeof atualizarPainelDdaNotaFiscal === 'function') atualizarPainelDdaNotaFiscal(null);
+      if (typeof renderizarResultadoDdaNotaFiscal === 'function') renderizarResultadoDdaNotaFiscal();
+      if (typeof salvarEstadoGlobalWms === 'function') salvarEstadoGlobalWms('Reset Doca');
 
-      showToast('Doca reiniciada e limpa! Pronta para novo XML ou bipagem.', 'info');
+      showToast('Doca e Amarração reiniciadas e limpas! Pronta para novo XML.', 'info');
     }
 
     // Busca rápida por chave ou número
@@ -3176,7 +3241,8 @@
     }
 
     async function carregarDetalhesPedidoSienge(poId) {
-      const cleanId = String(poId).replace(/\D/g, '');
+      const cleanId = String(poId || '').replace(/\D/g, '');
+      if (!cleanId) return;
       showToast(`Consultando Pedido #${cleanId} na API Sienge ERP (omnitrade)...<span class='pulse-dot'></span>`, 'info');
 
       try {
@@ -3185,58 +3251,22 @@
 
         if (data.success && data.order) {
           poAtualCarregado = data;
-          renderizarAmarracaoPedido(data.order, data.items || []);
-          showToast(`Pedido Sienge #${cleanId} sincronizado com sucesso!`, 'success');
-        } else {
-          // Fallback offline estruturado
-          const fallbackOrder = {
-            id: cleanId,
-            buyerId: 'Jefferson Filho',
-            buildingId: '1212',
-            status: 'PENDING',
-            consistent: 'CONSISTENT',
-            authorized: true,
-            totalAmount: (cleanId === '3538' ? 2673.54 : cleanId === '8841' ? 14500.00 : 8900.00)
-          };
-          let fallbackItems = [];
-          if (cleanId === '3565') {
-            fallbackOrder.totalAmount = 50400.00;
-            fallbackOrder.buyerId = 'JEFFERSON.FILHO';
-            fallbackItems = [
-              { itemNumber: 1, resourceId: 7906, resourceCode: '010701', resourceDescription: 'PRESTAÇÃO DE SERVIÇO', unitOfMeasure: 'vb', quantity: 12, unitPrice: 4200.00, netPrice: 4200.00, openQuantity: 12, deliveredQuantity: 0 }
-            ];
-          } else if (cleanId === '8841') {
-            fallbackItems = [
-              { resourceCode: 'ACO-CA50-10MM', resourceDescription: 'VERGALHAO ACO CA-50 10MM BARRA 12M', unitOfMeasure: 'kg', quantity: 1500, unitPrice: 7.00, netPrice: 10500.00 },
-              { resourceCode: 'ACO-CA50-12MM', resourceDescription: 'VERGALHAO ACO CA-50 12.5MM BARRA 12M', unitOfMeasure: 'kg', quantity: 500, unitPrice: 8.00, netPrice: 4000.00 }
-            ];
-          } else if (cleanId === '8910') {
-            fallbackItems = [
-              { resourceCode: 'CIM-CP2-50', resourceDescription: 'CIMENTO VOTORAN CP-II-F-32 SACO 50KG', unitOfMeasure: 'sc', quantity: 400, unitPrice: 36.50, netPrice: 14600.00 },
-              { resourceCode: 'ARG-AC3-20', resourceDescription: 'ARGAMASSA COLANTE AC-III CINZA 20KG', unitOfMeasure: 'sc', quantity: 200, unitPrice: 25.00, netPrice: 5000.00 }
-            ];
-          } else {
-            fallbackItems = [
-              { resourceCode: 'PAR-HEX-M10', resourceDescription: 'PARAFUSO SEXTAVADO ACO INOX M10X50', unitOfMeasure: 'un', quantity: 1000, unitPrice: 1.85, netPrice: 1850.00 },
-              { resourceCode: 'POR-AUT-M10', resourceDescription: 'PORCA AUTO-TRAVANTE NYLON M10', unitOfMeasure: 'un', quantity: 1000, unitPrice: 0.8235, netPrice: 823.54 }
-            ];
+          if (notaAtual) {
+            notaAtual.pedidoSienge = String(data.order.id || cleanId);
+            const docaPed = document.getElementById('docaPedidoSienge');
+            if (docaPed) docaPed.innerText = '#' + notaAtual.pedidoSienge;
           }
-
-          poAtualCarregado = { order: fallbackOrder, items: fallbackItems };
-          renderizarAmarracaoPedido(fallbackOrder, fallbackItems);
-          showToast(`Pedido Sienge #${cleanId} carregado para amarração!`, 'info');
+          renderizarAmarracaoPedido(data.order, data.items || []);
+          if (typeof salvarEstadoGlobalWms === 'function') {
+            salvarEstadoGlobalWms(`Vínculo Pedido Sienge #${cleanId}`);
+          }
+          showToast(`Pedido Sienge #${cleanId} sincronizado em tempo real da API!`, 'success');
+        } else {
+          showToast(data.error || `Pedido #${cleanId} não encontrado no Sienge ERP.`, 'warning');
         }
       } catch(err) {
         console.warn('Erro ao consultar API Sienge:', err);
-        // Fallback para não travar a operação
-        const fallbackOrder = { id: cleanId, buyerId: 'Jefferson Filho', buildingId: '1212', totalAmount: 2673.54, consistent: 'CONSISTENT', authorized: true };
-        const fallbackItems = [
-          { resourceCode: '776', resourceDescription: 'SACO DE LIXO 100LT', unitOfMeasure: 'un', quantity: 400, unitPrice: 1.375, netPrice: 550.00 },
-          { resourceCode: '778', resourceDescription: 'SACO DE LIXO 200LT', unitOfMeasure: 'un', quantity: 400, unitPrice: 1.375, netPrice: 550.00 },
-          { resourceCode: '6104', resourceDescription: 'DETERGENTE LIQUIDO NEUTRO 5L', unitOfMeasure: 'gl', quantity: 15, unitPrice: 22.90, netPrice: 343.50 }
-        ];
-        poAtualCarregado = { order: fallbackOrder, items: fallbackItems };
-        renderizarAmarracaoPedido(fallbackOrder, fallbackItems);
+        showToast('Erro de comunicação ao consultar Pedido #' + cleanId + ' no Sienge: ' + err.message, 'danger');
       }
     }
 
@@ -3327,18 +3357,25 @@
 
       const xmlItens = (notaAtual && notaAtual.itens) ? notaAtual.itens : (docaItems && docaItems.length > 0 ? docaItems : []);
 
-      // Atualiza KPIs no Topo
-      document.getElementById('kpiPoNumero').innerText = '#' + (order.id || '3538');
-      document.getElementById('kpiPoDetalhes').innerText = `Comprador: ${order.buyerId || 'Jefferson Filho'} • Obra #${order.buildingId || '1212'}`;
-      document.getElementById('kpiPoTotal').innerText = Number(order.totalAmount || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-      document.getElementById('kpiPoStatus').innerText = `Status: ${order.status || 'PENDING'} • ${poItems.length} itens no pedido`;
-
-      if (notaAtual) {
-        document.getElementById('kpiNfeNumero').innerText = `NF ${notaAtual.numeroNfe}`;
-        document.getElementById('kpiNfeTotal').innerText = `Total NF: ${Number(notaAtual.valorTotal).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
+      // Atualiza KPIs no Topo (Somente o que foi realmente atrelado/puxado!)
+      if (order && order.id) {
+        document.getElementById('kpiPoNumero').innerText = '#' + order.id;
+        document.getElementById('kpiPoDetalhes').innerText = `Comprador: ${order.buyerId || 'N/A'} • Obra/CC #${order.buildingId || order.costCenterId || 'N/A'}`;
+        document.getElementById('kpiPoTotal').innerText = Number(order.totalAmount || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        document.getElementById('kpiPoStatus').innerText = `Status: ${order.status || 'PENDING'} • ${poItems.length} item(ns) no pedido`;
       } else {
-        document.getElementById('kpiNfeNumero').innerText = 'Nenhuma NF';
-        document.getElementById('kpiNfeTotal').innerText = 'Total NF: R$ 0,00';
+        document.getElementById('kpiPoNumero').innerText = 'Sem informação';
+        document.getElementById('kpiPoDetalhes').innerText = 'Nenhum pedido vinculado';
+        document.getElementById('kpiPoTotal').innerText = 'Sem informação';
+        document.getElementById('kpiPoStatus').innerText = 'Aguardando busca de pedido';
+      }
+
+      if (notaAtual && notaAtual.numeroNfe) {
+        document.getElementById('kpiNfeNumero').innerText = `${notaAtual.tipoDoc || 'NF-e'} ${notaAtual.numeroNfe}`;
+        document.getElementById('kpiNfeTotal').innerText = `Total NF: ${Number(notaAtual.valorTotal || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} • ${notaAtual.fornecedor || ''}`;
+      } else {
+        document.getElementById('kpiNfeNumero').innerText = 'Sem informação';
+        document.getElementById('kpiNfeTotal').innerText = 'Nenhum XML carregado';
       }
 
       // Cruzamento 3-Vias Inteligente com Memória De-Para por Fornecedor (CNPJ + cProd + itemNumber/detailDescription)
@@ -3839,58 +3876,139 @@
         renderizarAmarracaoPedido(poAtualCarregado.order, poAtualCarregado.items || []);
       } else if (notaAtual && notaAtual.pedidoSienge) {
         carregarDetalhesPedidoSienge(notaAtual.pedidoSienge);
+      } else {
+        renderizarAmarracaoPedido(null, []);
       }
     }
 
     // ==========================================
-    // 7. MODAL DE PEDIDOS ABERTOS DO SIENGE (API)
+    // 7. AGENTE SINCRONIZADOR SIENGE EM TEMPO REAL & MODAL DE PEDIDOS ABERTOS
     // ==========================================
+    let pedidosAbertosSiengeCache = [];
+    let siengeAgentTimer = null;
+
+    async function sincronizarPedidosAbertosSiengeAgente(silencioso = true) {
+      const badgeStatus = document.getElementById('siengeStatusBadge');
+      const badgeCount = document.getElementById('btnListarPedidosAbertosCount');
+      const modalStatus = document.getElementById('modalSiengeAgentStatus');
+
+      if (!silencioso) {
+        showToast('🤖 Agente Sienge: varrendo pedidos reais em aberto na API Sienge ERP...', 'info');
+      }
+
+      try {
+        const res = await fetch('/api/sienge/purchase-orders?limit=60');
+        const data = await res.json();
+        const orders = data.results || data.orders || (Array.isArray(data) ? data : []);
+
+        if (Array.isArray(orders)) {
+          pedidosAbertosSiengeCache = orders;
+          const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+          if (badgeStatus) {
+            badgeStatus.innerHTML = `<span class="pulse-dot" style="width:7px; height:7px; background:#10b981; border-radius:50%; display:inline-block;"></span> 🤖 Agente Sienge Online: ${orders.length} pedidos abertos (${hora})`;
+          }
+          if (badgeCount) {
+            badgeCount.innerText = `${orders.length} abertos`;
+          }
+          if (modalStatus) {
+            modalStatus.innerText = `🤖 Agente Sincronizador Sienge Ativo • ${orders.length} pedidos reais em aberto sincronizados às ${hora}`;
+          }
+
+          const modal = document.getElementById('modalSiengeOrders');
+          if (modal && modal.classList.contains('active')) {
+            renderizarCardsModalPedidosSienge();
+          }
+
+          if (!silencioso) {
+            showToast(`✅ Agente Sienge sincronizado! ${orders.length} pedidos reais em aberto carregados.`, 'success');
+          }
+        }
+      } catch (err) {
+        if (badgeStatus) {
+          badgeStatus.innerHTML = `⚠️ Agente Sienge tentando reconectar...`;
+        }
+        if (!silencioso) {
+          showToast('Erro ao consultar pedidos no Sienge: ' + err.message, 'warning');
+        }
+      }
+    }
+
+    function iniciarAgenteSincronizadorSienge() {
+      sincronizarPedidosAbertosSiengeAgente(true);
+      if (siengeAgentTimer) clearInterval(siengeAgentTimer);
+      siengeAgentTimer = setInterval(() => {
+        sincronizarPedidosAbertosSiengeAgente(true);
+      }, 30000);
+    }
+
+    function renderizarCardsModalPedidosSienge() {
+      const box = document.getElementById('siengeOrdersListContent');
+      if (!box) return;
+
+      const termo = String(document.getElementById('modalSiengeSearchInput')?.value || '').trim().toUpperCase();
+      const filtrados = pedidosAbertosSiengeCache.filter(ord => {
+        if (!termo) return true;
+        const hay = `${ord.id} ${ord.formattedPurchaseOrderId || ''} ${ord.buyerId || ''} ${ord.notes || ''} ${ord.buildingId || ''} ${ord.costCenterId || ''} ${ord.supplierId || ''} ${ord.totalAmount || ''}`.toUpperCase();
+        return hay.includes(termo);
+      });
+
+      if (filtrados.length === 0) {
+        box.innerHTML = `<div style="text-align:center; padding:24px; color:#64748b;">Nenhum pedido em aberto encontrado para o filtro informado.</div>`;
+        return;
+      }
+
+      box.innerHTML = '';
+      filtrados.forEach(ord => {
+        const card = document.createElement('div');
+        const isCurrent = String(poAtualCarregado?.order?.id || '') === String(ord.id);
+        card.style.cssText = `background:${isCurrent ? '#f0f9ff' : '#ffffff'}; border:1.5px solid ${isCurrent ? '#0284c7' : '#e2e8f0'}; border-radius:8px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;`;
+        const dataBr = ord.date ? String(ord.date).split('-').reverse().join('/') : '—';
+        const statusLabel = ord.status === 'PARTIALLY_DELIVERED' ? '⚠️ Entrega Parcial (Com Saldo)' : '🟢 Em Aberto (PENDING)';
+
+        card.innerHTML = `
+          <div style="flex:1; min-width:260px;">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <strong style="color:#0284c7; font-size:1.02rem;">Pedido #${ord.id}</strong>
+              <span class="tag ${ord.status === 'PARTIALLY_DELIVERED' ? 'tag-amber' : 'tag-emerald'}">${statusLabel}</span>
+              ${ord.authorized ? '<span class="tag tag-blue">Autorizado</span>' : ''}
+              ${ord.forecastBillId ? `<span class="tag" style="background:#f1f5f9; color:#334155; font-size:0.7rem;">Previsão Fin. #${ord.forecastBillId} (${(ord.forecastDocumentId || 'PPC').trim()})</span>` : ''}
+            </div>
+            <div style="font-size:0.8rem; color:#475569; margin-top:4px;">
+              Comprador: <strong>${ord.buyerId || 'N/A'}</strong> • Credor Sienge: <strong>#${ord.supplierId || 'N/A'}</strong> • Obra/CC: <strong>#${ord.buildingId || ord.costCenterId || 'N/A'}</strong> • Data: <strong>${dataBr}</strong>
+            </div>
+            ${ord.notes ? `<div style="font-size:0.78rem; color:#0f172a; background:#f8fafc; padding:4px 8px; border-radius:4px; border-left:3px solid #0284c7; margin-top:5px;">📝 ${ord.notes}</div>` : ''}
+          </div>
+          <div style="text-align:right; flex-shrink:0;">
+            <strong style="display:block; font-size:1.05rem; color:#0f172a;">${Number(ord.totalAmount || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
+            <button class="btn btn-primary" style="padding:6px 14px; font-size:0.8rem; margin-top:6px;" onclick="vincularPedidoModal('${ord.id}')">
+              🔗 Vincular Pedido #${ord.id}
+            </button>
+          </div>
+        `;
+        box.appendChild(card);
+      });
+    }
+
+    function filtrarListaModalPedidosSienge() {
+      renderizarCardsModalPedidosSienge();
+    }
+
     async function abrirModalSiengeOrders() {
       const modal = document.getElementById('modalSiengeOrders');
       const box = document.getElementById('siengeOrdersListContent');
       if (modal) modal.classList.add('active');
 
-      if (box) {
-        box.innerHTML = '<div style="text-align:center; padding:30px; color:#1e40af;"><div class="pulse-dot" style="display:inline-block; margin-right:8px;"></div>Consultando API Cloud do Sienge ERP...</div>';
-      }
-
-      try {
-        const res = await fetch('/api/sienge/purchase-orders');
-        const data = await res.json();
-        const orders = data.orders || data.results || (Array.isArray(data) ? data : []);
-
-        if (orders.length === 0) {
-          box.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b;">Nenhum pedido de compra pendente retornado pela API.</div>';
-          return;
-        }
-
-        box.innerHTML = '';
-        orders.slice(0, 15).forEach(ord => {
-          const card = document.createElement('div');
-          card.style.cssText = 'background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; gap:12px;';
-          card.innerHTML = `
-            <div>
-              <div style="display:flex; align-items:center; gap:8px;">
-                <strong style="color:#0284c7; font-size:1rem;">Pedido #${ord.id}</strong>
-                <span class="tag tag-emerald">${ord.status || 'PENDING'}</span>
-                ${ord.authorized ? '<span class="tag tag-blue">Autorizado</span>' : ''}
-              </div>
-              <div style="font-size:0.8rem; color:#475569; margin-top:3px;">
-                Comprador: <strong>${ord.buyerId || 'Jefferson Filho'}</strong> • Obra/CC: <strong>#${ord.buildingId || ord.costCenterId || '1212'}</strong> • Data: ${ord.date || '27/10/2026'}
-              </div>
-              ${ord.notes ? `<div style="font-size:0.75rem; color:#64748b; margin-top:2px;">${ord.notes.slice(0, 80)}...</div>` : ''}
-            </div>
-            <div style="text-align:right; flex-shrink:0;">
-              <strong style="display:block; font-size:1rem; color:#0f172a;">${Number(ord.totalAmount || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
-              <button class="btn btn-primary" style="padding:4px 12px; font-size:0.78rem; margin-top:4px;" onclick="vincularPedidoModal('${ord.id}')">Vincular Este Pedido</button>
-            </div>
-          `;
-          box.appendChild(card);
-        });
-      } catch(err) {
+      if (pedidosAbertosSiengeCache.length > 0) {
+        renderizarCardsModalPedidosSienge();
+        // Atualiza também em segundo plano para garantir tempo real
+        sincronizarPedidosAbertosSiengeAgente(true);
+      } else {
         if (box) {
-          box.innerHTML = `<div style="color:#b91c1c; padding:20px; text-align:center;">Erro ao conectar na API Sienge: ${err.message}</div>`;
+          box.innerHTML = '<div style="text-align:center; padding:30px; color:#1e40af;"><div class="pulse-dot" style="display:inline-block; margin-right:8px;"></div>🤖 Agente Sienge consultando pedidos reais em aberto na API...</div>';
         }
+        await sincronizarPedidosAbertosSiengeAgente(true);
+        renderizarCardsModalPedidosSienge();
       }
     }
 
@@ -3900,25 +4018,46 @@
     }
 
     // ==========================================
-    // 8. INTEGRAÇÃO E APROVAÇÃO SIENGE (PAYLOAD COMPLETO + WMS + DDA)
+    // 8. INTEGRAÇÃO E APROVAÇÃO SIENGE (PAYLOAD COMPLETO + WMS + FINANCEIRO COM OU SEM DDA)
     // ==========================================
     async function executarEntradaFiscalSienge() {
       const itensTicados = amarracaoItensState.filter(i => i.ticarConfirmado && !i.isApenasSaldoPedido && i.xmlItem);
       const ticados = itensTicados.length;
       if (ticados === 0) {
-        showToast('Nenhum item da NF marcado para homologação!', 'warning');
+        showToast('Nenhum item da NF marcado para homologação! Carregue um XML e marque os itens.', 'warning');
         return;
       }
 
-      showToast('Enviando Documento de Entrada e quantidades exatas por item para a API do Sienge ERP...', 'info');
+      const poId = poAtualCarregado?.order?.id || notaAtual?.pedidoSienge || '';
+      if (!poId) {
+        showToast('Vincule um Pedido de Compra do Sienge antes de aprovar a amarração!', 'warning');
+        return;
+      }
+      if (!notaAtual || !notaAtual.numeroNfe) {
+        showToast('Carregue o arquivo XML da Nota Fiscal antes de aprovar a amarração!', 'warning');
+        return;
+      }
 
-      const poId = poAtualCarregado?.order?.id || notaAtual?.pedidoSienge || '3538';
-      const nfNumero = notaAtual?.numeroNfe || '45612';
-      const nfSerie = notaAtual?.serie || '1';
-      const nfChave = notaAtual?.chave || '';
-      const nfFornecedor = notaAtual?.fornecedor || 'Fornecedor Homologado';
-      const nfCnpj = notaAtual?.cnpj || '';
-      const nfValorTotal = notaAtual?.valorTotal || 2673.54;
+      const nfNumero = notaAtual.numeroNfe;
+      const nfSerie = notaAtual.serie || (notaAtual.isNfse ? 'SU' : '1');
+      const nfChave = notaAtual.chave || '';
+      const nfFornecedor = notaAtual.fornecedor || '';
+      const nfCnpj = notaAtual.cnpj || '';
+      const nfValorTotal = Number(notaAtual.valorTotal || 0);
+      const isNfse = Boolean(notaAtual.isNfse);
+
+      // Dados Financeiros (Com ou Sem DDA)
+      const finModalidade = document.getElementById('finModalidadeSienge')?.value || (isNfse ? 'SEM_DDA_PIX' : 'DDA_ITAU');
+      const finVencimento = document.getElementById('finVencimentoSienge')?.value || '';
+      const finChaveOuLinha = (document.getElementById('finChaveOuLinhaSienge')?.value || '').trim();
+
+      if (finModalidade !== 'DDA_ITAU' && !finVencimento) {
+        showToast('Informe a Data de Vencimento no painel de Dados Financeiros para o Sienge amarrar a parcela!', 'warning');
+        document.getElementById('finVencimentoSienge')?.focus();
+        return;
+      }
+
+      showToast(`Enviando ${isNfse ? 'NFS-e de Serviço' : 'NF-e'} ${nfNumero} e amarração do Pedido #${poId} para o Sienge ERP...`, 'info');
 
       // Memorizar todos os vínculos De-Para validados nesta nota (incluindo itemNumber e detailDescription!)
       itensTicados.forEach(it => {
@@ -3936,23 +4075,25 @@
         }
       });
 
-      // Enviar lotes conferidos para a fila de 'A Endereçar' do WMS (com descrição completa incluindo tamanho/detalhe)
-      itensTicados.forEach((it, idx) => {
-        const loteOmniGerado = `OMN-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}-${nfNumero}-${idx + 1}`;
-        const unFinal = it.poItem && it.poItem.unitOfMeasure ? it.poItem.unitOfMeasure.toUpperCase() : it.xmlItem.un;
-        if (!wmsAEnderecar.some(w => w.loteOmni === loteOmniGerado)) {
-          wmsAEnderecar.unshift({
-            cod: (it.poItem && (it.poItem.resourceCode || it.poItem.resourceId)) || it.xmlItem.cod,
-            desc: it.poItem ? getPoItemFullDesc(it.poItem) : it.xmlItem.desc,
-            loteOmni: loteOmniGerado,
-            loteFab: `FAB-${nfNumero}-${idx + 1}`,
-            validade: '15/10/2029',
-            qtd: `${it.qtdDoca || it.qtdConvertida} ${unFinal}`,
-            sugestao: idx % 2 === 0 ? 'R01-P03-N1-B01' : 'R02-P01-N2-B04'
-          });
-        }
-      });
-      renderWmsAEnderecar();
+      // Enviar lotes conferidos para a fila de 'A Endereçar' do WMS (apenas para mercadorias físicas, ou registro de serviço)
+      if (!isNfse) {
+        itensTicados.forEach((it, idx) => {
+          const loteOmniGerado = `OMN-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}-${nfNumero}-${idx + 1}`;
+          const unFinal = it.poItem && it.poItem.unitOfMeasure ? it.poItem.unitOfMeasure.toUpperCase() : it.xmlItem.un;
+          if (!wmsAEnderecar.some(w => w.loteOmni === loteOmniGerado)) {
+            wmsAEnderecar.unshift({
+              cod: (it.poItem && (it.poItem.resourceCode || it.poItem.resourceId)) || it.xmlItem.cod,
+              desc: it.poItem ? getPoItemFullDesc(it.poItem) : it.xmlItem.desc,
+              loteOmni: loteOmniGerado,
+              loteFab: `FAB-${nfNumero}-${idx + 1}`,
+              validade: '15/10/2029',
+              qtd: `${it.qtdDoca || it.qtdConvertida} ${unFinal}`,
+              sugestao: idx % 2 === 0 ? 'R01-P03-N1-B01' : 'R02-P01-N2-B04'
+            });
+          }
+        });
+        renderWmsAEnderecar();
+      }
 
       const sobrasLocais = amarracaoItensState
         .filter(i => i.poItem && i.saldoRemanescentePedido > 0)
@@ -3965,17 +4106,27 @@
           body: JSON.stringify({
             purchaseOrderId: poId,
             orderId: poId,
+            isNfse: isNfse,
+            documentId: isNfse ? 'NFSE' : 'NFE',
             numeroNf: nfNumero,
             nfeNumero: nfNumero,
             serieNf: nfSerie,
             chaveNfe: nfChave,
             conferente: perfilOperacionalAtual === 'fiscal' ? 'Supervisor Fiscal Omni' : 'Conferente Doca Omni',
-            dataEmissao: notaAtual?.dataEmissao || new Date().toISOString().slice(0, 10),
+            dataEmissao: notaAtual.dataEmissao || new Date().toISOString().slice(0, 10),
             fornecedor: nfFornecedor,
             cnpj: nfCnpj,
             valorTotal: nfValorTotal,
-            impostos: notaAtual?.impostos || {},
-            duplicatas: notaAtual?.duplicatas || [],
+            impostos: notaAtual.impostos || {},
+            duplicatas: notaAtual.duplicatas || [],
+            dadosFinanceiros: {
+              modalidade: finModalidade,
+              vencimento: finVencimento,
+              valor: nfValorTotal,
+              chavePix: finModalidade === 'SEM_DDA_PIX' ? finChaveOuLinha : '',
+              linhaDigitavel: finModalidade === 'BOLETO_MANUAL' ? finChaveOuLinha : '',
+              observacao: `${isNfse ? 'NFS-e' : 'NF-e'} ${nfNumero} • Pedido #${poId} • ${nfFornecedor}`
+            },
             itensRecebidos: itensTicados
               .filter(it => it.poItem && it.poItem.itemNumber != null)
               .map(it => ({
@@ -4003,38 +4154,64 @@
           });
         }
 
-        // Se o checkbox "Gravar automaticamente Linha Digitável DDA no Contas a Pagar do Sienge" estiver marcado,
-        // garante que o DDA específico desta NF seja buscado e injetado no Sienge!
-        let resumoDdaInjetado = '';
+        let resumoFinanceiroTexto = '';
         const autoDda = document.getElementById('chkAutoInjetarDdaAoLiquidar')?.checked;
-        if (autoDda && typeof injetarDdaAutomaticoDaNotaAoLiquidar === 'function') {
-          resumoDdaInjetado = await injetarDdaAutomaticoDaNotaAoLiquidar();
+
+        if (finModalidade === 'BOLETO_MANUAL' && finChaveOuLinha && (data.billId || poAtualCarregado?.order?.forecastBillId)) {
+          const targetBill = data.billId || poAtualCarregado?.order?.forecastBillId;
+          try {
+            await fetch('/api/sienge/conciliar-dda', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                billId: targetBill,
+                installmentId: 1,
+                barcode44: finChaveOuLinha,
+                digitableLine47: finChaveOuLinha,
+                dueDate: finVencimento,
+                updateInstallmentDueDate: Boolean(finVencimento),
+                amount: nfValorTotal,
+                fornecedor: nfFornecedor,
+                cnpjBeneficiario: nfCnpj,
+                notes: `Boleto Manual vinculado na entrada da NF ${nfNumero}`
+              })
+            });
+            resumoFinanceiroTexto = `Boleto Manual vinculado ao Título Sienge #${targetBill} (Venc: ${finVencimento.split('-').reverse().join('/')})`;
+          } catch (e) {}
+        } else if ((finModalidade === 'DDA_ITAU' || autoDda) && typeof injetarDdaAutomaticoDaNotaAoLiquidar === 'function') {
+          resumoFinanceiroTexto = await injetarDdaAutomaticoDaNotaAoLiquidar();
+        } else {
+          const billRef = data.billId || poAtualCarregado?.order?.forecastBillId || 'Gerado no Sienge';
+          const vencBr = finVencimento ? finVencimento.split('-').reverse().join('/') : 'Conforme Pedido';
+          resumoFinanceiroTexto = `Sem DDA (${finModalidade.replace('SEM_DDA_', '')}) • Título Sienge #${billRef} • Vencimento: ${vencBr} • Valor: ${nfValorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
         }
 
-        await salvarEstadoGlobalWms(`Liquidação Fiscal + DDA NF ${nfNumero} / Pedido #${poId}`);
+        // Atualiza lista do Agente Sienge após liquidar
+        sincronizarPedidosAbertosSiengeAgente(true);
+        await salvarEstadoGlobalWms(`Liquidação Fiscal ${isNfse ? 'NFS-e' : 'NF-e'} ${nfNumero} / Pedido #${poId}`);
 
-        const seqMsg = data.sequentialNumber ? ` (Sequencial Sienge #${data.sequentialNumber})` : '';
-        showToast(`NF-e ${nfNumero} liquidada no Sienge${seqMsg} + saldos do Pedido #${poId} atualizados!`, 'success');
+        const seqMsg = data.sequentialNumber ? ` (Seq. Sienge #${data.sequentialNumber})` : '';
+        showToast(`${isNfse ? 'NFS-e' : 'NF-e'} ${nfNumero} integrada no Sienge${seqMsg}!`, 'success');
 
         const resumoSobrasTexto = sobrasLocais.length > 0
-          ? `\n📦 SALDO / SOBRA PENDENTE NO PEDIDO #${poId} (OMNI & SIENGE):\n  - ` + sobrasLocais.join('\n  - ') + '\n'
+          ? `\n📦 SALDO REMANESCENTE NO PEDIDO #${poId} (OMNI & SIENGE):\n  - ` + sobrasLocais.join('\n  - ') + '\n'
           : '\n• Saldo do Pedido: 100% Atendido (Sem sobras pendentes)\n';
 
         alert(
-          '🎉 AMARRAÇÃO FISCAL, ENTRADA SIENGE & BOLETO DDA CONCLUÍDOS!\n\n' +
+          '🎉 AMARRAÇÃO FISCAL & FINANCEIRA CONCLUÍDA NO SIENGE!\n\n' +
           `• Pedido Sienge: #${poId} (${data.novoStatusSienge || (sobrasLocais.length > 0 ? 'PARTIALLY_DELIVERED' : 'FULLY_DELIVERED')})\n` +
-          `• NF-e: ${nfNumero} (${nfFornecedor})${seqMsg}\n` +
-          `• Itens Faturados Homologados: ${ticados} item(ns) da NF-e\n` +
-          resumoSobrasTexto + '\n' +
-          (resumoDdaInjetado ? `• DDA Itaú Conciliado na NF: ${resumoDdaInjetado}\n\n` : `• Duplicatas XML: ${(notaAtual?.duplicatas || []).length} parcela(s) enviadas para Conciliação DDA Itaú (Módulo 9).\n\n`) +
-          'Os lotes já foram gerados no Módulo 3 (WMS & A Endereçar).'
+          `• Documento: ${isNfse ? 'NFS-e (Serviço)' : 'NF-e'} ${nfNumero} (${nfFornecedor})${seqMsg}\n` +
+          `• Valor Liquidado: ${nfValorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}\n` +
+          `• Financeiro Sienge: ${resumoFinanceiroTexto}\n` +
+          resumoSobrasTexto
         );
 
-        switchModule('enderecamento');
+        if (!isNfse) {
+          switchModule('enderecamento');
+        }
       } catch(err) {
         await salvarEstadoGlobalWms(`Liquidação Fiscal Contingência NF ${nfNumero}`);
-        showToast('Homologação Sienge concluída e lotes enviados ao WMS!', 'success');
-        switchModule('enderecamento');
+        showToast('Erro ao comunicar com Sienge: ' + err.message, 'danger');
       }
     }
 
@@ -4993,25 +5170,109 @@ function renderWmsAEnderecar() {
     let boletosDdaNotaFiscalAtual = [];
 
     function atualizarPainelDdaNotaFiscal(order) {
-      const forn = notaAtual?.fornecedor || 'DISTRIBUIDORA DE SUPRIMENTOS E EMBALAGENS LTDA';
-      const cnpj = notaAtual?.cnpj || '60.746.948/0001-12';
-      const nfNum = notaAtual?.numeroNfe || '3538';
-      const poId = order?.id || poAtualCarregado?.order?.id || notaAtual?.pedidoSienge || '3538';
-      const valTotal = Number(notaAtual?.valorTotal || order?.totalAmount || 2673.54);
-      const dups = Array.isArray(notaAtual?.duplicatas) && notaAtual.duplicatas.length > 0
+      const poObj = order || poAtualCarregado?.order || null;
+      const temNota = Boolean(notaAtual && (notaAtual.numeroNfe || notaAtual.fornecedor));
+      const temPo = Boolean(poObj && poObj.id);
+
+      // Beneficiário / Emitente: exibe SOMENTE o que foi puxado do XML; se não tiver, "Sem informação"
+      const forn = temNota && notaAtual.fornecedor ? notaAtual.fornecedor : 'Sem informação';
+      const cnpj = temNota && notaAtual.cnpj ? notaAtual.cnpj : 'Sem informação';
+
+      // Documento / Pedido Sienge: exibe apenas o que foi vinculado
+      const partesDocPo = [];
+      if (temNota && notaAtual.numeroNfe) {
+        partesDocPo.push(`${notaAtual.tipoDoc || 'NF-e'} ${notaAtual.numeroNfe}`);
+      }
+      const poIdVinculado = poObj?.id || notaAtual?.pedidoSienge || '';
+      if (poIdVinculado) {
+        partesDocPo.push(`Pedido #${poIdVinculado}`);
+      }
+      const textoDocPo = partesDocPo.length > 0 ? partesDocPo.join(' • ') : 'Sem informação';
+
+      // Duplicatas XML (<cobr><dup>): exibe apenas duplicatas reais do XML; nunca inventa R$ 50.400,00 do pedido!
+      const dupsReais = (temNota && Array.isArray(notaAtual.duplicatas) && notaAtual.duplicatas.length > 0)
         ? notaAtual.duplicatas
-        : [{ numero: '001', vencimento: '2026-11-18', valor: valTotal }];
+        : [];
 
       const elForn = document.getElementById('fiscalDdaFornecedor');
-      if (elForn) elForn.innerText = forn;
+      if (elForn) {
+        elForn.innerText = forn;
+        elForn.style.color = temNota ? '#0f172a' : '#64748b';
+      }
       const elCnpj = document.getElementById('fiscalDdaCnpj');
-      if (elCnpj) elCnpj.innerText = cnpj;
+      if (elCnpj) {
+        elCnpj.innerText = cnpj;
+        elCnpj.style.color = temNota ? '#c2410c' : '#64748b';
+      }
       const elNfPo = document.getElementById('fiscalDdaNfPo');
-      if (elNfPo) elNfPo.innerText = `NF ${nfNum} • Pedido #${poId}`;
+      if (elNfPo) {
+        elNfPo.innerText = textoDocPo;
+        elNfPo.style.color = partesDocPo.length > 0 ? '#0369a1' : '#64748b';
+      }
       const elDups = document.getElementById('fiscalDdaDuplicatasResumo');
       if (elDups) {
-        const somaDups = dups.reduce((acc, d) => acc + (Number(d.valor) || 0), 0) || valTotal;
-        elDups.innerText = `${dups.length}x parcela(s) • Total ${somaDups.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
+        if (dupsReais.length > 0) {
+          const somaDups = dupsReais.reduce((acc, d) => acc + (Number(d.valor) || 0), 0);
+          elDups.innerText = `${dupsReais.length}x parcela(s) • Total ${somaDups.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
+          elDups.style.color = '#15803d';
+        } else if (temNota) {
+          const valNf = Number(notaAtual.valorTotal || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+          elDups.innerText = `Sem tag <dup> no XML (Valor NF: ${valNf})`;
+          elDups.style.color = '#b45309';
+        } else {
+          elDups.innerText = 'Sem informação';
+          elDups.style.color = '#64748b';
+        }
+      }
+
+      // Atualiza Parâmetros de Amarração Financeira p/ Sienge ERP (sem DDA / com previsão do pedido)
+      const elPrevisaoInfo = document.getElementById('fiscalPrevisaoSiengeInfo');
+      const forecastInst = (poObj && Array.isArray(poObj.forecastInstallments) && poObj.forecastInstallments.length > 0)
+        ? poObj.forecastInstallments[0]
+        : null;
+
+      if (elPrevisaoInfo) {
+        if (poObj && poObj.forecastBillId) {
+          const vencPrev = forecastInst?.dueDate ? String(forecastInst.dueDate).split('-').reverse().join('/') : 'S/ Venc.';
+          elPrevisaoInfo.innerText = `Título Previsão #${poObj.forecastBillId} (${(poObj.forecastDocumentId || 'PPC').trim()}) • Venc. Previsto: ${vencPrev}`;
+        } else if (temPo) {
+          elPrevisaoInfo.innerText = `Pedido #${poObj.id} vinculado (Sem título de previsão PPC)`;
+        } else {
+          elPrevisaoInfo.innerText = 'Previsão Sienge: Sem informação';
+        }
+      }
+
+      const elFinValor = document.getElementById('finValorSienge');
+      if (elFinValor) {
+        if (temNota && Number(notaAtual.valorTotal) > 0) {
+          elFinValor.value = Number(notaAtual.valorTotal).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        } else {
+          elFinValor.value = '';
+        }
+      }
+
+      const elFinVenc = document.getElementById('finVencimentoSienge');
+      if (elFinVenc) {
+        if (dupsReais.length > 0 && dupsReais[0].vencimento) {
+          elFinVenc.value = dupsReais[0].vencimento;
+        } else if (forecastInst && forecastInst.dueDate) {
+          elFinVenc.value = forecastInst.dueDate;
+        } else if (!temNota && !temPo) {
+          elFinVenc.value = '';
+        }
+      }
+
+      const elFinMod = document.getElementById('finModalidadeSienge');
+      if (elFinMod && temNota) {
+        if (notaAtual.isNfse || dupsReais.length === 0) {
+          if (elFinMod.value === 'DDA_ITAU') {
+            elFinMod.value = 'SEM_DDA_PIX';
+            aoMudarModalidadeFinanceiraSienge();
+          }
+        } else {
+          elFinMod.value = 'DDA_ITAU';
+          aoMudarModalidadeFinanceiraSienge();
+        }
       }
 
       const badgeModo = document.getElementById('badgeModoDdaFiscal');
@@ -5026,15 +5287,49 @@ function renderWmsAEnderecar() {
       }
     }
 
+    function aoMudarModalidadeFinanceiraSienge() {
+      const mod = document.getElementById('finModalidadeSienge')?.value || 'DDA_ITAU';
+      const lbl = document.getElementById('lblFinChaveOuLinha');
+      const inp = document.getElementById('finChaveOuLinhaSienge');
+      const chkDda = document.getElementById('chkInjetarDdaAutomaticoLiquidacao');
+      if (!lbl || !inp) return;
+
+      if (mod === 'SEM_DDA_PIX') {
+        lbl.innerText = 'Chave PIX (CNPJ/E-mail/Telefone) ou Copia e Cola (paymentTypeId=14):';
+        inp.placeholder = notaAtual?.cnpj ? `Ex: CNPJ ${notaAtual.cnpj} ou Chave PIX da NFS-e` : 'Informe a Chave PIX ou deixe em branco p/ usar CNPJ do Emitente';
+        if (chkDda) chkDda.checked = false;
+      } else if (mod === 'SEM_DDA_TED') {
+        lbl.innerText = 'Dados Bancários p/ TED / Transferência (paymentTypeId=6):';
+        inp.placeholder = 'Ex: Banco / Agência / Conta Corrente (ou Cadastro do Credor no Sienge)';
+        if (chkDda) chkDda.checked = false;
+      } else if (mod === 'SEM_DDA_BOLETO_MANUAL') {
+        lbl.innerText = 'Linha Digitável (47 dígitos) ou Código de Barras (44 dígitos):';
+        inp.placeholder = 'Digite os 47 dígitos da Linha Digitável do boleto avulso';
+        if (chkDda) chkDda.checked = false;
+      } else if (mod === 'PREVISAO_PEDIDO') {
+        lbl.innerText = 'Observação da Previsão Financeira Sienge (Título PPC):';
+        inp.placeholder = 'Mantém condição original do Pedido de Compra no Contas a Pagar Sienge';
+        if (chkDda) chkDda.checked = false;
+      } else {
+        lbl.innerText = 'Linha Digitável DDA Itaú (47 dígitos) / Código de Barras:';
+        inp.placeholder = 'Preenchido automaticamente ao buscar no DDA Itaú ou digite manualmente';
+        if (chkDda) chkDda.checked = true;
+      }
+    }
+
     async function buscarDdaEspecificoDestaNota(modoOrigem = 'API_ITAU') {
-      const forn = notaAtual?.fornecedor || 'DISTRIBUIDORA DE SUPRIMENTOS E EMBALAGENS LTDA';
-      const cnpj = notaAtual?.cnpj || '60.746.948/0001-12';
-      const nfNum = String(notaAtual?.numeroNfe || '3538').replace(/\D/g, '') || '3538';
-      const poId = String(poAtualCarregado?.order?.id || notaAtual?.pedidoSienge || '3538');
-      const valTotal = Number(notaAtual?.valorTotal || poAtualCarregado?.order?.totalAmount || 2673.54);
-      const dups = Array.isArray(notaAtual?.duplicatas) && notaAtual.duplicatas.length > 0
+      if (!notaAtual || (!notaAtual.cnpj && !notaAtual.numeroNfe)) {
+        showToast('Importe ou selecione primeiro o XML da NF-e/NFS-e para buscar o DDA correspondente.', 'warning');
+        return;
+      }
+      const forn = notaAtual.fornecedor || 'Sem informação';
+      const cnpj = notaAtual.cnpj || '';
+      const nfNum = String(notaAtual.numeroNfe || '').replace(/\D/g, '');
+      const poId = String(poAtualCarregado?.order?.id || notaAtual?.pedidoSienge || '');
+      const valTotal = Number(notaAtual.valorTotal || 0);
+      const dups = Array.isArray(notaAtual.duplicatas) && notaAtual.duplicatas.length > 0
         ? notaAtual.duplicatas
-        : [{ numero: '001', vencimento: '2026-11-18', valor: valTotal }];
+        : [];
 
       showToast(`Conectando ao Itaú DDA: buscando exclusivamente boleto(s) da NF ${nfNum} (CNPJ ${cnpj})...`, 'info');
 
@@ -5069,6 +5364,15 @@ function renderWmsAEnderecar() {
           renderizarResultadoDdaNotaFiscal();
           await salvarEstadoGlobalWms(`Busca Seletiva DDA Itaú NF ${nfNum}`);
           showToast(data.message || `${data.boletos.length} boleto(s) DDA Itaú localizado(s) para a NF ${nfNum}!`, 'success');
+        } else {
+          boletosDdaNotaFiscalAtual = [];
+          renderizarResultadoDdaNotaFiscal();
+          const elFinMod = document.getElementById('finModalidadeSienge');
+          if (elFinMod && (notaAtual.isNfse || dups.length === 0)) {
+            elFinMod.value = 'SEM_DDA_PIX';
+            aoMudarModalidadeFinanceiraSienge();
+          }
+          showToast(`Nenhum boleto DDA encontrado no Itaú para o CNPJ ${cnpj} (NF ${nfNum}). Utilize a Amarração Financeira Sienge (PIX/TED/Previsão) logo abaixo.`, 'warning');
         }
       } catch (err) {
         showToast('Erro ao consultar DDA seletivo: ' + err.message, 'warning');
@@ -5194,7 +5498,7 @@ function renderWmsAEnderecar() {
       const file = event.target.files && event.target.files[0];
       if (!file) return;
       const cnpjNotaDigits = String(notaAtual?.cnpj || '').replace(/\D/g, '');
-      const nfNum = String(notaAtual?.numeroNfe || '3538').replace(/\D/g, '');
+      const nfNum = String(notaAtual?.numeroNfe || '').replace(/\D/g, '');
       const reader = new FileReader();
       reader.onload = async function(e) {
         const lines = String(e.target.result || '').split(/\r?\n/);
@@ -5209,9 +5513,9 @@ function renderWmsAEnderecar() {
             const valorReais = (parseInt(line.substring(115, 130).replace(/\D/g, ''), 10) || 0) / 100;
             const seuNum = line.substring(147, 162).trim();
 
-            if (!cnpjNotaDigits || cnpjRaw.includes(cnpjNotaDigits.slice(0, 8)) || seuNum.includes(nfNum)) {
+            if (!cnpjNotaDigits || cnpjRaw.includes(cnpjNotaDigits.slice(0, 8)) || (nfNum && seuNum.includes(nfNum))) {
               encontrados.push({
-                id: `CNAB-NF-${nfNum}-${idx}`,
+                id: `CNAB-NF-${nfNum || idx}-${idx}`,
                 beneficiario: nomeCedente || notaAtual?.fornecedor || 'FORNECEDOR CNAB ITAU',
                 cnpj: notaAtual?.cnpj || cnpjRaw,
                 seuNumero: seuNum || `NF-${nfNum}/01`,
@@ -5221,9 +5525,9 @@ function renderWmsAEnderecar() {
                 valor: valorReais,
                 barcode44: barcode44,
                 digitableLine47: barcode44 + '000',
-                siengeBillId: 13309,
+                siengeBillId: poAtualCarregado?.order?.forecastBillId || 13309,
                 siengeInstallmentId: 1,
-                pedidoSienge: notaAtual?.pedidoSienge || '3538',
+                pedidoSienge: notaAtual?.pedidoSienge || poAtualCarregado?.order?.id || '',
                 origem: `Arquivo CNAB 240 (${file.name}) Filtrado p/ NF`,
                 statusMatch: 'MATCH_100',
                 gravadoSienge: false
@@ -5309,7 +5613,7 @@ function renderWmsAEnderecar() {
     // ==============================================================
     // PERSISTÊNCIA EM NUVEM (SUPABASE + LOCALSTORAGE)
     // ==============================================================
-    const LOCAL_STORAGE_KEY = 'omnitrade_wms_pcp_dda_state_v4';
+    const LOCAL_STORAGE_KEY = 'omnitrade_wms_pcp_dda_state_v5';
 
     async function salvarEstadoGlobalWms(motivo = 'Atualização Operacional') {
       const stateSnapshot = {
@@ -5383,13 +5687,13 @@ function renderWmsAEnderecar() {
       return abrirModalSupervisor();
     }
 
-    // Inicialização + Limpeza automática de Service Worker antigo (v1) para exibir v4.2 imediatamente
+    // Inicialização + Limpeza automática de Service Worker antigo para exibir v4.7 imediatamente
     window.addEventListener('DOMContentLoaded', async () => {
       try {
         if ('caches' in window) {
           const keys = await caches.keys();
           for (const k of keys) {
-            if (k !== 'omnifiscal-recebimento-v4.6') await caches.delete(k);
+            if (k !== 'omnifiscal-recebimento-v4.7') await caches.delete(k);
           }
         }
         if ('serviceWorker' in navigator) {
@@ -5408,6 +5712,7 @@ function renderWmsAEnderecar() {
       if (typeof renderTabelaOrdensProducao === 'function') renderTabelaOrdensProducao();
       if (typeof renderTabelaDda === 'function') renderTabelaDda();
       if (typeof atualizarPainelDdaNotaFiscal === 'function') atualizarPainelDdaNotaFiscal();
+      if (typeof iniciarAgenteSincronizadorSienge === 'function') iniciarAgenteSincronizadorSienge();
     });
   
 

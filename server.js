@@ -84,17 +84,32 @@ const handler = async (req, res) => {
     return;
   }
 
-  // 2. Listar Pedidos de Compra do Sienge
+  // 2. Listar Pedidos de Compra do Sienge (Agente Sincronizador de Pedidos Abertos)
   if (pathname === '/api/sienge/purchase-orders') {
-    const limit = reqUrl.searchParams.get('limit') || '10';
-    const offset = reqUrl.searchParams.get('offset') || '0';
+    const poListHandler = require('./api/sienge/purchase-orders.js');
+    req.query = Object.fromEntries(reqUrl.searchParams);
+    const mockRes = {
+      setHeader: (k, v) => res.setHeader(k, v),
+      status: (code) => {
+        res.statusCode = code;
+        return {
+          json: (data) => {
+            res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(JSON.stringify(data));
+          },
+          send: (data) => {
+            res.writeHead(code);
+            res.end(data);
+          },
+          end: () => res.end()
+        };
+      }
+    };
     try {
-      const result = await siengeFetch('/purchase-orders?limit=' + limit + '&offset=' + offset);
-      res.writeHead(result.status, { 'Content-Type': 'application/json; charset=utf-8' });
-      res.end(JSON.stringify(result.data));
+      await poListHandler(req, mockRes);
     } catch(err) {
       res.writeHead(500, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: err.message }));
+      res.end(JSON.stringify({ ok: false, error: err.message, results: [] }));
     }
     return;
   }

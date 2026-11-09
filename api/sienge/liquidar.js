@@ -17,7 +17,7 @@ function siengeReq(method, path, body) {
       headers: {
         'Authorization': 'Basic ' + SIENGE_AUTH,
         'Accept': 'application/json',
-        'User-Agent': 'OmniFiscalAI/2.0',
+        'User-Agent': 'OmniFiscalAI/3.0',
         ...(data ? { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data) } : {})
       },
       timeout: 25000
@@ -26,7 +26,7 @@ function siengeReq(method, path, body) {
       res.on('data', c => d += c);
       res.on('end', () => {
         try {
-          resolve({ status: res.statusCode, data: JSON.parse(d) });
+          resolve({ status: res.statusCode, data: d ? JSON.parse(d) : {} });
         } catch(e) {
           resolve({ status: res.statusCode, data: d });
         }
@@ -65,15 +65,20 @@ module.exports = async (req, res) => {
 
   const purchaseOrderId = body.purchaseOrderId || body.orderId;
   const numeroNf = body.numeroNf || body.nfeNumero;
-  const serieNf = body.serieNf || body.serie || '1';
+  const isNfse = Boolean(body.isNfse || body.documentId === 'NFSE');
+  const rawSerie = String(body.serieNf || body.serie || (isNfse ? 'SU' : '1')).trim();
+  // Sienge limita series em purchase-invoices a até 3 caracteres (ex: 'SU' para NFS-e, '1' para NF-e)
+  const serieNf = isNfse ? (rawSerie.length <= 3 && rawSerie !== '70000' ? rawSerie : 'SU') : (rawSerie.slice(0, 3) || '1');
   const chaveNfe = body.chaveNfe || body.accessKeyNumber || '';
   const conferente = body.conferente || 'Conferente Omni Trade';
   const dataEmissao = body.dataEmissao || '';
   const fornecedor = body.fornecedor || '';
+  const cnpjFornecedor = String(body.cnpj || '').replace(/\D/g, '');
   const itensRecebidos = Array.isArray(body.itensRecebidos) ? body.itensRecebidos : (Array.isArray(body.items) ? body.items : []);
   const duplicatas = Array.isArray(body.duplicatas) ? body.duplicatas : [];
   const impostos = body.impostos || {};
   const valorTotal = parseFloat(body.valorTotal || impostos.vNF || 0) || 0;
+  const dadosFinanceiros = body.dadosFinanceiros || null;
 
   const poDigits = String(purchaseOrderId || '').replace(/\D/g, '');
   if (!poDigits) {
@@ -107,32 +112,35 @@ module.exports = async (req, res) => {
       return;
     }
 
-    // 2. Criar a Nota Fiscal de Compra (purchase-invoices) com Impostos e Duplicatas
+    // 2. Criar a Nota Fiscal de Compra (purchase-invoices) com suporte a NF-e e NFS-e de Serviço
     const todayIso = new Date().toISOString().split('T')[0];
     const issueDateStr = (dataEmissao && dataEmissao.length === 10)
       ? dataEmissao
       : todayIso;
 
     const cleanNfNum = String(numeroNf || '').replace(/\D/g, '') || String(poId);
-    const cleanSerie = String(serieNf || '1').trim() || '1';
     const dupResumo = duplicatas.length > 0
-      ? ' | Duplicatas XML: ' + duplicatas.map(d => `${d.nDup}:${d.dVenc}(R$${d.vDup})`).join(', ')
-      : '';
+      ? ' | Duplicatas: ' + duplicatas.map(d => `${d.nDup || d.numero || 1}:${d.dVenc || d.vencimento || ''}(R$${d.vDup || d.valor || valorTotal})`).join(', ')
+      : (dadosFinanceiros && dadosFinanceiros.vencimento ? ` | Venc: ${dadosFinanceiros.vencimento} (${dadosFinanceiros.modalidade || 'Sem DDA'})` : '');
+
+    const docTypeSienge = isNfse ? 'NFSE' : 'NFE';
 
     const invoicePayload = {
-      notes: ((chaveNfe ? ('Chave NF-e: ' + chaveNfe) : 'Recebimento OmniFiscal AI') + dupResumo + ' | Conf: ' + conferente).substring(0, 500),
+      notes: ((chaveNfe ? (`Chave ${docTypeSienge}: ` + chaveNfe) : `Recebimento OmniFiscal (${docTypeSienge})`) + dupResumo + ' | Conf: ' + conferente).substring(0, 500),
       supplierId: poData.supplierId,
       number: cleanNfNum,
-      series: cleanSerie,
+      series: serieNf,
       companyId: poData.companyId || 1,
-      documentId: 'NFE',
+      documentId: docTypeSienge,
       issueDate: issueDateStr,
       movementDate: todayIso,
       accountingDate: todayIso,
       ...(valorTotal > 0 ? {
         itemsTotalAmount: valorTotal,
-        productsAmount: parseFloat(impostos.vProd || valorTotal) || valorTotal,
-        eletronicInvoiceAmount: valorTotal
+        ...(!isNfse ? {
+          productsAmount: parseFloat(impostos.vProd || valorTotal) || valorTotal,
+          eletronicInvoiceAmount: valorTotal
+        } : {})
       } : {}),
       ...(parseFloat(impostos.vFrete) > 0 ? { freightAmount: parseFloat(impostos.vFrete) } : {}),
       ...(parseFloat(impostos.vDesc) > 0 ? { discount: parseFloat(impostos.vDesc) } : {}),
@@ -140,36 +148,33 @@ module.exports = async (req, res) => {
       ...(parseFloat(impostos.vST) > 0 ? { icmsStTax: parseFloat(impostos.vST) } : {})
     };
 
-    // Verificar se já existe nota com esse número e fornecedor no Sienge para evitar rascunhos duplicados
+    let sequentialNumber = null;
+    let billIdGerado = poData.forecastBillId || null;
+
+    // Verificar se já existe nota com esse número e fornecedor no Sienge
     const searchExisting = await siengeReq('GET', '/purchase-invoices?number=' + cleanNfNum + '&supplierId=' + poData.supplierId);
-    if (searchExisting.status === 200 && searchExisting.data && searchExisting.data.results && searchExisting.data.results.length > 0) {
-      const validInv = searchExisting.data.results.find(i => i.consistency === 'N' || i.itemsTotalAmount > 0);
-      if (validInv) {
-        res.status(200).json({
-          success: true,
-          alreadyDelivered: true,
-          message: 'A NF-e ' + cleanNfNum + ' já se encontra integrada no Sienge (Seq: ' + validInv.sequentialNumber + ', Total: R$ ' + validInv.itemsTotalAmount + ').',
-          sequentialNumber: validInv.sequentialNumber,
-          purchaseOrderId: poId
-        });
-        return;
-      }
+    if (searchExisting.status === 200 && searchExisting.data && Array.isArray(searchExisting.data.results) && searchExisting.data.results.length > 0) {
+      const existingInv = searchExisting.data.results[0];
+      sequentialNumber = existingInv.sequentialNumber;
+      if (existingInv.billId) billIdGerado = existingInv.billId;
     }
 
-    const invRes = await siengeReq('POST', '/purchase-invoices', invoicePayload);
-    let sequentialNumber = invRes.data && invRes.data.sequentialNumber;
-
     if (!sequentialNumber) {
-      // Se a nota já foi cadastrada anteriormente, buscar o sequentialNumber existente
-      const searchInv = await siengeReq('GET', `/purchase-invoices?number=${cleanNfNum}&supplierId=${poData.supplierId}`);
-      if (searchInv.status === 200 && searchInv.data && searchInv.data.results && searchInv.data.results.length > 0) {
-        sequentialNumber = searchInv.data.results[0].sequentialNumber;
-      } else {
-        res.status(invRes.status || 500).json({
-          error: 'Falha ao registrar Nota Fiscal de Compra no Sienge ERP.',
-          details: invRes.data
-        });
-        return;
+      const invRes = await siengeReq('POST', '/purchase-invoices', invoicePayload);
+      sequentialNumber = invRes.data && invRes.data.sequentialNumber;
+
+      if (!sequentialNumber) {
+        const searchInv = await siengeReq('GET', `/purchase-invoices?number=${cleanNfNum}&supplierId=${poData.supplierId}`);
+        if (searchInv.status === 200 && searchInv.data && Array.isArray(searchInv.data.results) && searchInv.data.results.length > 0) {
+          sequentialNumber = searchInv.data.results[0].sequentialNumber;
+          if (searchInv.data.results[0].billId) billIdGerado = searchInv.data.results[0].billId;
+        } else {
+          res.status(invRes.status || 500).json({
+            error: 'Falha ao registrar Nota Fiscal de Compra no Sienge ERP.',
+            details: invRes.data
+          });
+          return;
+        }
       }
     }
 
@@ -198,12 +203,10 @@ module.exports = async (req, res) => {
       let targetQty = 0;
 
       if (hasExplicitReceivedList) {
-        // Prioridade 1: Match estrito pelo itemNumber do Pedido Sienge (evita colisão quando vários itens têm mesmo resourceId, ex: Botinas TAM 37..43)
         let matchedEntries = itensRecebidos.filter(r =>
           r.itemNumber != null && Number(r.itemNumber) === Number(item.itemNumber)
         );
 
-        // Prioridade 2: Apenas para entradas sem itemNumber definido, tenta casar por detailId ou resourceId único no pedido
         if (matchedEntries.length === 0) {
           const sameResourceCount = poItems.filter(
             p => String(p.resourceId || p.resourceCode).trim() === String(item.resourceId || item.resourceCode).trim()
@@ -229,8 +232,6 @@ module.exports = async (req, res) => {
         targetQty = totalOpenInPo;
       }
 
-      // Se o item do pedido NÃO veio na Nota Fiscal (ex: Pedido tem 4 ou 7 itens e a NF veio com apenas 3 ou 4 itens),
-      // NÃO vincula entrega para este item -> mantém 100% do saldo em aberto no Sienge e no Omni!
       if (targetQty <= 0) {
         if (totalOpenInPo > 0) {
           itensSobraPedido.push({
@@ -286,7 +287,6 @@ module.exports = async (req, res) => {
 
       const saldoRestanteNoPedido = Math.max(0, Number((totalOpenInPo - deliveredForThisItem).toFixed(4)));
       if (saldoRestanteNoPedido > 0) {
-        // Ex: Pedido pediu 4 e na NF vieram 3 -> fica 1 de saldo/sobra pendente no Pedido Sienge e no Omni
         itensSobraPedido.push({
           itemNumber: item.itemNumber,
           resourceId: item.resourceId,
@@ -302,7 +302,6 @@ module.exports = async (req, res) => {
       }
 
       if (remainingToDeliver > 0) {
-        // Ex: NF veio com quantidade maior que o saldo do pedido
         itensExcedentesNf.push({
           itemNumber: item.itemNumber,
           resourceId: item.resourceId,
@@ -321,6 +320,67 @@ module.exports = async (req, res) => {
       linkRes = await siengeReq('POST', `/purchase-invoices/${sequentialNumber}/items/purchase-orders/delivery-schedules`, {
         deliveriesOrder
       });
+    }
+
+    // 4.1 Consultar a Nota Fiscal criada para obter o billId definitivo gerado pelo Sienge no Contas a Pagar
+    try {
+      const invDetailRes = await siengeReq('GET', `/purchase-invoices/${sequentialNumber}`);
+      if (invDetailRes.status === 200 && invDetailRes.data && invDetailRes.data.billId) {
+        billIdGerado = invDetailRes.data.billId;
+      }
+    } catch (e) {}
+
+    // 4.2 Se houver Dados Financeiros informados (com ou sem DDA), atualizar o Título / Parcela no Sienge (/bills/{billId}/installments/1)
+    let financeiroResult = null;
+    if (billIdGerado && dadosFinanceiros) {
+      try {
+        const vencIso = dadosFinanceiros.vencimento || (duplicatas[0] && (duplicatas[0].dVenc || duplicatas[0].vencimento)) || '';
+        const mod = dadosFinanceiros.modalidade || 'SEM_DDA_PIX';
+        const obsFin = String(dadosFinanceiros.observacao || `Amarração Financeira ${docTypeSienge} ${cleanNfNum} • Pedido #${poId}`).substring(0, 450);
+
+        let duePatchStatus = null;
+        if (vencIso && /^\d{4}-\d{2}-\d{2}$/.test(vencIso)) {
+          const patchDue = await siengeReq('PATCH', `/bills/${billIdGerado}/installments/1`, { dueDate: vencIso });
+          duePatchStatus = patchDue.status;
+        }
+
+        let paymentPatchStatus = null;
+        if (mod === 'SEM_DDA_PIX') {
+          const chavePix = String(dadosFinanceiros.chavePix || cnpjFornecedor || '').trim();
+          const tipoPix = dadosFinanceiros.tipoChavePix || (cnpjFornecedor ? 'C' : 'A');
+          const pixRes = await siengeReq('PATCH', `/bills/${billIdGerado}/installments/1/payment-information/pix`, {
+            paymentTypeId: 14,
+            isUsingCreditorData: chavePix ? 'N' : 'S',
+            beneficiaryName: String(fornecedor || '').substring(0, 80),
+            ...(cnpjFornecedor.length === 11
+              ? { beneficiaryCpfNumber: cnpjFornecedor }
+              : cnpjFornecedor.length === 14
+                ? { beneficiaryCnpjNumber: cnpjFornecedor }
+                : {}),
+            ...(chavePix ? { keyPixType: tipoPix, keyPix: chavePix } : {}),
+            notes: obsFin
+          });
+          paymentPatchStatus = pixRes.status;
+        } else if (mod === 'SEM_DDA_TED' || mod === 'SEM_DDA_TRANSFERENCIA') {
+          const tedRes = await siengeReq('PATCH', `/bills/${billIdGerado}/installments/1/payment-information/bank-transfer`, {
+            paymentTypeId: mod === 'SEM_DDA_TRANSFERENCIA' ? 3 : 6,
+            beneficiaryName: String(fornecedor || '').substring(0, 80),
+            ...(cnpjFornecedor.length === 14 ? { beneficiaryCNPJNumber: cnpjFornecedor } : {}),
+            notes: obsFin
+          });
+          paymentPatchStatus = tedRes.status;
+        }
+
+        financeiroResult = {
+          billId: billIdGerado,
+          modalidade: mod,
+          vencimento: vencIso,
+          duePatchStatus,
+          paymentPatchStatus
+        };
+      } catch (eFin) {
+        financeiroResult = { billId: billIdGerado, error: eFin.message };
+      }
     }
 
     // 5. Verificar novo status do Pedido no Sienge
@@ -343,9 +403,12 @@ module.exports = async (req, res) => {
           actor: conferente || 'Conferente Omni Trade',
           category: 'recebimento_fiscal',
           action: 'RECEBIMENTO_SIENGE_LIQUIDADO',
-          target: `NF ${cleanNfNum} / Pedido #${poId}`,
+          target: `${docTypeSienge} ${cleanNfNum} / Pedido #${poId}`,
           details: JSON.stringify({
             sequentialNumber,
+            billId: billIdGerado,
+            forecastBillId: poData.forecastBillId || null,
+            documentId: docTypeSienge,
             purchaseOrderId: poId,
             statusAnterior: poData.status,
             novoStatusSienge: finalPoStatus,
@@ -355,6 +418,7 @@ module.exports = async (req, res) => {
             entregasVinculadas: deliveriesOrder,
             itensSobraPedido,
             itensExcedentesNf,
+            financeiroResult,
             linkStatus: linkRes ? linkRes.status : 'N/A'
           }),
           level: 'info'
@@ -366,14 +430,18 @@ module.exports = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: `NF-e ${cleanNfNum} integrada com sucesso! Pedido #${poId} atualizado no Sienge para ${finalPoStatus}.`,
+      message: `${docTypeSienge} ${cleanNfNum} integrada com sucesso! Pedido #${poId} atualizado no Sienge para ${finalPoStatus}.`,
       sequentialNumber,
+      billId: billIdGerado,
+      forecastBillId: poData.forecastBillId || null,
+      documentId: docTypeSienge,
       purchaseOrderId: poId,
       statusAnterior: poData.status,
       novoStatusSienge: finalPoStatus,
       entregasVinculadas: deliveriesOrder,
       itensSobraPedido,
-      itensExcedentesNf
+      itensExcedentesNf,
+      financeiroResult
     });
 
   } catch(err) {

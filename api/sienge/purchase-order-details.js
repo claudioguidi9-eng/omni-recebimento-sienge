@@ -13,9 +13,9 @@ function siengeReq(path) {
       headers: {
         'Authorization': 'Basic ' + SIENGE_AUTH,
         'Accept': 'application/json',
-        'User-Agent': 'OmniFiscalAI/2.0'
+        'User-Agent': 'OmniFiscalAI/3.0'
       },
-      timeout: 15000
+      timeout: 18000
     }, (res) => {
       let data = '';
       res.on('data', chunk => data += chunk);
@@ -77,15 +77,29 @@ module.exports = async (req, res) => {
 
     const orderData = orderRes.data;
 
-    // 2. Buscar itens do pedido e ordenar por itemNumber
+    // 2. Buscar itens do pedido e previsão financeira (forecastBillId) em paralelo
     let items = [];
-    try {
-      const itemsRes = await siengeReq('/purchase-orders/' + cleanId + '/items');
-      if (itemsRes.status === 200 && itemsRes.data) {
-        items = Array.isArray(itemsRes.data.results) ? itemsRes.data.results : (Array.isArray(itemsRes.data) ? itemsRes.data : []);
-      }
-    } catch(errItems) {
-      console.warn('Erro ao buscar itens do pedido ' + cleanId + ':', errItems.message);
+    let forecastInstallments = [];
+
+    const [itemsRes, forecastRes] = await Promise.all([
+      siengeReq('/purchase-orders/' + cleanId + '/items').catch(() => ({ status: 500, data: null })),
+      orderData.forecastBillId
+        ? siengeReq(`/bills/${orderData.forecastBillId}/installments?limit=20`).catch(() => ({ status: 500, data: null }))
+        : Promise.resolve({ status: 200, data: null })
+    ]);
+
+    if (itemsRes.status === 200 && itemsRes.data) {
+      items = Array.isArray(itemsRes.data.results) ? itemsRes.data.results : (Array.isArray(itemsRes.data) ? itemsRes.data : []);
+    }
+    if (forecastRes && forecastRes.status === 200 && forecastRes.data && Array.isArray(forecastRes.data.results)) {
+      forecastInstallments = forecastRes.data.results.map(inst => ({
+        installmentNumber: inst.installmentNumber || 1,
+        dueDate: inst.dueDate || null,
+        amount: Number(inst.amount || 0),
+        paymentTypeId: inst.paymentTypeId || null,
+        paymentType: inst.paymentType || null,
+        situation: inst.situation || null
+      }));
     }
 
     items.sort((a, b) => Number(a.itemNumber || 0) - Number(b.itemNumber || 0));
@@ -138,13 +152,18 @@ module.exports = async (req, res) => {
         totalAmount: orderData.totalAmount || 0,
         supplierId: orderData.supplierId,
         buildingId: orderData.buildingId,
+        costCenterId: orderData.costCenterId || orderData.buildingId,
+        companyId: orderData.companyId || 1,
         buyerId: orderData.buyerId || 'N/A',
         notes: orderData.notes || '',
         paymentCondition: orderData.paymentCondition || '',
         consistent: orderData.consistent,
         authorized: orderData.authorized,
         disapproved: orderData.disapproved,
-        freightType: orderData.freightType
+        freightType: orderData.freightType,
+        forecastDocumentId: (orderData.forecastDocumentId || '').trim() || null,
+        forecastBillId: orderData.forecastBillId || null,
+        forecastInstallments: forecastInstallments
       },
       items: enrichedItems
     });
